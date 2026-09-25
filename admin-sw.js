@@ -2,7 +2,7 @@ importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js
 importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-  apiKey: "AIzaSyBSjmCORxkAqYx64jkLDpq20wtThqxW0w",
+  apiKey: "AIzaSyBSjmCORx8kAqYx64jkLDpq20wtThqxW0w",
   authDomain: "shopmanager-45fac.firebaseapp.com",
   projectId: "shopmanager-45fac",
   storageBucket: "shopmanager-45fac.firebasestorage.app",
