@@ -1,0 +1,9 @@
+{
+  "name": "Shop Manager Admin",
+  "short_name": "Shop Admin",
+  "start_url": "/admin.html",
+  "display": "standalone",
+  "background_color": "#080307",
+  "theme_color": "#e30d40",
+  "description": "Private Shop Manager owner dashboard"
+}
