@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Track Order — Shop Manager</title>
+<meta name="theme-color" content="#0b0b0f">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#08090d;color:#f5f5f7;min-height:100vh}
+.wrap{width:min(680px,100%);margin:auto;padding:22px 15px 50px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-weight:800;font-size:20px}
+.muted{color:#9699a5;font-size:13px}
+.card{background:linear-gradient(145deg,#15161d,#0e0f14);border:1px solid #272a35;border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 12px 35px #0005}
+h1{font-size:25px;margin:0 0 6px}
+h2{font-size:16px;margin:0 0 14px}
+.row{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid #242631}
+.row:last-child{border-bottom:0}
+.label{color:#9296a3;font-size:13px}
+.value{text-align:right;font-weight:650;word-break:break-word}
+.total{font-size:24px;font-weight:850}
+.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:#232633;font-size:12px;font-weight:800}
+.status-review{background:#493a14;color:#ffd76a}
+.status-confirmed{background:#123c27;color:#79f0ad}
+.status-preparing{background:#173d57;color:#7dd6ff}
+.status-ready{background:#33205c;color:#c99cff}
+.status-completed{background:#164b35;color:#8ff7bc}
+.status-rejected,.status-cancelled{background:#4b1b25;color:#ff9eac}
+.timeline{display:grid;gap:10px}
+.step{display:flex;align-items:center;gap:12px;color:#707481}
+.dot{width:12px;height:12px;border-radius:50%;background:#30333d;flex:0 0 auto}
+.step.done{color:#f2f2f4}.step.done .dot{background:#58d68d;box-shadow:0 0 0 4px #58d68d22}
+.step.current{color:#fff;font-weight:800}.step.current .dot{background:#fff;box-shadow:0 0 0 4px #ffffff20}
+.items{display:grid;gap:8px}
+.item{display:flex;justify-content:space-between;gap:12px;padding:11px 12px;background:#101117;border-radius:13px}
+button{border:0;border-radius:13px;padding:12px 15px;background:#242733;color:#fff;font-weight:750;cursor:pointer}
+button.primary{background:#fff;color:#090a0d}
+.actions{display:flex;gap:9px;margin-top:15px}
+.hidden{display:none}
+.error{color:#ff9eac}
+.center{text-align:center;padding:45px 10px}
+.small{font-size:12px;color:#777b88}
+@media(max-width:520px){
+ .wrap{padding:15px 12px 35px}
+ .card{border-radius:18px;padding:16px}
+ .row{align-items:flex-start}
+ .value{max-width:62%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Shop Manager</div>
+    <div class="muted">Order Tracker</div>
+  </div>
+
+  <div id="loading" class="card center">
+    <h1>Loading order…</h1>
+    <div class="muted">Please wait.</div>
+  </div>
+
+  <div id="error" class="card center hidden">
+    <h1>Order unavailable</h1>
+    <p id="errorText" class="error">This tracking link is invalid or expired.</p>
+    <button class="primary" onclick="loadOrder()">Try again</button>
+  </div>
+
+  <main id="content" class="hidden">
+    <section class="card">
+      <div class="muted" id="shopName">Shop</div>
+      <h1 id="orderNumber">Order</h1>
+      <div id="statusBadge" class="badge">Loading</div>
+    </section>
+
+    <section class="card">
+      <h2>Order details</h2>
+      <div class="row"><span class="label">Customer</span><span class="value" id="customer">—</span></div>
+      <div class="row"><span class="label">Payer</span><span class="value" id="payer">—</span></div>
+      <div class="row"><span class="label">Payment</span><span class="value" id="payment">—</span></div>
+      <div class="row"><span class="label">Transaction / UTR</span><span class="value" id="transaction">—</span></div>
+      <div class="row"><span class="label">Pickup / visit</span><span class="value" id="pickup">—</span></div>
+      <div class="row"><span class="label">Placed</span><span class="value" id="created">—</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Items</h2>
+      <div id="items" class="items"></div>
+      <div class="row" style="margin-top:8px;border-bottom:0">
+        <span class="label">Total</span>
+        <span class="value total" id="total">₹0</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Order progress</h2>
+      <div id="timeline" class="timeline"></div>
+      <div class="actions">
+        <button onclick="loadOrder()">↻ Refresh</button>
+      </div>
+      <p class="small">This page refreshes automatically every 30 seconds.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL="https://wzoatpjewfphxcclxpmz.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b2F0cGpld2ZwaHhjY2x4cG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MjE5MDksImV4cCI6MjEwNTM5NzkwOX0.MpcEGav98i-wAWgsD3ep8DNcUr-Jg0N-hYm4bTWFTqU";
+
+const params=new URLSearchParams(location.search);
+const token=(params.get("t")||params.get("token")||"").trim();
+
+const $=id=>document.getElementById(id);
+
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+function money(v){
+  return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function dateTime(v){
+  if(!v)return "—";
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{
+    dateStyle:"medium",timeStyle:"short"
+  });
+}
+
+function normalize(r){
+  if(Array.isArray(r)) return r[0]||null;
+  return r?.data ?? r;
+}
+
+function statusText(s){
+  const map={
+    payment_pending:"Payment pending",
+    payment_review:"Payment under review",
+    confirmed:"Confirmed",
+    preparing:"Preparing",
+    ready:"Ready for pickup",
+    completed:"Completed",
+    rejected:"Payment rejected",
+    cancelled:"Cancelled"
+  };
+  return map[s]||String(s||"Unknown").replaceAll("_"," ");
+}
+
+function statusClass(s){
+  if(s==="payment_review")return "status-review";
+  if(s==="confirmed")return "status-confirmed";
+  if(s==="preparing")return "status-preparing";
+  if(s==="ready")return "status-ready";
+  if(s==="completed")return "status-completed";
+  if(s==="rejected"||s==="cancelled")return "status-rejected";
+  return "";
+}
+
+async function rpc(name,body){
+  const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/"+name,{
+    method:"POST",
+    headers:{
+      apikey:SUPABASE_ANON_KEY,
+      Authorization:"Bearer "+SUPABASE_ANON_KEY,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify(body)
+  });
+  const t=await r.text();
+  if(!r.ok)throw new Error(t||("HTTP "+r.status));
+  try{return JSON.parse(t)}catch{return t}
+}
+
+function render(o){
+  $("shopName").textContent=o.shop_name||"Shop";
+  $("orderNumber").textContent=o.order_number||"Order";
+  $("statusBadge").textContent=statusText(o.order_status);
+  $("statusBadge").className="badge "+statusClass(o.order_status);
+
+  $("customer").textContent=o.customer_name||"—";
+  $("payer").textContent=o.payer_name||"—";
+  $("payment").textContent=statusText(o.payment_status);
+  $("transaction").textContent=o.transaction_id||"—";
+  $("pickup").textContent=dateTime(o.pickup_at);
+  $("created").textContent=dateTime(o.created_at);
+  $("total").textContent=money(o.total);
+
+  const items=Array.isArray(o.items)?o.items:[];
+  $("items").innerHTML=items.length
+    ? items.map(x=>`
+      <div class="item">
+        <span>${escapeHtml(x.name||"Item")} × ${Number(x.qty||0)}</span>
+        <b>${money(x.line_total)}</b>
+      </div>`).join("")
+    : '<div class="muted">No item details available.</div>';
+
+  const terminal=o.order_status==="rejected"||o.order_status==="cancelled";
+  const stages=["payment_review","confirmed","preparing","ready","completed"];
+  const current=stages.indexOf(o.order_status);
+
+  $("timeline").innerHTML=terminal
+    ? `<div class="step current"><span class="dot"></span><span>${escapeHtml(statusText(o.order_status))}</span></div>`
+    : stages.map((s,i)=>{
+        const done=current>=0 && i<current;
+        const cur=current===i;
+        return `<div class="step ${done?"done":""} ${cur?"current":""}">
+          <span class="dot"></span><span>${escapeHtml(statusText(s))}</span>
+        </div>`;
+      }).join("");
+
+  $("loading").classList.add("hidden");
+  $("error").classList.add("hidden");
+  $("content").classList.remove("hidden");
+}
+
+async function loadOrder(){
+  $("error").classList.add("hidden");
+
+  if(!token){
+    $("loading").classList.add("hidden");
+    $("content").classList.add("hidden");
+    $("error").classList.remove("hidden");
+    $("errorText").textContent="No tracking token was provided.";
+    return;
+  }
+
+  $("loading").classList.remove("hidden");
+
+  try{
+    localStorage.setItem("shopmanager_tracker_token",JSON.stringify({
+      token,
+      expiresAt:Date.now()+2*60*60*1000
+    }));
+
+    const r=await rpc("get_order_by_tracker",{p_tracker_token:token});
+    const order=normalize(r);
+
+    if(!order)throw new Error("ORDER_NOT_FOUND");
+
+    render(order);
+  }catch(e){
+    console.error("Tracker load failed:",e);
+    $("loading").classList.add("hidden");
+    $("content").classList.add("hidden");
+    $("error").classList.remove("hidden");
+    $("errorText").textContent="This tracking link is invalid, expired, or the order could not be loaded.";
+  }
+}
+
+loadOrder();
+setInterval(loadOrder,30000);
+</script>
+</body>
+</html>
