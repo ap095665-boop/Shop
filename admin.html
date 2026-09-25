@@ -9,7 +9,7 @@
 </style></head><body><div class="wrap"><div class="card">
 <div id="login"><div class="k">PRIVATE OWNER PANEL</div><div class="h">Shop Manager</div><div class="note">Owner accounts are created by the administrator in Supabase Authentication. There is no public signup here.</div><div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div><div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div><button class="btn primary" id="signin">Sign in</button></div>
 <div id="setup" class="hidden"><div class="k">FIRST LOGIN</div><div class="h">Create your shop</div><div class="field"><label>Shop name</label><input id="sname"></div><div class="field"><label>Store type</label><input id="stype" placeholder="Kirana, salon, fashion, restaurant..."></div><div class="field"><label>Owner name</label><input id="oname"></div><div class="field"><label>Phone</label><input id="phone"></div><div class="field"><label>Address</label><textarea id="address"></textarea></div><button class="btn primary" id="gps">📍 Get my shop location</button><div class="small" id="gpsmsg">GPS is required for the exact Location button.</div><div class="field"><label>Latitude</label><input id="lat" readonly></div><div class="field"><label>Longitude</label><input id="lng" readonly></div><button class="btn primary" id="create">Create shop</button><button class="btn" id="signout1">Sign out</button></div>
-<div id="dash" class="hidden"><div class="row"><div><div class="k">OWNER CONTROL</div><div class="h" id="shopTitle">Shop</div></div><div class="row" style="justify-content:flex-end;gap:8px;flex:0 0 auto"><button class="btn" id="siteToggle" type="button">● QUICK OPEN</button><button class="btn" id="signout">Sign out</button></div></div><div class="note shopurl" id="publicUrl"></div>
+<div id="dash" class="hidden"><div class="row"><div><div class="k">OWNER CONTROL</div><div class="h" id="shopTitle">Shop</div></div><div class="row" style="justify-content:flex-end;gap:8px;flex:0 0 auto"><button class="btn" id="siteToggle" type="button">● QUICK OPEN</button><button class="btn" id="signout">Sign out</button></div></div><div class="note shopurl" id="publicUrl"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="enableNotifications" type="button">🔔 Enable order notifications</button><div class="small" id="pushStatus">Notifications not connected</div></div>
 <div class="tabs"><button class="btn on" data-tab="basic">Shop</button><button class="btn" data-tab="closed">Closed</button><button class="btn" data-tab="schedule">Schedule</button><button class="btn" data-tab="offer">Offer</button><button class="btn" data-tab="info">Custom Notes</button></div>
 <section class="section" id="basic"><div class="field"><label>Shop name</label><input id="bname"></div><div class="field"><label>Store type</label><input id="btype"></div><div class="field"><label>Owner name</label><input id="bowner"></div><div class="field"><label>Phone</label><input id="bphone"></div><div class="field"><label>UPI ID</label><input id="bupi" placeholder="shopname@upi" autocomplete="off"></div><div class="field"><label>UPI display name</label><input id="bupiName" placeholder="Shop name"></div><div class="field"><label>UPI number (optional)</label><input id="bupiNumber" inputmode="numeric" placeholder="9876543210"></div><div class="field"><label>Address</label><textarea id="baddress"></textarea></div><div class="row"><button class="btn primary" id="saveBasic">Save shop details</button><button class="btn" id="updateGps">📍 Update GPS</button></div></section>
 <section class="section hidden" id="closed"><div class="field"><label>Temporary reopen date & time</label><input id="reopen" type="datetime-local"></div><div class="field"><label>Closed message</label><textarea id="closedMsg" placeholder="We'll reopen soon."></textarea></div><div class="row"><button class="btn primary" id="saveClosed">Mark Closed</button><button class="btn" id="openNow">Open now / clear temporary close</button></div><div class="small">Manual close takes priority until the reopen time. If no reopen time is set, use Open now to clear it.</div></section>
@@ -61,13 +61,14 @@ const FIREBASE_CONFIG={
 const FCM_VAPID_KEY="BLUDpJEAr5mKhPORPIP9dnRQrdrFzKgmn2zdaRt8i9Z0V99RYOUPRSP23LOTh-EvDxfZ2rsGDCXVM3K7uJigl0k";
 let firebaseApp=null,fcm=null,adminSwReg=null,registeredFcmToken=null,fcmMessageBound=false;
 async function registerAdminPush(){
-  if(!token||!user||!shop||!('serviceWorker' in navigator)||!('Notification' in window))return;
+  if(!token||!user||!shop||!('serviceWorker' in navigator)||!('Notification' in window)){return;}
+  $("pushStatus").textContent="Connecting notifications…";
   try{
     firebaseApp=firebaseApp||firebase.initializeApp(FIREBASE_CONFIG);
     fcm=fcm||firebase.messaging();
     adminSwReg=await navigator.serviceWorker.register('/admin-sw.js',{scope:'/'});
     const permission=await Notification.requestPermission();
-    if(permission!=="granted"){toast("Notifications are blocked");return}
+    if(permission!=="granted"){$("pushStatus").textContent="Notifications blocked — allow them in browser settings.";toast("Notifications are blocked");return}
     const fcmToken=await fcm.getToken({vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:adminSwReg});
     if(!fcmToken)throw new Error("FCM token unavailable");
     registeredFcmToken=fcmToken;
@@ -82,8 +83,8 @@ async function registerAdminPush(){
       const body=payload?.notification?.body||payload?.data?.body||'A customer order needs attention.';
       toast(title+' — '+body);
     });}
-    console.log('Admin push registration ready');
-  }catch(e){console.error('Admin push registration failed',e);}
+    $("pushStatus").textContent="Order notifications enabled ✓";$("enableNotifications").textContent="🔔 Notifications enabled";$("enableNotifications").disabled=true;console.log('Admin push registration ready');
+  }catch(e){$("pushStatus").textContent="Notification setup failed: "+(e?.message||e);console.error('Admin push registration failed',e);}
 }
 </script>
 <script>
@@ -121,7 +122,7 @@ $("infoEnabledToggle").classList.toggle("primary",i.enabled!==false);
 $("infoEnd").value=selectedInfo.endAt?localDateTimeValue(selectedInfo.endAt):"";
 $("customWrap").classList.toggle("hidden",$("infoReset").value!=="custom");
 renderProductFields(pr);toggleInfoType();updateInfoWordCount();updateToggle()}
-function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();setTimeout(registerAdminPush,300)}
+function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();updatePushStatus();if(Notification.permission==="granted")setTimeout(registerAdminPush,300)}
 function updateToggle(){const on=!!shop?.quick_closed;$("siteToggle").textContent=on?"● QUICK CLOSED":"● QUICK OPEN";$("siteToggle").classList.toggle("danger",on);$("siteToggle").classList.toggle("primary",!on)}
 
 async function patch(body){await api("/rest/v1/shops?id=eq."+shop.id,{method:"PATCH",body:JSON.stringify(body),headers:{Prefer:"return=representation"}});shop={...shop,...body};fill();toast("Saved")}
@@ -145,7 +146,8 @@ $("legalAgree").onchange=()=>{$("legalAccept").disabled=!$("legalAgree").checked
 $("legalAccept").onclick=async()=>{if($("legalOverlay").dataset.mandatory==="1"){if(!$("legalAgree").checked)return;try{$("legalAccept").disabled=true;await saveConsent();$("legalOverlay").classList.add("hidden");if(legalPendingSetup){legalPendingSetup=false;toast("Agreement recorded")}else showDash();toast("Agreement recorded")}catch(e){$("legalAccept").disabled=false;toast("Could not record acceptance. Create the consent table first.")}}else $("legalOverlay").classList.add("hidden")};
 document.querySelectorAll("[data-legal-footer]").forEach(b=>b.onclick=()=>openLegal(b.dataset.legalFooter==="violations"?"violations":b.dataset.legalFooter,false));
 
-$("signin").onclick=async()=>{try{await signIn()}catch(e){toast("Sign in failed")}};$("signout").onclick=$("signout1").onclick=async()=>{token=null;user=null;shop=null;legalPendingSetup=false;$("legalOverlay").classList.add("hidden");$("dash").classList.add("hidden");$("setup").classList.add("hidden");$("login").classList.remove("hidden")};
+$("signin").onclick=async()=>{try{await signIn()}catch(e){toast("Sign in failed")}};$("enableNotifications").onclick=registerAdminPush;
+function updatePushStatus(){if(!('Notification' in window)){$("pushStatus").textContent="This browser does not support notifications";return}if(Notification.permission==="granted"){$("pushStatus").textContent="Permission granted — connecting…"}else if(Notification.permission==="denied"){$("pushStatus").textContent="Notifications blocked — allow them in browser settings."}else{$("pushStatus").textContent="Tap Enable to receive order alerts."}}$("signout").onclick=$("signout1").onclick=async()=>{token=null;user=null;shop=null;legalPendingSetup=false;$("legalOverlay").classList.add("hidden");$("dash").classList.add("hidden");$("setup").classList.add("hidden");$("login").classList.remove("hidden")};
 $("gps").onclick=gps;$("updateGps").onclick=async()=>{navigator.geolocation.getCurrentPosition(async p=>{await patch({latitude:p.coords.latitude,longitude:p.coords.longitude})},e=>toast(e.message),{enableHighAccuracy:true,timeout:20000,maximumAge:0})};
 $("create").onclick=async()=>{try{if(!$("lat").value||!$("lng").value)return toast("Get GPS location first.");shop=await rpc("create_my_shop",{p_shop_name:$("sname").value,p_store_type:$("stype").value||"SHOP",p_owner_name:$("oname").value,p_phone:$("phone").value,p_address:$("address").value,p_latitude:Number($("lat").value),p_longitude:Number($("lng").value)});showDash()}catch(e){toast("Could not create shop")}};
 $("saveBasic").onclick=()=>patch({shop_name:$("bname").value,store_type:$("btype").value,owner_name:$("bowner").value,phone:$("bphone").value,upi_id:$("bupi").value.trim(),upi_name:$("bupiName").value.trim(),upi_number:$("bupiNumber").value.trim(),address:$("baddress").value});
