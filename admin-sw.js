@@ -6,7 +6,7 @@ importScripts(
 );
 
 firebase.initializeApp({
-  apiKey: "AIzaSyBSjmCORx8kAqY64jkLDpq20wtThqxW0w",
+  apiKey: "AIzaSyBSjmCORx8kAqYx64jkLDpq20wtThqxW0w",
   authDomain: "shopmanager-45fac.firebaseapp.com",
   projectId: "shopmanager-45fac",
   storageBucket: "shopmanager-45fac.firebasestorage.app",
