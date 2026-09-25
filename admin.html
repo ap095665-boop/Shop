@@ -51,7 +51,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
 <script>
 const FIREBASE_CONFIG={
-  apiKey: "AIzaSyBSjmCORx8kAqYx64jkLDpq20wtThqxW0w",
+  apiKey:"AIzaSyBSjmCORx8kAqY64jkLDpq20wtThqxW0w",
   authDomain:"shopmanager-45fac.firebaseapp.com",
   projectId:"shopmanager-45fac",
   storageBucket:"shopmanager-45fac.firebasestorage.app",
@@ -122,7 +122,7 @@ $("infoEnabledToggle").classList.toggle("primary",i.enabled!==false);
 $("infoEnd").value=selectedInfo.endAt?localDateTimeValue(selectedInfo.endAt):"";
 $("customWrap").classList.toggle("hidden",$("infoReset").value!=="custom");
 renderProductFields(pr);toggleInfoType();updateInfoWordCount();updateToggle()}
-function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();updatePushStatus();if(Notification.permission==="granted")setTimeout(registerAdminPush,300)}
+let orderRefreshTimer=null;function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();loadOrders();updatePushStatus();if(Notification.permission==="granted")setTimeout(registerAdminPush,300);if(orderRefreshTimer)clearInterval(orderRefreshTimer);orderRefreshTimer=setInterval(loadOrders,15000)}
 function updateToggle(){const on=!!shop?.quick_closed;$("siteToggle").textContent=on?"● QUICK CLOSED":"● QUICK OPEN";$("siteToggle").classList.toggle("danger",on);$("siteToggle").classList.toggle("primary",!on)}
 
 async function patch(body){await api("/rest/v1/shops?id=eq."+shop.id,{method:"PATCH",body:JSON.stringify(body),headers:{Prefer:"return=representation"}});shop={...shop,...body};fill();toast("Saved")}
