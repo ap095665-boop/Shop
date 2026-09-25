@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Shop Manager — Owner</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="/admin-manifest.json"><title>Shop Manager — Owner</title>
 <style>
 :root{--r:#e30d40;--r2:#ff416b;--bg:#080307;--line:#ffffff20;--muted:#cdbfc3}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#5e0926,#080307 48%);color:#fff;font-family:Inter,system-ui,sans-serif;min-height:100dvh}.wrap{width:min(720px,100%);margin:auto;padding:18px}.card{border:1px solid var(--line);background:#ffffff0b;backdrop-filter:blur(22px);border-radius:28px;padding:22px;box-shadow:0 30px 100px #0008}.hidden{display:none!important}.k{font-size:10px;letter-spacing:.2em;color:#ff8ba0;font-weight:900}.h{font-size:38px;font-weight:950;letter-spacing:-.06em;margin:8px 0 20px}.field{margin:12px 0}label{display:block;font-size:11px;color:#bcaeb2;margin:0 0 6px;letter-spacing:.08em}input,textarea,select{width:100%;border:1px solid var(--line);background:#0007;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}textarea{min-height:110px;resize:vertical}.btn{border:1px solid var(--line);background:#ffffff0d;color:#fff;border-radius:14px;padding:12px 15px;font-weight:900;cursor:pointer}.primary{background:linear-gradient(135deg,var(--r2),var(--r));border:0}.tabs{display:flex;gap:8px;overflow:auto;margin:18px 0}.tabs button{white-space:nowrap}.tabs .on{background:#e30d40}.section{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.note{padding:13px;border:1px solid var(--line);border-radius:15px;color:var(--muted);font-size:13px;line-height:1.5}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.danger{background:#4b071a}.ok{color:#72ffb0;font-size:12px}.small{font-size:11px;color:#a99a9f}.shopurl{word-break:break-all}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;color:#19070d;padding:12px 16px;border-radius:999px;font-weight:900;display:none;z-index:20}.toast.show{display:block}@media(max-width:560px){.wrap{padding:10px}.card{padding:17px}.row{flex-direction:column;align-items:stretch}}
 
@@ -47,6 +47,45 @@
 <button type="button" data-legal-footer="data">Data Collection</button>
 <button type="button" data-legal-footer="violations">Prohibited Use</button>
 </div><div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script>
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBSjmCORx8kAqY64jkLDpq20wtThqxW0w",
+  authDomain:"shopmanager-45fac.firebaseapp.com",
+  projectId:"shopmanager-45fac",
+  storageBucket:"shopmanager-45fac.firebasestorage.app",
+  messagingSenderId:"66583287766",
+  appId:"1:66583287766:web:83e892ad557cef52853677"
+};
+const FCM_VAPID_KEY="BLUDpJEAr5mKhPORPIP9dnRQrdrFzKgmn2zdaRt8i9Z0V99RYOUPRSP23LOTh-EvDxfZ2rsGDCXVM3K7uJigl0k";
+let firebaseApp=null,fcm=null,adminSwReg=null,registeredFcmToken=null,fcmMessageBound=false;
+async function registerAdminPush(){
+  if(!token||!user||!shop||!('serviceWorker' in navigator)||!('Notification' in window))return;
+  try{
+    firebaseApp=firebaseApp||firebase.initializeApp(FIREBASE_CONFIG);
+    fcm=fcm||firebase.messaging();
+    adminSwReg=await navigator.serviceWorker.register('/admin-sw.js',{scope:'/'});
+    const permission=await Notification.requestPermission();
+    if(permission!=="granted"){toast("Notifications are blocked");return}
+    const fcmToken=await fcm.getToken({vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:adminSwReg});
+    if(!fcmToken)throw new Error("FCM token unavailable");
+    registeredFcmToken=fcmToken;
+    const existing=await api('/rest/v1/admin_push_tokens?select=id&owner_id=eq.'+encodeURIComponent(user.id)+'&shop_id=eq.'+encodeURIComponent(shop.id)+'&limit=1');
+    if(existing&&existing.length){
+      await api('/rest/v1/admin_push_tokens?id=eq.'+encodeURIComponent(existing[0].id),{method:'PATCH',body:JSON.stringify({token:fcmToken,updated_at:new Date().toISOString()}),headers:{Prefer:'return=minimal'}});
+    }else{
+      await api('/rest/v1/admin_push_tokens',{method:'POST',body:JSON.stringify({owner_id:user.id,shop_id:shop.id,token:fcmToken}),headers:{Prefer:'return=minimal'}});
+    }
+    if(!fcmMessageBound){fcmMessageBound=true;fcm.onMessage(payload=>{
+      const title=payload?.notification?.title||payload?.data?.title||'New Shop Order';
+      const body=payload?.notification?.body||payload?.data?.body||'A customer order needs attention.';
+      toast(title+' — '+body);
+    });}
+    console.log('Admin push registration ready');
+  }catch(e){console.error('Admin push registration failed',e);}
+}
+</script>
 <script>
 const URL="https://wzoatpjewfphxcclxpmz.supabase.co",KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b2F0cGpld2ZwaHhjY2x4cG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MjE5MDksImV4cCI6MjEwNTM5NzkwOX0.MpcEGav98i-wAWgsD3ep8DNcUr-Jg0N-hYm4bTWFTqU";
 let token=null,user=null,shop=null;
@@ -82,7 +121,7 @@ $("infoEnabledToggle").classList.toggle("primary",i.enabled!==false);
 $("infoEnd").value=selectedInfo.endAt?localDateTimeValue(selectedInfo.endAt):"";
 $("customWrap").classList.toggle("hidden",$("infoReset").value!=="custom");
 renderProductFields(pr);toggleInfoType();updateInfoWordCount();updateToggle()}
-function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill()}
+function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();setTimeout(registerAdminPush,300)}
 function updateToggle(){const on=!!shop?.quick_closed;$("siteToggle").textContent=on?"● QUICK CLOSED":"● QUICK OPEN";$("siteToggle").classList.toggle("danger",on);$("siteToggle").classList.toggle("primary",!on)}
 
 async function patch(body){await api("/rest/v1/shops?id=eq."+shop.id,{method:"PATCH",body:JSON.stringify(body),headers:{Prefer:"return=representation"}});shop={...shop,...body};fill();toast("Saved")}
