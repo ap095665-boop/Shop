@@ -3,6 +3,27 @@
 <style>
 :root{--r:#e30d40;--r2:#ff416b;--bg:#080307;--line:#ffffff20;--muted:#cdbfc3}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#5e0926,#080307 48%);color:#fff;font-family:Inter,system-ui,sans-serif;min-height:100dvh}.wrap{width:min(720px,100%);margin:auto;padding:18px}.card{border:1px solid var(--line);background:#ffffff0b;backdrop-filter:blur(22px);border-radius:28px;padding:22px;box-shadow:0 30px 100px #0008}.hidden{display:none!important}.k{font-size:10px;letter-spacing:.2em;color:#ff8ba0;font-weight:900}.h{font-size:38px;font-weight:950;letter-spacing:-.06em;margin:8px 0 20px}.field{margin:12px 0}label{display:block;font-size:11px;color:#bcaeb2;margin:0 0 6px;letter-spacing:.08em}input,textarea,select{width:100%;border:1px solid var(--line);background:#0007;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}textarea{min-height:110px;resize:vertical}.btn{border:1px solid var(--line);background:#ffffff0d;color:#fff;border-radius:14px;padding:12px 15px;font-weight:900;cursor:pointer}.primary{background:linear-gradient(135deg,var(--r2),var(--r));border:0}.tabs{display:flex;gap:8px;overflow:auto;margin:18px 0}.tabs button{white-space:nowrap}.tabs .on{background:#e30d40}.section{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}.note{padding:13px;border:1px solid var(--line);border-radius:15px;color:var(--muted);font-size:13px;line-height:1.5}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.danger{background:#4b071a}.ok{color:#72ffb0;font-size:12px}.small{font-size:11px;color:#a99a9f}.shopurl{word-break:break-all}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;color:#19070d;padding:12px 16px;border-radius:999px;font-weight:900;display:none;z-index:20}.toast.show{display:block}@media(max-width:560px){.wrap{padding:10px}.card{padding:17px}.row{flex-direction:column;align-items:stretch}}
 
+
+.order-card{border:1px solid var(--line);background:#0005;border-radius:18px;padding:15px}
+.order-card.review{border-color:#ffb62e66;box-shadow:0 0 0 1px #ffb62e14 inset}
+.order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.order-number{font-weight:950;font-size:18px}
+.order-badge{display:inline-flex;padding:5px 9px;border-radius:999px;background:#ffffff12;font-size:10px;font-weight:900;white-space:nowrap}
+.order-badge.review{background:#5a410d;color:#ffd76a}
+.order-badge.confirmed{background:#123d29;color:#7dffb2}
+.order-badge.preparing{background:#123d58;color:#7dd9ff}
+.order-badge.ready{background:#34205c;color:#d0a5ff}
+.order-badge.completed{background:#164b35;color:#8ff7bc}
+.order-badge.rejected,.order-badge.cancelled{background:#4b1b25;color:#ff9eac}
+.order-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;margin-top:12px}
+.order-meta div{font-size:12px;color:var(--muted)}
+.order-meta b{display:block;color:#fff;font-size:13px;margin-top:2px;word-break:break-word}
+.order-items{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.order-item{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px}
+.order-total{display:flex;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:1px solid var(--line);font-weight:950;font-size:17px}
+.order-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.order-actions .btn{flex:1;min-width:120px}
+@media(max-width:560px){.order-meta{grid-template-columns:1fr}.order-head{align-items:flex-start}}
 .legal-overlay{position:fixed;inset:0;background:#050204ee;backdrop-filter:blur(18px);z-index:50;display:flex;align-items:center;justify-content:center;padding:14px}
 .legal-modal{width:min(720px,100%);max-height:92dvh;overflow:auto;border:1px solid var(--line);background:#10070d;border-radius:26px;padding:20px;box-shadow:0 30px 100px #000b}
 .legal-modal h2{font-size:30px;margin:8px 0 12px;letter-spacing:-.04em}.legal-doc{max-height:48dvh;overflow:auto;border:1px solid var(--line);border-radius:17px;padding:15px;background:#0006;color:#d9cbd0;font-size:12px;line-height:1.6}.legal-doc h3{color:#fff;font-size:14px;margin:18px 0 6px}.legal-doc h3:first-child{margin-top:0}.legal-tabs{display:flex;gap:7px;overflow:auto;margin:12px 0}.legal-tabs button{white-space:nowrap;font-size:11px}.legal-tabs .on{background:#e30d40}.legal-check{display:flex;gap:10px;align-items:flex-start;margin:14px 0;color:#e6dadd;font-size:12px;line-height:1.5}.legal-check input{width:auto;min-width:18px;margin-top:2px}.legal-actions{display:flex;gap:8px}.legal-actions .btn{flex:1}.legal-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:11px}.legal-links button{background:none;border:0;color:#ff9ab0;text-decoration:underline;cursor:pointer}
@@ -10,8 +31,20 @@
 <div id="login"><div class="k">PRIVATE OWNER PANEL</div><div class="h">Shop Manager</div><div class="note">Owner accounts are created by the administrator in Supabase Authentication. There is no public signup here.</div><div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div><div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div><button class="btn primary" id="signin">Sign in</button></div>
 <div id="setup" class="hidden"><div class="k">FIRST LOGIN</div><div class="h">Create your shop</div><div class="field"><label>Shop name</label><input id="sname"></div><div class="field"><label>Store type</label><input id="stype" placeholder="Kirana, salon, fashion, restaurant..."></div><div class="field"><label>Owner name</label><input id="oname"></div><div class="field"><label>Phone</label><input id="phone"></div><div class="field"><label>Address</label><textarea id="address"></textarea></div><button class="btn primary" id="gps">📍 Get my shop location</button><div class="small" id="gpsmsg">GPS is required for the exact Location button.</div><div class="field"><label>Latitude</label><input id="lat" readonly></div><div class="field"><label>Longitude</label><input id="lng" readonly></div><button class="btn primary" id="create">Create shop</button><button class="btn" id="signout1">Sign out</button></div>
 <div id="dash" class="hidden"><div class="row"><div><div class="k">OWNER CONTROL</div><div class="h" id="shopTitle">Shop</div></div><div class="row" style="justify-content:flex-end;gap:8px;flex:0 0 auto"><button class="btn" id="siteToggle" type="button">● QUICK OPEN</button><button class="btn" id="signout">Sign out</button></div></div><div class="note shopurl" id="publicUrl"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="enableNotifications" type="button">🔔 Enable order notifications</button><div class="small" id="pushStatus">Notifications not connected</div></div>
-<div class="tabs"><button class="btn on" data-tab="basic">Shop</button><button class="btn" data-tab="closed">Closed</button><button class="btn" data-tab="schedule">Schedule</button><button class="btn" data-tab="offer">Offer</button><button class="btn" data-tab="info">Custom Notes</button></div>
+<div class="tabs"><button class="btn on" data-tab="basic">Shop</button><button class="btn" data-tab="orders">Orders <span id="orderCount" style="display:inline-block;min-width:18px;padding:2px 6px;border-radius:999px;background:#ffffff22;font-size:10px">0</span></button><button class="btn" data-tab="closed">Closed</button><button class="btn" data-tab="schedule">Schedule</button><button class="btn" data-tab="offer">Offer</button><button class="btn" data-tab="info">Custom Notes</button></div>
 <section class="section" id="basic"><div class="field"><label>Shop name</label><input id="bname"></div><div class="field"><label>Store type</label><input id="btype"></div><div class="field"><label>Owner name</label><input id="bowner"></div><div class="field"><label>Phone</label><input id="bphone"></div><div class="field"><label>UPI ID</label><input id="bupi" placeholder="shopname@upi" autocomplete="off"></div><div class="field"><label>UPI display name</label><input id="bupiName" placeholder="Shop name"></div><div class="field"><label>UPI number (optional)</label><input id="bupiNumber" inputmode="numeric" placeholder="9876543210"></div><div class="field"><label>Address</label><textarea id="baddress"></textarea></div><div class="row"><button class="btn primary" id="saveBasic">Save shop details</button><button class="btn" id="updateGps">📍 Update GPS</button></div></section>
+
+<section class="section hidden" id="orders">
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <div>
+      <label style="margin-bottom:3px">Customer Orders</label>
+      <div class="small">Payment-review orders appear here automatically. The list refreshes every 15 seconds.</div>
+    </div>
+    <button class="btn primary" id="refreshOrders" type="button">↻ Refresh</button>
+  </div>
+  <div id="ordersList" style="display:grid;gap:10px;margin-top:14px"></div>
+  <div id="ordersEmpty" class="note hidden" style="margin-top:12px">No orders yet.</div>
+</section>
 <section class="section hidden" id="closed"><div class="field"><label>Temporary reopen date & time</label><input id="reopen" type="datetime-local"></div><div class="field"><label>Closed message</label><textarea id="closedMsg" placeholder="We'll reopen soon."></textarea></div><div class="row"><button class="btn primary" id="saveClosed">Mark Closed</button><button class="btn" id="openNow">Open now / clear temporary close</button></div><div class="small">Manual close takes priority until the reopen time. If no reopen time is set, use Open now to clear it.</div></section>
 <section class="section hidden" id="schedule"><div class="field"><label>Opening time</label><input id="openTime" type="time"></div><div class="field"><label>Closing time</label><input id="closeTime" type="time"></div><label><input id="scheduleEnabled" type="checkbox" style="width:auto"> Enable automatic daily open/close</label><p class="small">Supports overnight hours such as 18:00 → 02:00. If opening and closing time are identical, the schedule is treated as closed all day.</p><button class="btn primary" id="saveSchedule">Save Daily Schedule</button></section>
 <section class="section hidden" id="offer"><div class="field"><label>Product / service</label><input id="offerName"></div><div class="field"><label>Original price</label><input id="offerOld"></div><div class="field"><label>Offer / discount</label><input id="offerDeal"></div><div class="field"><label>Offer ends</label><input id="offerEnd" type="datetime-local"></div><div class="field"><label>Offer message</label><textarea id="offerMsg"></textarea></div><div class="row"><button class="btn primary" id="saveOffer">Publish Offer</button><button class="btn" id="clearOffer">Clear Offer</button></div></section>
@@ -67,6 +100,8 @@ async function registerAdminPush(){
     firebaseApp=firebaseApp||firebase.initializeApp(FIREBASE_CONFIG);
     fcm=fcm||firebase.messaging();
     adminSwReg=await navigator.serviceWorker.register('/admin-sw.js',{scope:'/'});
+    await adminSwReg.update();
+    adminSwReg=await navigator.serviceWorker.ready;
     const permission=await Notification.requestPermission();
     if(permission!=="granted"){$("pushStatus").textContent="Notifications blocked — allow them in browser settings.";toast("Notifications are blocked");return}
     const fcmToken=await fcm.getToken({vapidKey:FCM_VAPID_KEY,serviceWorkerRegistration:adminSwReg});
@@ -122,6 +157,115 @@ $("infoEnabledToggle").classList.toggle("primary",i.enabled!==false);
 $("infoEnd").value=selectedInfo.endAt?localDateTimeValue(selectedInfo.endAt):"";
 $("customWrap").classList.toggle("hidden",$("infoReset").value!=="custom");
 renderProductFields(pr);toggleInfoType();updateInfoWordCount();updateToggle()}
+
+function orderStatusLabel(s){
+  const m={payment_pending:"Payment pending",payment_review:"Payment under review",confirmed:"Confirmed",preparing:"Preparing",ready:"Ready",completed:"Completed",rejected:"Payment rejected",cancelled:"Cancelled"};
+  return m[s]||String(s||"Unknown").replaceAll("_"," ");
+}
+function orderBadgeClass(s){
+  if(s==="payment_review")return "review";
+  if(s==="confirmed")return "confirmed";
+  if(s==="preparing")return "preparing";
+  if(s==="ready")return "ready";
+  if(s==="completed")return "completed";
+  if(s==="rejected"||s==="cancelled")return "rejected";
+  return "";
+}
+function orderMoney(v){return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function orderDate(v){
+  if(!v)return "—";
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
+}
+function escOrder(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function renderOrders(rows){
+  rows=Array.isArray(rows)?rows:[];
+  const list=$("ordersList"),empty=$("ordersEmpty"),count=$("orderCount");
+  if(count)count.textContent=rows.filter(x=>x.payment_status==="payment_review").length;
+  if(!rows.length){list.innerHTML="";empty.classList.remove("hidden");return}
+  empty.classList.add("hidden");
+  list.innerHTML=rows.map(o=>{
+    const items=Array.isArray(o.items)?o.items:[];
+    const itemHtml=items.length?items.map(i=>`<div class="order-item"><span>${escOrder(i.name||"Item")} × ${Number(i.qty||0)}</span><b>${orderMoney(i.line_total)}</b></div>`).join(""):"<div class=\"small\">No item details</div>";
+    const s=o.order_status||o.payment_status;
+    const review=o.payment_status==="payment_review";
+    let actions="";
+    if(review){
+      actions=`<button class="btn primary" data-order-action="confirm" data-id="${escOrder(o.id)}">✓ Verify & Confirm</button><button class="btn danger" data-order-action="reject" data-id="${escOrder(o.id)}">Reject payment</button>`;
+    }else if(s==="confirmed"){
+      actions=`<button class="btn primary" data-order-action="preparing" data-id="${escOrder(o.id)}">Start Preparing</button>`;
+    }else if(s==="preparing"){
+      actions=`<button class="btn primary" data-order-action="ready" data-id="${escOrder(o.id)}">Mark Ready</button>`;
+    }else if(s==="ready"){
+      actions=`<button class="btn primary" data-order-action="completed" data-id="${escOrder(o.id)}">Complete Order</button>`;
+    }
+    return `<article class="order-card ${review?"review":""}">
+      <div class="order-head"><div><div class="order-number">${escOrder(o.order_number||"Order")}</div><div class="small">${escOrder(o.customer_name||"Customer")} · ${orderDate(o.created_at)}</div></div><span class="order-badge ${orderBadgeClass(s)}">${escOrder(orderStatusLabel(s))}</span></div>
+      <div class="order-meta">
+        <div>Customer<b>${escOrder(o.customer_name||"—")}</b></div>
+        <div>Payer<b>${escOrder(o.payer_name||"—")}</b></div>
+        <div>Transaction / UTR<b>${escOrder(o.transaction_id||"—")}</b></div>
+        <div>Pickup / visit<b>${escOrder(orderDate(o.pickup_at))}</b></div>
+        <div>Payment<b>${escOrder(orderStatusLabel(o.payment_status))}</b></div>
+        <div>Created<b>${escOrder(orderDate(o.created_at))}</b></div>
+      </div>
+      <div class="order-items">${itemHtml}<div class="order-total"><span>Total</span><span>${orderMoney(o.total)}</span></div></div>
+      ${actions?`<div class="order-actions">${actions}</div>`:""}
+    </article>`;
+  }).join("");
+}
+async function loadOrders(){
+  if(!shop||!shop.id)return;
+  try{
+    const rows=await api("/rest/v1/orders?select=*&shop_id=eq."+encodeURIComponent(shop.id)+"&order=created_at.desc&limit=50");
+    renderOrders(rows||[]);
+  }catch(e){
+    console.error("Order load failed:",e);
+    toast("Could not load orders");
+  }
+}
+async function updateOrderStatus(id,next){
+  const updates={order_status:next,updated_at:new Date().toISOString()};
+  if(next==="confirmed")updates.confirmed_at=new Date().toISOString();
+  if(next==="ready")updates.ready_at=new Date().toISOString();
+  if(next==="completed")updates.completed_at=new Date().toISOString();
+  if(next==="confirmed")updates.payment_status="payment_verified";
+  if(next==="rejected"){updates.payment_status="payment_rejected";updates.order_status="rejected"}
+  await api("/rest/v1/orders?id=eq."+encodeURIComponent(id),{
+    method:"PATCH",
+    body:JSON.stringify(updates),
+    headers:{Prefer:"return=minimal"}
+  });
+  await loadOrders();
+  toast(next==="rejected"?"Payment rejected":"Order updated");
+}
+$("ordersList").addEventListener("click",async e=>{
+  const btn=e.target.closest("[data-order-action]");
+  if(!btn)return;
+  const id=btn.dataset.id, action=btn.dataset.orderAction;
+  if(!id)return;
+  btn.disabled=true;
+  try{
+    if(action==="confirm"){
+      if(!confirm("Verify the payment in your UPI/bank account before confirming this order."))return;
+      await updateOrderStatus(id,"confirmed");
+    }else if(action==="reject"){
+      if(!confirm("Reject this payment/order?"))return;
+      await updateOrderStatus(id,"rejected");
+    }else if(action==="preparing"){
+      await updateOrderStatus(id,"preparing");
+    }else if(action==="ready"){
+      await updateOrderStatus(id,"ready");
+    }else if(action==="completed"){
+      await updateOrderStatus(id,"completed");
+    }
+  }catch(e){
+    console.error("Order update failed:",e);
+    toast("Could not update order");
+  }finally{btn.disabled=false}
+});
+$("refreshOrders").onclick=loadOrders;
+
 let orderRefreshTimer=null;function showDash(){$("login").classList.add("hidden");$("setup").classList.add("hidden");$("dash").classList.remove("hidden");fill();loadOrders();updatePushStatus();if(Notification.permission==="granted")setTimeout(registerAdminPush,300);if(orderRefreshTimer)clearInterval(orderRefreshTimer);orderRefreshTimer=setInterval(loadOrders,15000)}
 function updateToggle(){const on=!!shop?.quick_closed;$("siteToggle").textContent=on?"● QUICK CLOSED":"● QUICK OPEN";$("siteToggle").classList.toggle("danger",on);$("siteToggle").classList.toggle("primary",!on)}
 
