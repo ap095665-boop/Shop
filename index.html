@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shop Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--r:#e30d40;--r2:#ff416b;--bg:#070307;--glass:#ffffff10;--line:#ffffff20;--muted:#cbbbc0}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,sans-serif}body{min-height:100dvh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20%;z-index:-5;background:radial-gradient(circle at 50% 25%,#ef174d,transparent 34%),radial-gradient(circle at 15% 80%,#8d0829,transparent 35%),#080308;animation:aurora 9s ease-in-out infinite alternate}
+body:after{content:"";position:fixed;inset:-20px;z-index:-4;background:linear-gradient(100deg,#000b,#0002,#000b),url("https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=85") center/cover;filter:blur(16px);opacity:.43}
+@keyframes aurora{to{transform:scale(1.12) rotate(3deg)}}@keyframes pulse{50%{box-shadow:0 0 0 11px #ff315e00}}
+.wrap{width:min(1160px,100%);margin:auto;padding:20px}.nav{display:flex;justify-content:space-between;align-items:center}.brand{font-size:12px;font-weight:950;letter-spacing:.22em}.status{display:flex;gap:8px;align-items:center;padding:9px 13px;border:1px solid var(--line);background:#ffffff0d;backdrop-filter:blur(18px);border-radius:999px;font-size:11px;font-weight:900}.status i{width:8px;height:8px;border-radius:50%;background:#40f49a;box-shadow:0 0 14px #40f49a;animation:pulse 1.8s infinite}.status.closed i{background:#ff315e;box-shadow:0 0 14px #ff315e}
+.hero{min-height:75vh;display:grid;place-items:center;text-align:center;position:relative}.orb{position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ff91a8,#e30d40 32%,#65041d 65%,transparent 70%);filter:blur(2px);opacity:.7;animation:float 6s ease-in-out infinite;z-index:-1}@keyframes float{50%{transform:translateY(-13px)}}
+.eyebrow{font-size:11px;letter-spacing:.25em;color:#d8c8cc;font-weight:900}.hero h1{font-size:clamp(58px,12vw,150px);line-height:.78;letter-spacing:-.09em;margin:22px 0;font-weight:1000;text-shadow:0 25px 70px #000}.hero p{max-width:620px;color:var(--muted);font-size:17px;margin:0 auto 28px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#ffffff0d;color:#fff;border-radius:16px;padding:13px 17px;font-weight:850;text-decoration:none;cursor:pointer;backdrop-filter:blur(18px)}.btn.primary{background:linear-gradient(135deg,var(--r2),var(--r));border-color:transparent;box-shadow:0 15px 45px #e30d4038}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:10px 0 65px}.card{padding:20px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(22px);border-radius:24px}.label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#ab9ca0}.value{font-weight:900;font-size:17px;margin-top:7px}footer{text-align:center;border-top:1px solid var(--line);padding:25px 0 35px;color:#bcaeb2;font-size:13px}
+.overlay{position:fixed;inset:0;z-index:50;background:#030003d9;backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:9px}.overlay.show{display:flex}.popup{width:min(850px,100%);height:min(780px,calc(100dvh - 18px));border:1px solid var(--line);border-radius:30px;background:linear-gradient(145deg,#430718ed,#090509f5);box-shadow:0 40px 120px #000;position:relative;overflow:hidden}.close{position:absolute;right:14px;top:14px;z-index:5;width:45px;height:45px;border-radius:50%;border:1px solid var(--line);background:#0006;color:#fff;font-size:23px;cursor:pointer}.popup-inner{height:100%;display:flex;flex-direction:column;padding:clamp(20px,4vw,38px);position:relative}.popup-kicker{font-size:10px;letter-spacing:.2em;color:#ff8ba0;font-weight:950}.popup h2{font-size:clamp(38px,7vw,70px);line-height:.9;letter-spacing:-.06em;margin:9px 0 18px}.slides{flex:1;min-height:0;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.slides::-webkit-scrollbar{display:none}.slide{min-width:100%;scroll-snap-align:center;border:1px solid var(--line);background:#ffffff0a;border-radius:24px;padding:clamp(20px,5vw,45px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;overflow:auto}.slide h3{font-size:clamp(42px,9vw,84px);line-height:.9;letter-spacing:-.07em;margin:8px 0 18px}.slide p{max-width:680px;color:#d9c9cd;font-size:17px;line-height:1.55;margin:0 0 18px}.timer{font-size:clamp(34px,8vw,68px);font-weight:1000;font-variant-numeric:tabular-nums}.small{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#9e8f94;line-height:1.5}.old{text-decoration:line-through;color:#928389}.deal{color:#ff6a87;font-size:28px;font-weight:1000}.hint{text-align:center;color:#998a8f;font-size:11px;padding-top:9px}.error{text-align:center;padding:40px;color:#ffd1db}
+.product-slide{justify-content:flex-start!important;align-items:stretch!important;padding:18px!important;overflow:hidden!important}
+.product-list{flex:1;min-height:0;overflow:auto;padding-right:3px}
+.product-item{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);background:#ffffff08;border-radius:18px;padding:13px;margin-bottom:9px}
+.product-item input{width:19px;height:19px;accent-color:#e30d40}.product-main{min-width:0}.qty-control{display:flex;align-items:center;gap:8px;margin-top:10px}.qty-btn{width:32px;height:32px;border:1px solid var(--line);border-radius:10px;background:#ffffff0d;color:#fff;font-size:20px;font-weight:900;cursor:pointer}.qty-value{min-width:24px;text-align:center;font-weight:950}.product-item{grid-template-columns:1fr auto;display:grid}.product-prices{margin-top:4px;justify-content:flex-start}
+.product-name{font-weight:950;font-size:16px}
+.product-prices{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap;font-weight:900}
+.product-selling{text-decoration:line-through;color:#9e8f94;font-size:12px}
+.product-offer{color:#ff6a87;font-size:17px}
+.product-cart{margin-top:10px;border:1px solid #ff557555;background:#17070d;backdrop-filter:blur(18px);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;z-index:2}
+.product-cart-meta{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px}.product-cart-meta strong{font-size:16px}.product-cart-total{font-size:20px;font-weight:1000;margin-top:2px}.product-cart .btn{white-space:nowrap;padding:11px 14px;width:100%}.cart-btn.reacted{animation:cartReact .42s cubic-bezier(.2,.9,.25,1.4)}@keyframes cartReact{0%{transform:scale(1)}35%{transform:scale(1.07) rotate(-1deg)}70%{transform:scale(.98) rotate(1deg)}100%{transform:scale(1)}}.cart-badge{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;margin-left:7px;border-radius:999px;background:#fff;color:#e30d40;font-size:11px;font-weight:1000;vertical-align:middle}.cart-popup{width:min(620px,100%);height:min(760px,calc(100dvh - 18px))}.cart-popup-inner{padding:24px}.cart-items{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:9px}.cart-row{border:1px solid var(--line);background:#ffffff09;border-radius:16px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:10px}.cart-row-name{font-weight:950}.cart-row-sub{color:#bbaeb2;font-size:12px;margin-top:3px}.cart-row-total{font-weight:1000;align-self:center}.cart-summary{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.cart-summary-line{display:flex;justify-content:space-between;gap:10px;margin:6px 0}.cart-grand{font-size:22px;font-weight:1000;margin-top:10px}.cart-popup .order-slot{margin-top:10px}.pickup-info{margin-top:12px;border:1px solid #ff557555;background:#ff1f3d0d;border-radius:14px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.4;color:#d9cbd0}.pickup-info strong{color:#fff}.pickup-info span{display:block}.cart-popup-actions{display:flex;gap:9px;margin-top:12px}.cart-popup-actions .btn{flex:1}
+.order-slot{display:grid;grid-template-columns:1fr 1fr;gap:9px}.order-slot label{display:block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#b9aeb2}.order-slot input,.order-slot select{margin-top:5px;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:11px;background:#ffffff0d;color:#fff;padding:11px 10px;font:inherit;font-weight:800;outline:none}.order-slot input:focus,.order-slot select:focus{border-color:#ff5575}.order-slot option{background:#17070d;color:#fff}
+@media(max-width:650px){.product-item{grid-template-columns:25px 1fr}.product-prices{grid-column:2;justify-content:flex-start}.product-cart{align-items:stretch}.product-cart .btn{flex:0 0 auto}.order-slot{grid-template-columns:1fr 1fr}}
+
+@media(max-width:650px){.wrap{padding:15px}.grid{grid-template-columns:1fr}.hero{min-height:72vh}.hero h1{font-size:68px}.popup{height:calc(100dvh - 16px);border-radius:25px}.popup-inner{padding:20px 15px 14px}.popup h2{font-size:42px;padding-right:50px}.slide{padding:22px 18px}.slide h3{font-size:clamp(40px,12vw,62px)}.slide p{font-size:16px}}
+
+.legal-footer{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 10px 4px;font-size:11px;color:#a99a9f}
+.legal-footer button{background:none;border:0;color:#ff9ab0;text-decoration:underline;cursor:pointer;font:inherit}
+.legal-footer .dot{color:#6f6267}
+.site-policy{position:fixed;inset:0;z-index:80;background:#030003e8;backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:12px}
+.site-policy.show{display:flex}
+.site-policy-box{width:min(720px,100%);max-height:90dvh;overflow:auto;border:1px solid var(--line);border-radius:26px;background:#10070d;padding:20px;box-shadow:0 40px 120px #000}
+.site-policy-box h2{font-size:32px;letter-spacing:-.05em;margin:8px 0 14px}
+.site-policy-doc{border:1px solid var(--line);background:#0006;border-radius:17px;padding:16px;color:#d8cbd0;font-size:12px;line-height:1.6}
+.site-policy-doc h3{font-size:14px;color:#fff;margin:17px 0 6px}.site-policy-doc h3:first-child{margin-top:0}
+.site-policy-close{display:flex;justify-content:flex-end;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
+<main class="hero"><div class="orb"></div><div><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main>
+<section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
+<footer id="address">—</footer>
+<div class="legal-footer" aria-label="Required policies">
+<button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
+<button type="button" data-policy="terms">Terms &amp; Conditions</button><span class="dot">·</span>
+<button type="button" data-policy="data">Data Collection</button>
+</div>
+
+</div>
+<div class="overlay" id="payOverlay"><div class="popup"><button class="close" id="payClose">×</button><div class="popup-inner" style="align-items:center;text-align:center;justify-content:center"><div class="popup-kicker">UPI PAYMENT</div><h2 style="padding-right:0">Scan to pay.</h2><div id="qrBox" style="background:#fff;padding:16px;border-radius:20px;min-width:230px;min-height:230px;display:grid;place-items:center"></div><div id="upiName" style="font-weight:900;font-size:20px;margin-top:18px"></div><div id="upiId" class="small" style="margin-top:5px"></div><div id="upiNumber" class="small" style="margin-top:5px"></div><button id="upiShare" class="btn primary" style="margin-top:18px;display:none" type="button">Share QR</button><div class="small" style="margin-top:12px">Scan this QR with any supported UPI app.</div></div></div></div>
+<div class="overlay" id="overlay"><div class="popup"><button class="close" id="close">×</button><div class="popup-inner"><div class="popup-kicker">LIVE SHOP UPDATE</div><h2>Right now.</h2><div class="slides" id="slides"></div><div class="hint" id="hint"></div></div></div></div>
+<div class="overlay" id="cartOverlay"><div class="popup cart-popup"><button class="close" id="cartClose">×</button><div class="popup-inner cart-popup-inner"><div class="popup-kicker">YOUR CART</div><h2>Review order.</h2><div class="cart-items" id="cartItems"></div><div class="cart-summary"><div class="cart-summary-line"><span>Items</span><strong id="cartItemCount">0</strong></div><div class="cart-summary-line cart-grand"><span>Grand Total</span><strong id="cartGrandTotal">₹0</strong></div><div class="pickup-info" role="note">🕒 <strong>Choose your time</strong><span>Select a pickup / visit time <strong>at least 30 minutes from now</strong>.</span></div><div class="order-slot"><label>Pickup / Visit date<input id="cartOrderDate" type="date" aria-label="Pickup or visit date"></label><label>Time<input id="cartOrderTime" type="time" required aria-label="Pickup or visit time"></label></div><div class="cart-popup-actions"><button class="btn" type="button" id="cartBack">Back</button><button class="btn primary" type="button" id="cartSendOrder">Send Order</button></div></div></div></div></div>
+<div class="site-policy" id="sitePolicy">
+  <div class="site-policy-box">
+    <button class="close" id="policyClose" type="button" aria-label="Close">×</button>
+    <div class="popup-kicker">SINDORA · SHOP MANAGER</div>
+    <h2 id="policyTitle">Privacy Policy</h2>
+    <div class="site-policy-doc" id="policyDoc"></div>
+    <div class="site-policy-close"><button class="btn" id="policyClose2" type="button">Close</button></div>
+  </div>
+</div>
+<script>
+
+const $=id=>document.getElementById(id);
+
+const SITE_POLICIES={
+privacy:`<h3>What this page does</h3><p>This shop page displays business information, shop status, offers, products/services, location, UPI information and contact options provided by the shop owner.</p><h3>Public information</h3><p>Information entered by the shop owner may be visible to anyone who opens this page or scans its QR code. The shop owner is responsible for the information they publish.</p><h3>Customer information</h3><p>Ordinary visitors do not need a Shop Manager account to view this page. Shop Manager does not ask visitors for UPI PINs, banking passwords or similar payment credentials.</p><h3>Orders and WhatsApp</h3><p>If ordering is enabled, the selected order and pickup/visit details are sent directly to the shop through WhatsApp. The shop is responsible for accepting, preparing and fulfilling the order.</p><h3>Payments</h3><p>UPI details and QR codes shown here are provided by the shop. Verify the recipient before making a payment. Shop Manager does not hold customer payment funds through this page.</p><h3>Location and third parties</h3><p>The Location button may open Google Maps. WhatsApp and UPI functionality may also use third-party services with their own policies.</p><h3>Contact</h3><p>For questions about this particular shop's information, contact the shop directly.</p>`,
+terms:`<h3>Using this shop page</h3><p>This page is provided as a digital information and ordering interface for the participating shop. Information, prices, offers, opening status and availability are supplied by the shop owner.</p><h3>Orders</h3><p>A WhatsApp order is a request sent to the shop. Sending an order does not by itself guarantee acceptance, availability or fulfillment.</p><h3>Prices and offers</h3><p>Prices, discounts and offers can change. Confirm the final price and availability with the shop before payment or collection.</p><h3>Payments</h3><p>Customers should verify the UPI recipient details before paying. Any payment, refund or order dispute is primarily between the customer and the shop/payment provider, as applicable.</p><h3>Service limitations</h3><p>Shop Manager does not guarantee uninterrupted availability of this page or third-party services such as WhatsApp, Google Maps or UPI services.</p>`,
+data:`<h3>Short Data Collection Notice</h3><p>Shop Manager's ordinary public shop page is designed to work without requiring a customer account.</p><h3>Information you may provide</h3><p>If you use the ordering feature, the information you enter for your selected pickup/visit details and order is placed into the WhatsApp message sent to the shop. The shop may receive and process that information through WhatsApp.</p><h3>Browser technologies</h3><p>The page may use essential browser functionality for the interface. It does not intentionally ask customers for passwords, UPI PINs or banking credentials.</p><h3>Owner-provided information</h3><p>Business information displayed on this page is supplied by the shop owner. For correction of shop information, contact the shop.</p>`
+};
+function openSitePolicy(type){$("policyTitle").textContent=type==="terms"?"Terms & Conditions":type==="data"?"Data Collection":"Privacy Policy";$("policyDoc").innerHTML=SITE_POLICIES[type]||SITE_POLICIES.privacy;$("sitePolicy").classList.add("show")}
+document.querySelectorAll("[data-policy]").forEach(b=>b.onclick=()=>openSitePolicy(b.dataset.policy));
+$("policyClose").onclick=$("policyClose2").onclick=()=>$("sitePolicy").classList.remove("show");
+$("sitePolicy").addEventListener("click",e=>{if(e.target===$("sitePolicy"))$("sitePolicy").classList.remove("show")});
+
+const SUPABASE_URL="https://wzoatpjewfphxcclxpmz.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b2F0cGpld2ZwaHhjY2x4cG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MjE5MDksImV4cCI6MjEwNTM5NzkwOX0.MpcEGav98i-wAWgsD3ep8DNcUr-Jg0N-hYm4bTWFTqU";
+const params=new URLSearchParams(location.search);
+const SLUG=(params.get("shop")||params.get("slug")||"").trim().replace(/^\/+|\/+$/g,"").toLowerCase();
+let shop=null,lastClosed=null,popupSig="",selectedProducts=new Map(),lastProductCatalogKey="";
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+function countdown(iso){let n=new Date(iso)-Date.now();if(n<=0)return"00:00:00";let s=Math.floor(n/1000),d=Math.floor(s/86400);s%=86400;let h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;return(d?d+"d ":"")+`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+function hm(v){let a=String(v||"").slice(0,5).split(":").map(Number);return(a[0]||0)*60+(a[1]||0)}
+function schedule(){if(!shop?.schedule_enabled||!shop.daily_open_time||!shop.daily_close_time)return{enabled:false,closed:false,next:null};let o=hm(shop.daily_open_time),c=hm(shop.daily_close_time),n=new Date(),x=n.getHours()*60+n.getMinutes();if(o===c)return{enabled:true,closed:true,next:null};let open=o<c?(x>=o&&x<c):(x>=o||x<c);if(open)return{enabled:true,closed:false,next:null};let d=new Date();d.setSeconds(0,0);d.setMilliseconds(0);d.setHours(Math.floor(o/60),o%60,0,0);if(d<=n)d.setDate(d.getDate()+1);return{enabled:true,closed:true,next:d.toISOString()}}
+function state(){if(!shop)return{closed:false,next:null,reason:null};if(shop.quick_closed)return{closed:true,next:null,reason:"quick"};if(shop.status==="closed"&&shop.reopen_at&&new Date(shop.reopen_at)>new Date())return{closed:true,next:shop.reopen_at,reason:"manual"};let s=schedule();return s.closed?{closed:true,next:s.next,reason:"schedule"}:{closed:false,next:null,reason:null}}
+function infoPayload(){const i=shop?.info;if(!i)return null;const type=i.displayType||i.type||"notes";if(type==="products"){const meta=i.productsMeta||i.productsData||{};return{type:"products",products:Array.isArray(i.products)?i.products:[],endAt:meta.endAt??i.productsEndAt??(i.type==="products"?i.endAt:null),title:"Products & Services",displayMode:i.productDisplayMode==="list"?"list":"cart"}}const n=i.notes||((i.title||i.message)?{title:i.title,message:i.message,endAt:i.endAt,resetMode:i.resetMode}:null);return n?{type:"notes",title:n.title||"",message:n.message||"",endAt:n.endAt}:null}
+function infoActive(){const i=shop?.info;if(!i||i.enabled===false)return false;const p=infoPayload();if(!p)return false;if(p.endAt===null||p.endAt===undefined||p.endAt==="")return true;const t=new Date(p.endAt).getTime();return Number.isFinite(t)&&t>Date.now()}
+function offerActive(){let o=shop?.offer;return !!(o?.endAt&&new Date(o.endAt)>new Date())}
+function signature(){let s=state();return JSON.stringify({closed:s.closed,next:s.next,offer:shop?.offer,info:shop?.info})}
+function render(){if(!shop)return;let s=state();$("brand").textContent=shop.shop_name;$("name").innerHTML=esc(shop.shop_name).replace(/\s+/g,"<br>");$("type").textContent=shop.store_type;$("type2").textContent=shop.store_type;$("owner").textContent=shop.owner_name;$("phone").textContent=shop.phone;$("address").textContent=shop.address||"";$("call").href="tel:"+String(shop.phone||"").replace(/[^\d+]/g,"");$("wa").href="https://wa.me/"+String(shop.phone||"").replace(/\D/g,"")+"?text="+encodeURIComponent("Hello, I'd like to enquire.");$("map").href=shop.latitude!=null&&shop.longitude!=null?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.latitude+","+shop.longitude):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.address||shop.shop_name||"");$("status").classList.toggle("closed",s.closed);$("statusText").textContent=s.closed?"CLOSED":"OPEN";$("tagline").textContent=s.closed?(s.reason==="manual"?(shop.closed_message||"Shop is currently closed."):s.reason==="quick"?"The shop is temporarily closed.":"Shop is currently outside today's opening hours."):"A live digital presence for this shop.";renderSlides()}
+function productItems(){const list=shop?.info?.products;return Array.isArray(list)?list.slice(0,20).filter(x=>x&&String(x.name||"").trim()!==""&&x.sellingPrice!==""&&x.sellingPrice!=null):[]}
+function itemPrice(item){const offer=Number(item.offerPrice);return item.offerPrice!==""&&!Number.isNaN(offer)?offer:Number(item.sellingPrice)||0}
+function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
+function productCatalogKey(){const i=infoPayload();if(!i||i.type!=="products")return "";return JSON.stringify({displayMode:i.displayMode||"cart",products:i.products||[]})}
+function syncProductSelectionState(){const key=productCatalogKey();if(key!==lastProductCatalogKey){selectedProducts.clear();lastProductCatalogKey=key}}
+function productSelectedCount(){let n=0;for(const q of selectedProducts.values())n+=q;return n}
+function whatsappNumber(){let d=String(shop?.phone||"").replace(/\D/g,"");if(d.length===10)d="91"+d;if(d.startsWith("0")&&d.length===11)d="91"+d.slice(1);return d}
+function renderProductSlide(){const items=productItems();if(!items.length)return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Nothing listed yet.</h3><p>The shop has not published any products or services.</p></article>`;const info=infoPayload()||{};const mode=info.displayMode==="list"?"list":"cart";if(mode==="list"){const rows=items.map(x=>{const offer=x.offerPrice!==""?money(x.offerPrice):"";const selling=money(x.sellingPrice);return `<div class="product-item list-only"><div class="product-main"><span class="product-name">${esc(x.name)}</span><span class="product-prices">${offer?`<span class="product-selling">${selling}</span><span class="product-offer">${offer}</span>`:`<span class="product-offer">${selling}</span>`}</span></div></div>`}).join("");return `<article class="slide product-slide"><div class="popup-kicker">MENU / PRODUCT LIST</div><h3>Our products.</h3><div class="product-list">${rows}</div></article>`}const closed=state().closed;const rows=items.map((x,i)=>{const qty=selectedProducts.get(i)||0;const offer=x.offerPrice!==""?money(x.offerPrice):"";const selling=money(x.sellingPrice);return `<div class="product-item"><div class="product-main"><span class="product-name">${esc(x.name)}</span><span class="product-prices">${offer?`<span class="product-selling">${selling}</span><span class="product-offer">${offer}</span>`:`<span class="product-offer">${selling}</span>`}</span></div><div class="qty-control"><button type="button" class="qty-btn" data-qty="${i}" data-dir="-1" aria-label="Decrease quantity">−</button><span class="qty-value" data-qty-value="${i}">${qty}</span><button type="button" class="qty-btn" data-qty="${i}" data-dir="1" aria-label="Increase quantity">＋</button></div></div>`}).join("");let total=0;items.forEach((x,i)=>total+=itemPrice(x)*(selectedProducts.get(i)||0));const disabled=closed||productSelectedCount()===0;const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Choose items.</h3>${closed?`<div class="note">Store is currently closed. Orders are temporarily disabled.</div>`:""}<div class="product-list">${rows}</div><div class="product-cart"><div class="product-cart-meta"><div id="selectedCount"><strong>${productSelectedCount()}</strong> item${productSelectedCount()===1?"":"s"} selected</div><div class="product-cart-total" id="selectedTotal">Grand Total ${money(total)}</div></div><button class="btn primary cart-btn" type="button" id="viewCart" ${disabled?"disabled":""}>${closed?"Store Closed":"View Cart"}${!closed&&productSelectedCount()?`<span class="cart-badge" id="cartBadge">${productSelectedCount()}</span>`:""}</button></div></article>`}
+function cartLocalToday(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`}
+function cartMinPickupDateTime(){return new Date(Date.now()+30*60*1000)}
+function cartTimeValue(d){return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
+function syncPickupConstraints(){const d=$("cartOrderDate"),t=$("cartOrderTime");if(!d||!t)return;const today=cartLocalToday();d.min=today;const minDateTime=cartMinPickupDateTime();const minDate=minDateTime.getFullYear()+"-"+String(minDateTime.getMonth()+1).padStart(2,"0")+"-"+String(minDateTime.getDate()).padStart(2,"0");if(!d.value||d.value<today)d.value=today;if(d.value===today){t.min=cartTimeValue(minDateTime);if(t.value&&!pickupTimeIsValid(d.value,t.value))t.value=""}else{t.removeAttribute("min")}}
+function pickupTimeIsValid(date,time){if(!date||!time)return false;const m=String(time).match(/^(\d{2}):(\d{2})$/);if(!m)return false;const selected=new Date(date+"T"+m[1]+":"+m[2]+":00");if(Number.isNaN(selected.getTime()))return false;const minimum=Date.now()+30*60*1000;return selected.getTime()>=minimum}
+function cartSelectionItems(){return productItems().map((x,i)=>({...x,qty:selectedProducts.get(i)||0})).filter(x=>x.qty>0)}
+function updateProductCart(){const count=$("selectedCount"),totalEl=$("selectedTotal"),view=$("viewCart");let total=0;productItems().forEach((x,i)=>total+=itemPrice(x)*(selectedProducts.get(i)||0));const n=productSelectedCount();if(count)count.innerHTML="<strong>"+n+"</strong> item"+(n===1?"":"s")+" selected";if(totalEl)totalEl.textContent="Grand Total "+money(total);if(view){view.disabled=state().closed||n===0;view.innerHTML=state().closed?"Store Closed":"View Cart"+(n?`<span class="cart-badge" id="cartBadge">${n}</span>`:"")}}
+function reactCartButton(){const b=$("viewCart");if(!b)return;b.classList.remove("reacted");void b.offsetWidth;b.classList.add("reacted");setTimeout(()=>b.classList.remove("reacted"),450)}
+function openCart(){if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");const items=cartSelectionItems();if(!items.length)return toastOrder("Select at least one item.");const d=$("cartOrderDate"),t=$("cartOrderTime");if(d){const today=cartLocalToday();d.min=today;if(!d.value||d.value<today)d.value=today}if(t)t.value="";syncPickupConstraints();const box=$("cartItems");box.innerHTML=items.map((x,i)=>`<div class="cart-row"><div><div class="cart-row-name">${esc(x.name)}</div><div class="cart-row-sub">${x.qty} × ${money(itemPrice(x))}</div></div><div class="cart-row-total">${money(itemPrice(x)*x.qty)}</div></div>`).join("");$("cartItemCount").textContent=productSelectedCount();$("cartGrandTotal").textContent=money(items.reduce((sum,x)=>sum+itemPrice(x)*x.qty,0));$("cartOverlay").classList.add("show")}
+function closeCart(){$("cartOverlay").classList.remove("show")}
+function wireProductCart(){document.querySelectorAll("[data-qty]").forEach(btn=>btn.onclick=()=>{if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");const i=Number(btn.dataset.qty),dir=Number(btn.dataset.dir),next=Math.max(0,Math.min(99,(selectedProducts.get(i)||0)+dir));if(next===0)selectedProducts.delete(i);else selectedProducts.set(i,next);const v=document.querySelector(`[data-qty-value="${i}"]`);if(v)v.textContent=next;updateProductCart();if(next>0)reactCartButton()});const view=$("viewCart");if(view)view.onclick=openCart;updateProductCart()}
+function sendSelectedOrder(){if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");const items=cartSelectionItems();if(!items.length)return toastOrder("Select at least one item.");const number=whatsappNumber();if(!number)return toastOrder("Shop WhatsApp number is not configured.");const dateEl=$("cartOrderDate"),timeEl=$("cartOrderTime");const date=dateEl?.value||"",time=timeEl?.value||"";const today=cartLocalToday();syncPickupConstraints();if(!date){dateEl?.focus();return toastOrder("Please select a pickup / visit date.")}if(date<today){dateEl?.focus();return toastOrder("Please select today or a future date.")}if(!time){timeEl?.focus();return toastOrder("Please select a pickup / visit time at least 30 minutes from now.")}if(!pickupTimeIsValid(date,time)){syncPickupConstraints();timeEl?.focus();return toastOrder("Pickup / visit time must be at least 30 minutes from now.")}const d=new Date(date+"T00:00:00");const dateText=Number.isNaN(d.getTime())?date:d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});const timeText=new Date("1970-01-01T"+time).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"});const lines=items.map((x,i)=>`${i+1}. ${x.name} × ${x.qty} - ${money(itemPrice(x)*x.qty)}`);const total=items.reduce((sum,x)=>sum+itemPrice(x)*x.qty,0);const msg=`Hello ${shop.shop_name||"Shop"},\n\nI would like to order:\n${lines.join("\n")}\n\nPickup / Visit: ${dateText} at ${timeText}\nGrand Total: ${money(total)}\n\nPending payment screenshot\nPlease pay and sent.`;window.open("https://wa.me/"+number+"?text="+encodeURIComponent(msg),"_blank","noopener") }
+function toastOrder(message){let t=$("orderToast");if(!t){t=document.createElement("div");t.id="orderToast";t.className="toast";document.body.appendChild(t)}t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+function renderSlides(keepScroll=true){if(!shop)return;syncProductSelectionState();let a=[],s=state();if(s.closed)a.push(`<article class="slide"><div class="popup-kicker">SHOP STATUS</div><h3>We're<br>closed.</h3><p>${esc(s.reason==="manual"?(shop.closed_message||"Please check back later."):s.reason==="quick"?"The shop is temporarily closed.":"We're currently outside today's opening hours.")}</p>${s.next?`<div class="timer" data-count="${esc(s.next)}">${countdown(s.next)}</div><div class="small">Until next opening · live countdown</div>`:""}</article>`);let o=shop.offer;if(offerActive())a.push(`<article class="slide"><div class="popup-kicker">LIMITED OFFER</div><h3>${esc(o.name)}</h3><p>${esc(o.message||"Limited-time offer.")}</p><p><span class="old">${esc(o.oldPrice)}</span> &nbsp; <span class="deal">${esc(o.deal)}</span></p><div class="timer" data-count="${esc(o.endAt)}">${countdown(o.endAt)}</div><div class="small">Offer ends · live countdown</div></article>`);let i=infoPayload();if(infoActive()&&i){if(i.type==="products"&&productItems().length)a.push(renderProductSlide());else if(i.type==="notes")a.push(`<article class="slide"><div class="popup-kicker">CUSTOM INFORMATION</div><h3>${esc(i.title)}</h3><p style="white-space:pre-wrap">${esc(i.message)}</p><div class="small">${i.endAt?`Expires · ${new Date(i.endAt).toLocaleString()}`:"No automatic expiry"}</div></article>`)}$("slides").innerHTML=a.length?a.join(""):`<article class="slide"><div class="popup-kicker">ALL CLEAR</div><h3>No active updates.</h3><p>New shop updates will appear here.</p></article>`;$("hint").textContent=a.length>1?"Swipe to see all updates":"";wireProductCart()}
+function active(){let s=state();return s.closed||offerActive()||infoActive()}
+async function load(){
+  if(!SLUG){$("name").textContent="SHOP LINK MISSING";$("type").textContent="ADD ?shop=YOUR-SLUG";return}
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_shop_public_by_slug",{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify({shop_slug:SLUG})});
+    const t=await r.text();
+    if(!r.ok)throw Error("HTTP "+r.status+" "+t);
+    shop=t?JSON.parse(t):null;
+    if(!shop||!shop.id)throw Error("No shop matched slug: "+SLUG);
+    popupSig="";render();
+    const sig=signature();
+    if(active()){popupSig=sig;$("overlay").classList.add("show")}else{$("overlay").classList.remove("show")}
+  }catch(e){
+    console.error("Shop load failed:",e);
+    $("name").textContent="SHOP NOT FOUND";
+    $("type").textContent="CHECK SHOP LINK";
+    $("tagline").textContent="Slug: "+SLUG;
+  }
+}
+function upiData(){return{upi:String(shop?.upi_id||"").trim(),name:String(shop?.upi_name||shop?.shop_name||"").trim(),number:String(shop?.upi_number||"").trim()}}
+let currentQrLink="";
+function openPayment(){
+  let d=upiData();
+  $("qrBox").innerHTML="";
+  $("upiName").textContent=d.name||"UPI Payment";
+  $("upiId").textContent=d.upi?d.upi:"UPI ID not configured";
+  $("upiNumber").textContent=d.number?"UPI number · "+d.number:"";
+  $("upiShare").style.display="none";
+  if(!d.upi){
+    $("qrBox").innerHTML='<div class="qr-error">UPI payment is not configured for this shop yet.</div>';
+    $("payOverlay").classList.add("show");
+    return;
+  }
+  currentQrLink="upi://pay?pa="+encodeURIComponent(d.upi)+"&pn="+encodeURIComponent(d.name||shop.shop_name||"Shop");
+  try{
+    new QRCode($("qrBox"),{
+      text:currentQrLink,
+      width:210,
+      height:210,
+      colorDark:"#000000",
+      colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.M
+    });
+    $("upiShare").style.display="inline-block";
+  }catch(e){
+    $("qrBox").innerHTML='<div class="qr-error">QR could not be generated. Please try again.</div>';
+  }
+  $("payOverlay").classList.add("show");
+}
+async function shareQr(){
+  const canvas=$("qrBox").querySelector("canvas");
+  if(!canvas)return;
+  try{
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+    if(!blob)throw Error("Could not prepare QR image.");
+    const file=new File([blob],"shop-upi-qr.png",{type:"image/png"});
+    const shareData={files:[file],title:"UPI Payment QR",text:"Scan this QR to pay "+(shop?.shop_name||"the shop")};
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share(shareData);
+    }else if(navigator.share){
+      await navigator.share({title:"UPI Payment QR",text:"Scan this QR to pay "+(shop?.shop_name||"the shop")});
+    }else{
+      const a=document.createElement("a");
+      a.href=canvas.toDataURL("image/png");
+      a.download="shop-upi-qr.png";
+      a.click();
+    }
+  }catch(e){
+    if(e.name!=="AbortError")alert("Sharing is not supported on this device. You can screenshot the QR.");
+  }
+}
+$("payQr").onclick=openPayment;$("upiShare").onclick=shareQr;$("payClose").onclick=()=>$("payOverlay").classList.remove("show");$("payOverlay").addEventListener("click",e=>{if(e.target===$("payOverlay"))$("payOverlay").classList.remove("show")});
+$("updates").onclick=()=>{$("overlay").classList.add("show");renderSlides()};$("close").onclick=()=>$("overlay").classList.remove("show");
+$("cartClose").onclick=closeCart;$("cartBack").onclick=closeCart;$("cartSendOrder").onclick=sendSelectedOrder;$("cartOrderDate").addEventListener("change",syncPickupConstraints);$("cartOrderTime").addEventListener("focus",syncPickupConstraints);$("cartOverlay").addEventListener("click",e=>{if(e.target===$("cartOverlay"))closeCart()});
+setInterval(()=>{if(!shop)return;document.querySelectorAll("[data-count]").forEach(e=>e.textContent=countdown(e.dataset.count));let c=state().closed;if(c!==lastClosed){lastClosed=c;render()}},1000);
+load();
+</script>
+
+
+</body></html>
