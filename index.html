@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shop Manager</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<div class="overlay" id="paymentConfirmOverlay" aria-hidden="true">
+  <div class="popup" style="width:min(560px,100%);height:auto;max-height:calc(100dvh - 30px)">
+    <button class="close" id="paymentConfirmClose" type="button">×</button>
+    <div class="popup-inner" style="height:auto">
+      <div class="popup-kicker">FINAL PAYMENT CHECK</div>
+      <h2 style="font-size:clamp(38px,8vw,58px)">Confirm before submitting.</h2>
+      <div class="payment-confirm-box">
+        <h3>Important</h3>
+        <p>Please confirm that the payment screenshot is <strong>genuine and unedited</strong>, the transaction / UTR ID you entered is correct, and the name you provided is correct.</p>
+        <p>The shop owner will manually verify the payment. If the submitted details do not match the actual payment, the amount is not credited to the shop account, or fraud/tampering is found, the order may be <strong>rejected on the spot</strong>.</p>
+        <div class="confirm-actions">
+          <button class="btn" id="paymentConfirmCancel" type="button">Go Back</button>
+          <button class="btn primary" id="paymentConfirmYes" type="button">Yes, Submit for Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{--r:#e30d40;--r2:#ff416b;--bg:#070307;--glass:#ffffff10;--line:#ffffff20;--muted:#cbbbc0}
@@ -389,24 +407,6 @@ $("paymentConfirmOverlay").addEventListener("click",e=>{if(e.target===$("payment
 setInterval(()=>{if(!shop)return;document.querySelectorAll("[data-count]").forEach(e=>e.textContent=countdown(e.dataset.count));let c=state().closed;if(c!==lastClosed){lastClosed=c;render()}},1000);
 load();
 </script>
-<div class="overlay" id="paymentConfirmOverlay" aria-hidden="true">
-  <div class="popup" style="width:min(560px,100%);height:auto;max-height:calc(100dvh - 30px)">
-    <button class="close" id="paymentConfirmClose" type="button">×</button>
-    <div class="popup-inner" style="height:auto">
-      <div class="popup-kicker">FINAL PAYMENT CHECK</div>
-      <h2 style="font-size:clamp(38px,8vw,58px)">Confirm before submitting.</h2>
-      <div class="payment-confirm-box">
-        <h3>Important</h3>
-        <p>Please confirm that the payment screenshot is <strong>genuine and unedited</strong>, the transaction / UTR ID you entered is correct, and the name you provided is correct.</p>
-        <p>The shop owner will manually verify the payment. If the submitted details do not match the actual payment, the amount is not credited to the shop account, or fraud/tampering is found, the order may be <strong>rejected on the spot</strong>.</p>
-        <div class="confirm-actions">
-          <button class="btn" id="paymentConfirmCancel" type="button">Go Back</button>
-          <button class="btn primary" id="paymentConfirmYes" type="button">Yes, Submit for Review</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 
