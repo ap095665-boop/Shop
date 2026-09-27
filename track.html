@@ -41,6 +41,12 @@ button.primary{background:#fff;color:#090a0d}
 .error{color:#ff9eac}
 .center{text-align:center;padding:45px 10px}
 .small{font-size:12px;color:#777b88}
+.tracker-banner{border:1px solid #ffffff18;background:linear-gradient(145deg,#1b1c25,#101117);border-radius:18px;padding:15px;margin-bottom:14px}
+.tracker-banner strong{display:block;font-size:14px;margin-bottom:6px}
+.tracker-banner p{margin:0;color:#b8bbc5;font-size:12px;line-height:1.55}
+.tracker-banner .banner-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.tracker-banner button{padding:10px 12px}
+.cancelled-notice{border:1px solid #ff596f55;background:#3a121b;color:#ffb2bc;border-radius:15px;padding:13px;font-size:13px;line-height:1.5;margin-top:12px}
 @media(max-width:520px){
  .wrap{padding:15px 12px 35px}
  .card{border-radius:18px;padding:16px}
@@ -74,6 +80,16 @@ button.primary{background:#fff;color:#090a0d}
       <div id="statusBadge" class="badge">Loading</div>
     </section>
 
+    <section class="tracker-banner">
+      <strong>Before you go to collect your order</strong>
+      <p>Copy this tracking page link somewhere safe. Before going to collect your order, check your order status here. If you find any issue with your order, please call the shop owner directly.</p>
+      <div class="banner-actions">
+        <button class="primary" type="button" id="copyTrackerLink">Copy tracking link</button>
+        <button type="button" id="callOwner" class="hidden">Call owner</button>
+      </div>
+      <div id="copyStatus" class="small" style="margin-top:8px"></div>
+    </section>
+
     <section class="card">
       <h2>Order details</h2>
       <div class="row"><span class="label">Customer</span><span class="value" id="customer">—</span></div>
@@ -97,88 +113,88 @@ button.primary{background:#fff;color:#090a0d}
       <h2>Order progress</h2>
       <div id="timeline" class="timeline"></div>
       <div class="actions">
-        <button onclick="loadOrder()">↻ Refresh</button>
+        <button type="button" onclick="renderCachedOrder()">↻ Refresh display</button>
       </div>
-      <p class="small">Tap Refresh to check the latest order status.</p>
+      <p class="small">Status is checked automatically every 10 minutes. Refresh display does not contact the server.</p>
     </section>
   </main>
 </div>
 
 <script>
 const SUPABASE_URL="https://wzoatpjewfphxcclxpmz.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b2F0cGpld2ZwaHhjY2x4cG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MjE5MDksImV4cCI6MjEwNTM5NzkwOX0.MpcEGav98i-wAWgsD3ep8DNcUr-Jg0N-hYm4bTWFTqU";
-
+const REAL_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzIiIsInJlZiI6Ind6b2F0cGpld2ZwaHhjcGxtIiwiaWF0IjoxNzg5ODIxOTA5LCJleHAiOjIxMDUzOTc5MDl9";
 const params=new URLSearchParams(location.search);
 const token=(params.get("t")||params.get("token")||"").trim();
-
+const CACHE_KEY=token?"shopmanager_tracker_order_"+token:"";
+const FETCH_INTERVAL=10*60*1000;
 const $=id=>document.getElementById(id);
+let currentOrder=null;
+let lastFetchAt=0;
+let fetchTimer=null;
 
 function escapeHtml(v){
-  return String(v??"").replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[c]));
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 }
-
-function money(v){
-  return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-function dateTime(v){
-  if(!v)return "—";
-  const d=new Date(v);
-  return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{
-    dateStyle:"medium",timeStyle:"short"
-  });
-}
-
-function normalize(r){
-  if(Array.isArray(r)) return r[0]||null;
-  return r?.data ?? r;
-}
-
+function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function dateTime(v){if(!v)return"—";const d=new Date(v);return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}
+function normalize(r){if(Array.isArray(r))return r[0]||null;return r?.data??r}
 function statusText(s){
-  const map={
-    payment_pending:"Payment pending",
-    payment_review:"Payment under review",
-    confirmed:"Confirmed",
-    preparing:"Preparing",
-    ready:"Ready for pickup",
-    completed:"Completed",
-    rejected:"Payment rejected",
-    cancelled:"Cancelled"
-  };
-  return map[s]||String(s||"Unknown").replaceAll("_"," ");
+  const map={payment_pending:"Payment pending",payment_review:"Payment under review",confirmed:"Confirmed",preparing:"Preparing",ready:"Ready for pickup",completed:"Completed",rejected:"Payment rejected"};
+  return map[s]||String(s||"Unknown").replaceAll("_"," ")
 }
-
 function statusClass(s){
-  if(s==="payment_review")return "status-review";
-  if(s==="confirmed")return "status-confirmed";
-  if(s==="preparing")return "status-preparing";
-  if(s==="ready")return "status-ready";
-  if(s==="completed")return "status-completed";
-  if(s==="rejected"||s==="cancelled")return "status-rejected";
-  return "";
+  if(s==="payment_review")return"status-review";
+  if(s==="confirmed")return"status-confirmed";
+  if(s==="preparing")return"status-preparing";
+  if(s==="ready")return"status-ready";
+  if(s==="completed")return"status-completed";
+  if(s==="rejected"||s==="cancelled")return"status-rejected";
+  return"";
 }
-
 async function rpc(name,body){
   const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/"+name,{
     method:"POST",
-    headers:{
-      apikey:SUPABASE_ANON_KEY,
-      Authorization:"Bearer "+SUPABASE_ANON_KEY,
-      "Content-Type":"application/json"
-    },
+    headers:{apikey:REAL_SUPABASE_ANON_KEY,Authorization:"Bearer "+REAL_SUPABASE_ANON_KEY,"Content-Type":"application/json"},
     body:JSON.stringify(body)
   });
   const t=await r.text();
   if(!r.ok)throw new Error(t||("HTTP "+r.status));
   try{return JSON.parse(t)}catch{return t}
 }
+function saveCachedOrder(o){
+  if(!CACHE_KEY)return;
+  localStorage.setItem(CACHE_KEY,JSON.stringify({order:o,savedAt:Date.now()}));
+}
+function readCachedOrder(){
+  if(!CACHE_KEY)return null;
+  try{
+    const x=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
+    return x?.order||null;
+  }catch{return null}
+}
+function copyTrackerLink(){
+  const url=location.href;
+  const done=()=>{
+    $("copyStatus").textContent="Tracking link copied. Save it somewhere safe.";
+    setTimeout(()=>{$("copyStatus").textContent=""},2500);
+  };
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>{
+      prompt("Copy this tracking link:",url);
+    });
+  }else{
+    prompt("Copy this tracking link:",url);
+  }
+}
+$("copyTrackerLink").onclick=copyTrackerLink;
 
 function render(o){
+  currentOrder=o;
   $("shopName").textContent=o.shop_name||"Shop";
   $("orderNumber").textContent=o.order_number||"Order";
-  $("statusBadge").textContent=statusText(o.order_status);
+
+  const ownerCancelled=o.order_status==="cancelled";
+  $("statusBadge").textContent=ownerCancelled?"Cancelled by shop":statusText(o.order_status);
   $("statusBadge").className="badge "+statusClass(o.order_status);
 
   $("customer").textContent=o.customer_name||"—";
@@ -189,37 +205,84 @@ function render(o){
   $("created").textContent=dateTime(o.created_at);
   $("total").textContent=money(o.total);
 
+  const call=$("callOwner");
+  if(o.shop_phone){
+    call.classList.remove("hidden");
+    call.onclick=()=>{location.href="tel:"+String(o.shop_phone).replace(/[^\d+]/g,"")};
+  }else call.classList.add("hidden");
+
+  let cancelNotice=document.getElementById("cancelledNotice");
+  if(cancelNotice)cancelNotice.remove();
+  if(ownerCancelled){
+    const n=document.createElement("div");
+    n.id="cancelledNotice";
+    n.className="cancelled-notice";
+    n.innerHTML="<strong>Order cancelled by the shop.</strong><br>Please do not go to collect this order. If you need clarification, call the shop owner.";
+    $("content").insertBefore(n,$("content").querySelector(".card:nth-of-type(2)"));
+  }
+
   const items=Array.isArray(o.items)?o.items:[];
   $("items").innerHTML=items.length
-    ? items.map(x=>`
-      <div class="item">
-        <span>${escapeHtml(x.name||"Item")} × ${Number(x.qty||0)}</span>
-        <b>${money(x.line_total)}</b>
-      </div>`).join("")
-    : '<div class="muted">No item details available.</div>';
+    ?items.map(x=>`<div class="item"><span>${escapeHtml(x.name||"Item")} × ${Number(x.qty||0)}</span><b>${money(x.line_total)}</b></div>`).join("")
+    :'<div class="muted">No item details available.</div>';
 
-  const terminal=o.order_status==="rejected"||o.order_status==="cancelled";
+  const terminal=ownerCancelled||o.order_status==="rejected";
   const stages=["payment_review","confirmed","preparing","ready","completed"];
   const current=stages.indexOf(o.order_status);
 
   $("timeline").innerHTML=terminal
-    ? `<div class="step current"><span class="dot"></span><span>${escapeHtml(statusText(o.order_status))}</span></div>`
-    : stages.map((s,i)=>{
-        const done=current>=0 && i<current;
-        const cur=current===i;
-        return `<div class="step ${done?"done":""} ${cur?"current":""}">
-          <span class="dot"></span><span>${escapeHtml(statusText(s))}</span>
-        </div>`;
-      }).join("");
+    ?`<div class="step current"><span class="dot"></span><span>${escapeHtml(ownerCancelled?"Cancelled by shop":statusText(o.order_status))}</span></div>`
+    :stages.map((s,i)=>{
+      const done=current>=0&&i<current;
+      const cur=current===i;
+      return `<div class="step ${done?"done":""} ${cur?"current":""}"><span class="dot"></span><span>${escapeHtml(statusText(s))}</span></div>`;
+    }).join("");
 
   $("loading").classList.add("hidden");
   $("error").classList.add("hidden");
   $("content").classList.remove("hidden");
 }
 
-async function loadOrder(){
-  $("error").classList.add("hidden");
+function renderCachedOrder(){
+  const o=readCachedOrder();
+  if(o){
+    render(o);
+    return true;
+  }
+  return false;
+}
 
+async function fetchLatestOrder(){
+  if(!token)return;
+  try{
+    const r=await rpc("get_order_by_tracker",{p_tracker_token:token});
+    const order=normalize(r);
+    if(!order)throw new Error("ORDER_NOT_FOUND");
+    currentOrder=order;
+    lastFetchAt=Date.now();
+    saveCachedOrder(order);
+    render(order);
+    scheduleNextFetch();
+  }catch(e){
+    console.error("Tracker status check failed:",e);
+    // Keep the last valid cached order visible when a scheduled check fails.
+    if(!renderCachedOrder()){
+      $("loading").classList.add("hidden");
+      $("content").classList.add("hidden");
+      $("error").classList.remove("hidden");
+      $("errorText").textContent="This tracking link is invalid, expired, or the order could not be loaded.";
+    }
+    scheduleNextFetch();
+  }
+}
+
+function scheduleNextFetch(){
+  clearTimeout(fetchTimer);
+  const wait=Math.max(1000,FETCH_INTERVAL-(Date.now()-lastFetchAt));
+  fetchTimer=setTimeout(fetchLatestOrder,wait);
+}
+
+async function init(){
   if(!token){
     $("loading").classList.add("hidden");
     $("content").classList.add("hidden");
@@ -228,30 +291,18 @@ async function loadOrder(){
     return;
   }
 
-  $("loading").classList.remove("hidden");
-
-  try{
-    localStorage.setItem("shopmanager_tracker_token",JSON.stringify({
-      token,
-      expiresAt:Date.now()+2*60*60*1000
-    }));
-
-    const r=await rpc("get_order_by_tracker",{p_tracker_token:token});
-    const order=normalize(r);
-
-    if(!order)throw new Error("ORDER_NOT_FOUND");
-
-    render(order);
-  }catch(e){
-    console.error("Tracker load failed:",e);
-    $("loading").classList.add("hidden");
-    $("content").classList.add("hidden");
-    $("error").classList.remove("hidden");
-    $("errorText").textContent="This tracking link is invalid, expired, or the order could not be loaded.";
+  // Page refresh uses the cached order and does NOT contact Supabase.
+  if(renderCachedOrder()){
+    lastFetchAt=Number(JSON.parse(localStorage.getItem(CACHE_KEY)||"{}").savedAt||Date.now());
+    scheduleNextFetch();
+    return;
   }
+
+  $("loading").classList.remove("hidden");
+  await fetchLatestOrder();
 }
 
-loadOrder();
+init();
 </script>
 </body>
 </html>
