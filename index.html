@@ -408,12 +408,14 @@ function closePaymentSubmitConfirmation(){
   $("paymentConfirmOverlay").classList.remove("show");
   $("paymentConfirmOverlay").setAttribute("aria-hidden","true");
 }
-$("checkoutSubmit").onclick=async()=>{
+$("checkoutSubmit").onclick=()=>{
   if(currentPaymentMethod==="cod"){
-    await submitPaymentReview();
-    return;
+    // COD has no UTR/screenshot. Submit directly.
+    submitPaymentReview();
+  }else{
+    // Keep the existing online-payment confirmation flow unchanged.
+    openPaymentSubmitConfirmation();
   }
-  openPaymentSubmitConfirmation();
 };
 $("paymentConfirmClose").onclick=closePaymentSubmitConfirmation;
 $("paymentConfirmCancel").onclick=closePaymentSubmitConfirmation;
