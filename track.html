@@ -113,9 +113,9 @@ button.primary{background:#fff;color:#090a0d}
       <h2>Order progress</h2>
       <div id="timeline" class="timeline"></div>
       <div class="actions">
-        <button type="button" onclick="renderCachedOrder()">↻ Refresh display</button>
+        <button type="button" onclick="manualRefresh()">↻ Refresh status</button>
       </div>
-      <p class="small">Status is checked automatically every 10 minutes. Refresh display does not contact the server.</p>
+      <p class="small">Status is checked manually. You can refresh once every 10 minutes, for up to 1 hour.</p>
     </section>
   </main>
 </div>
@@ -126,11 +126,13 @@ const REAL_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 const params=new URLSearchParams(location.search);
 const token=(params.get("t")||params.get("token")||"").trim();
 const CACHE_KEY=token?"shopmanager_tracker_order_"+token:"";
-const FETCH_INTERVAL=10*60*1000;
 const $=id=>document.getElementById(id);
 let currentOrder=null;
+const FETCH_GAP=10*60*1000;
+const TRACKER_LIFETIME=60*60*1000;
 let lastFetchAt=0;
-let fetchTimer=null;
+let trackerStartedAt=0;
+let refreshUiTimer=null;
 
 function escapeHtml(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -163,14 +165,55 @@ async function rpc(name,body){
 }
 function saveCachedOrder(o){
   if(!CACHE_KEY)return;
-  localStorage.setItem(CACHE_KEY,JSON.stringify({order:o,savedAt:Date.now()}));
+  const now=Date.now();
+  if(!trackerStartedAt) trackerStartedAt=now;
+  localStorage.setItem(CACHE_KEY,JSON.stringify({
+    order:o,
+    savedAt:now,
+    startedAt:trackerStartedAt
+  }));
 }
 function readCachedOrder(){
   if(!CACHE_KEY)return null;
   try{
     const x=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
-    return x?.order||null;
+    if(!x?.order)return null;
+    trackerStartedAt=Number(x.startedAt||x.savedAt||0);
+    lastFetchAt=Number(x.savedAt||0);
+    return x.order;
   }catch{return null}
+}
+function trackerExpired(){
+  return !!trackerStartedAt && Date.now()-trackerStartedAt>=TRACKER_LIFETIME;
+}
+function refreshAllowed(){
+  return !!lastFetchAt && Date.now()-lastFetchAt>=FETCH_GAP;
+}
+function updateRefreshButton(){
+  const btn=document.querySelector('.actions button');
+  if(!btn||!token)return;
+  if(trackerExpired()){
+    btn.disabled=true;
+    btn.textContent="Tracking expired";
+    if(refreshUiTimer){clearTimeout(refreshUiTimer);refreshUiTimer=null;}
+    return;
+  }
+  if(!lastFetchAt){
+    btn.disabled=false;
+    btn.textContent="↻ Refresh status";
+    return;
+  }
+  const remaining=Math.max(0,FETCH_GAP-(Date.now()-lastFetchAt));
+  if(remaining>0){
+    const mins=Math.floor(remaining/60000);
+    const secs=Math.ceil((remaining%60000)/1000);
+    btn.disabled=true;
+    btn.textContent=`Refresh in ${mins}:${String(secs).padStart(2,"0")}`;
+    refreshUiTimer=setTimeout(updateRefreshButton,1000);
+  }else{
+    btn.disabled=false;
+    btn.textContent="↻ Refresh status";
+  }
 }
 function copyTrackerLink(){
   const url=location.href;
@@ -253,33 +296,48 @@ function renderCachedOrder(){
 }
 
 async function fetchLatestOrder(){
-  if(!token)return;
+  if(!token)return false;
+  if(trackerExpired()){
+    updateRefreshButton();
+    return false;
+  }
   try{
     const r=await rpc("get_order_by_tracker",{p_tracker_token:token});
     const order=normalize(r);
     if(!order)throw new Error("ORDER_NOT_FOUND");
     currentOrder=order;
+    if(!trackerStartedAt) trackerStartedAt=Date.now();
     lastFetchAt=Date.now();
     saveCachedOrder(order);
     render(order);
-    scheduleNextFetch();
+    updateRefreshButton();
+    return true;
   }catch(e){
     console.error("Tracker status check failed:",e);
-    // Keep the last valid cached order visible when a scheduled check fails.
+    // Keep the last valid cached order visible when a manual refresh fails.
     if(!renderCachedOrder()){
       $("loading").classList.add("hidden");
       $("content").classList.add("hidden");
       $("error").classList.remove("hidden");
       $("errorText").textContent="This tracking link is invalid, expired, or the order could not be loaded.";
     }
-    scheduleNextFetch();
+    updateRefreshButton();
+    return false;
   }
 }
 
-function scheduleNextFetch(){
-  clearTimeout(fetchTimer);
-  const wait=Math.max(1000,FETCH_INTERVAL-(Date.now()-lastFetchAt));
-  fetchTimer=setTimeout(fetchLatestOrder,wait);
+async function manualRefresh(){
+  if(!token || trackerExpired() || (lastFetchAt && !refreshAllowed())){
+    updateRefreshButton();
+    return;
+  }
+  const btn=document.querySelector('.actions button');
+  if(btn){btn.disabled=true;btn.textContent="↻ Checking…";}
+  try{
+    await fetchLatestOrder();
+  }finally{
+    updateRefreshButton();
+  }
 }
 
 async function init(){
@@ -291,14 +349,23 @@ async function init(){
     return;
   }
 
-  // Page refresh uses the cached order and does NOT contact Supabase.
+  // Page load uses the cached order. No automatic polling is scheduled.
+  // A first-time tracker performs one initial fetch; later checks are manual
+  // and are limited to one fetch every 10 minutes for a maximum of 1 hour.
   if(renderCachedOrder()){
-    lastFetchAt=Number(JSON.parse(localStorage.getItem(CACHE_KEY)||"{}").savedAt||Date.now());
-    scheduleNextFetch();
+    if(trackerExpired()){
+      $("content").classList.add("hidden");
+      $("error").classList.remove("hidden");
+      $("errorText").textContent="This tracking link has expired after 1 hour.";
+      updateRefreshButton();
+      return;
+    }
+    updateRefreshButton();
     return;
   }
 
   $("loading").classList.remove("hidden");
+  trackerStartedAt=Date.now();
   await fetchLatestOrder();
 }
 
