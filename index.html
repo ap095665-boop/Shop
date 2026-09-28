@@ -408,7 +408,13 @@ function closePaymentSubmitConfirmation(){
   $("paymentConfirmOverlay").classList.remove("show");
   $("paymentConfirmOverlay").setAttribute("aria-hidden","true");
 }
-$("checkoutSubmit").onclick=openPaymentSubmitConfirmation;
+$("checkoutSubmit").onclick=async()=>{
+  if(currentPaymentMethod==="cod"){
+    await submitPaymentReview();
+    return;
+  }
+  openPaymentSubmitConfirmation();
+};
 $("paymentConfirmClose").onclick=closePaymentSubmitConfirmation;
 $("paymentConfirmCancel").onclick=closePaymentSubmitConfirmation;
 $("paymentConfirmYes").onclick=async()=>{
