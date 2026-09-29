@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Track Order — Shop Manager</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script><script>
+window.addEventListener("error",function(e){
+  if(e.target&&e.target.tagName==="SCRIPT"&&String(e.target.src).includes("qrcode")){
+    var x=document.createElement("script");
+    x.src="https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js";
+    document.head.appendChild(x);
+  }
+},true);
+</script>
 <meta name="theme-color" content="#0b0b0f">
 <style>
 *{box-sizing:border-box}
@@ -157,14 +165,54 @@ function renderOrderQr(o){
   if(!canvas||!id)return;
   const orderId=String(o?.id||"").trim();
   id.textContent=orderId||"—";
-  if(!orderId||typeof QRCode==="undefined"){
-    if(canvas.getContext)canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
-    return;
-  }
-  QRCode.toCanvas(canvas,orderId,{width:190,margin:2,errorCorrectionLevel:"M"},err=>{
-    if(err)console.error("Order QR render failed:",err);
-  });
+  const ctx=canvas.getContext("2d");
+  if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!orderId)return;
+
+  const drawFallbackQr=()=>{
+    const img=new Image();
+    img.alt="Order QR";
+    img.onload=()=>{
+      if(!ctx)return;
+      ctx.fillStyle="#fff";
+      ctx.fillRect(0,0,190,190);
+      ctx.drawImage(img,0,0,190,190);
+    };
+    img.onerror=()=>console.error("Order QR fallback failed");
+    img.src="https://quickchart.io/qr?size=190&margin=2&text="+encodeURIComponent(orderId);
+  };
+
+  const drawWithLibrary=()=>{
+    if(typeof QRCode!=="undefined"&&typeof QRCode.toCanvas==="function"){
+      try{
+        QRCode.toCanvas(canvas,orderId,{width:190,margin:2,errorCorrectionLevel:"M"},err=>{
+          if(err){
+            console.error("Order QR render failed:",err);
+            drawFallbackQr();
+          }
+        });
+        return true;
+      }catch(e){
+        console.error("Order QR render exception:",e);
+      }
+    }
+    return false;
+  };
+
+  if(drawWithLibrary())return;
+
+  let tries=0;
+  const wait=()=>{
+    if(drawWithLibrary())return;
+    if(++tries<20){
+      setTimeout(wait,250);
+      return;
+    }
+    drawFallbackQr();
+  };
+  wait();
 }
+
 function statusClass(s){
   if(s==="payment_review")return"status-review";
   if(s==="confirmed")return"status-confirmed";
