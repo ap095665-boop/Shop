@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Track Order — Shop Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <meta name="theme-color" content="#0b0b0f">
 <style>
 *{box-sizing:border-box}
@@ -47,6 +48,7 @@ button.primary{background:#fff;color:#090a0d}
 .tracker-banner .banner-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
 .tracker-banner button{padding:10px 12px}
 .cancelled-notice{border:1px solid #ff596f55;background:#3a121b;color:#ffb2bc;border-radius:15px;padding:13px;font-size:13px;line-height:1.5;margin-top:12px}
+.order-qr{text-align:center}.order-qr canvas{display:block;width:190px!important;height:190px!important;margin:12px auto;border-radius:14px;background:#fff;padding:8px}.qr-id{font-weight:900;font-size:18px;letter-spacing:.04em}.short-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}.short-box{background:#101117;border:1px solid #242631;border-radius:14px;padding:12px}.short-box .label{display:block;margin-bottom:4px}.short-box .value{display:block;text-align:left}.items-summary{display:grid;gap:7px}.items-summary .item{padding:9px 10px}
 @media(max-width:520px){
  .wrap{padding:15px 12px 35px}
  .card{border-radius:18px;padding:16px}
@@ -92,21 +94,25 @@ button.primary{background:#fff;color:#090a0d}
 
     <section class="card">
       <h2>Order details</h2>
-      <div class="row"><span class="label">Customer</span><span class="value" id="customer">—</span></div>
-      <div class="row"><span class="label">Payer</span><span class="value" id="payer">—</span></div>
-      <div class="row"><span class="label">Payment</span><span class="value" id="payment">—</span></div>
-      <div class="row"><span class="label">Transaction / UTR</span><span class="value" id="transaction">—</span></div>
-      <div class="row"><span class="label">Pickup / visit</span><span class="value" id="pickup">—</span></div>
-      <div class="row"><span class="label">Placed</span><span class="value" id="created">—</span></div>
+      <div class="short-details">
+        <div class="short-box"><span class="label">Customer</span><span class="value" id="customer">—</span></div>
+        <div class="short-box"><span class="label">Pickup / visit</span><span class="value" id="pickup">—</span></div>
+        <div class="short-box"><span class="label">Payment</span><span class="value" id="payment">—</span></div>
+        <div class="short-box"><span class="label">Total</span><span class="value total" id="total">₹0</span></div>
+      </div>
     </section>
 
     <section class="card">
       <h2>Items</h2>
-      <div id="items" class="items"></div>
-      <div class="row" style="margin-top:8px;border-bottom:0">
-        <span class="label">Total</span>
-        <span class="value total" id="total">₹0</span>
-      </div>
+      <div id="items" class="items-summary"></div>
+    </section>
+
+    <section class="card order-qr">
+      <h2>Show this at the shop</h2>
+      <div class="muted">Scan this QR in the Shop Manager Admin app to identify your order.</div>
+      <canvas id="orderQr" width="190" height="190"></canvas>
+      <div class="qr-id" id="qrOrderId">—</div>
+      <div class="small" style="margin-top:6px">Order ID</div>
     </section>
 
     <section class="card">
@@ -115,7 +121,7 @@ button.primary{background:#fff;color:#090a0d}
       <div class="actions">
         <button type="button" onclick="manualRefresh()">↻ Refresh status</button>
       </div>
-      <p class="small">Status is checked manually. You can refresh once every 10 minutes, for up to 1 hour.</p>
+      <p class="small">Status is checked manually once every 10 minutes. After the server-side tracker expiry, this page keeps the last status shown and stops all Supabase status requests.</p>
     </section>
   </main>
 </div>
@@ -129,9 +135,9 @@ const CACHE_KEY=token?"shopmanager_tracker_order_"+token:"";
 const $=id=>document.getElementById(id);
 let currentOrder=null;
 const FETCH_GAP=10*60*1000;
-const TRACKER_LIFETIME=60*60*1000;
+const TRACKER_MAX_AGE=60*60*1000;
 let lastFetchAt=0;
-let trackerStartedAt=0;
+let trackerExpiresAt=0;
 let refreshUiTimer=null;
 
 function escapeHtml(v){
@@ -141,8 +147,23 @@ function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{minimumFract
 function dateTime(v){if(!v)return"—";const d=new Date(v);return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}
 function normalize(r){if(Array.isArray(r))return r[0]||null;return r?.data??r}
 function statusText(s){
-  const map={payment_pending:"Payment pending",payment_review:"Payment under review",confirmed:"Confirmed",preparing:"Preparing",ready:"Ready for pickup",completed:"Completed",rejected:"Payment rejected"};
+  const map={payment_pending:"Payment pending",payment_review:"Payment under review",confirmed:"Confirmed",preparing:"Preparing",ready:"Ready for pickup",completed:"Collect your order",rejected:"Payment rejected"};
   return map[s]||String(s||"Unknown").replaceAll("_"," ")
+}
+
+function renderOrderQr(o){
+  const canvas=$("orderQr");
+  const id=$("qrOrderId");
+  if(!canvas||!id)return;
+  const orderId=String(o?.id||"").trim();
+  id.textContent=orderId||"—";
+  if(!orderId||typeof QRCode==="undefined"){
+    if(canvas.getContext)canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+    return;
+  }
+  QRCode.toCanvas(canvas,orderId,{width:190,margin:2,errorCorrectionLevel:"M"},err=>{
+    if(err)console.error("Order QR render failed:",err);
+  });
 }
 function statusClass(s){
   if(s==="payment_review")return"status-review";
@@ -166,11 +187,12 @@ async function rpc(name,body){
 function saveCachedOrder(o){
   if(!CACHE_KEY)return;
   const now=Date.now();
-  if(!trackerStartedAt) trackerStartedAt=now;
+  const serverExpiry=new Date(o?.tracker_expires_at||0).getTime();
+  if(Number.isFinite(serverExpiry)&&serverExpiry>0)trackerExpiresAt=serverExpiry;
   localStorage.setItem(CACHE_KEY,JSON.stringify({
     order:o,
     savedAt:now,
-    startedAt:trackerStartedAt
+    expiresAt:trackerExpiresAt||serverExpiry||0
   }));
 }
 function readCachedOrder(){
@@ -178,13 +200,16 @@ function readCachedOrder(){
   try{
     const x=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");
     if(!x?.order)return null;
-    trackerStartedAt=Number(x.startedAt||x.savedAt||0);
+    trackerExpiresAt=Number(x.expiresAt||new Date(x.order?.tracker_expires_at||0).getTime()||0);
     lastFetchAt=Number(x.savedAt||0);
     return x.order;
   }catch{return null}
 }
 function trackerExpired(){
-  return !!trackerStartedAt && Date.now()-trackerStartedAt>=TRACKER_LIFETIME;
+  return !!trackerExpiresAt && Date.now()>=trackerExpiresAt;
+}
+function serverCallBlocked(){
+  return trackerExpired();
 }
 function refreshAllowed(){
   return !!lastFetchAt && Date.now()-lastFetchAt>=FETCH_GAP;
@@ -192,9 +217,9 @@ function refreshAllowed(){
 function updateRefreshButton(){
   const btn=document.querySelector('.actions button');
   if(!btn||!token)return;
-  if(trackerExpired()){
+  if(serverCallBlocked()){
     btn.disabled=true;
-    btn.textContent="Tracking expired";
+    btn.textContent="Status checking ended";
     if(refreshUiTimer){clearTimeout(refreshUiTimer);refreshUiTimer=null;}
     return;
   }
@@ -241,12 +266,10 @@ function render(o){
   $("statusBadge").className="badge "+statusClass(o.order_status);
 
   $("customer").textContent=o.customer_name||"—";
-  $("payer").textContent=o.payer_name||"—";
-  $("payment").textContent=statusText(o.payment_status);
-  $("transaction").textContent=o.transaction_id||"—";
+  $("payment").textContent=o.transaction_id==="CASH_ON_DELIVERY"?"Cash on Delivery":statusText(o.payment_status);
   $("pickup").textContent=dateTime(o.pickup_at);
-  $("created").textContent=dateTime(o.created_at);
   $("total").textContent=money(o.total);
+  renderOrderQr(o);
 
   const call=$("callOwner");
   if(o.shop_phone){
@@ -306,7 +329,8 @@ async function fetchLatestOrder(){
     const order=normalize(r);
     if(!order)throw new Error("ORDER_NOT_FOUND");
     currentOrder=order;
-    if(!trackerStartedAt) trackerStartedAt=Date.now();
+    const serverExpiry=new Date(order?.tracker_expires_at||0).getTime();
+    if(Number.isFinite(serverExpiry)&&serverExpiry>0)trackerExpiresAt=serverExpiry;
     lastFetchAt=Date.now();
     saveCachedOrder(order);
     render(order);
@@ -319,7 +343,7 @@ async function fetchLatestOrder(){
       $("loading").classList.add("hidden");
       $("content").classList.add("hidden");
       $("error").classList.remove("hidden");
-      $("errorText").textContent="This tracking link is invalid, expired, or the order could not be loaded.";
+      $("errorText").textContent="This tracking link is invalid or the order could not be loaded.";
     }
     updateRefreshButton();
     return false;
@@ -327,7 +351,7 @@ async function fetchLatestOrder(){
 }
 
 async function manualRefresh(){
-  if(!token || trackerExpired() || (lastFetchAt && !refreshAllowed())){
+  if(!token || serverCallBlocked() || (lastFetchAt && !refreshAllowed())){
     updateRefreshButton();
     return;
   }
@@ -349,23 +373,14 @@ async function init(){
     return;
   }
 
-  // Page load uses the cached order. No automatic polling is scheduled.
-  // A first-time tracker performs one initial fetch; later checks are manual
-  // and are limited to one fetch every 10 minutes for a maximum of 1 hour.
+  // The page never expires locally. Once the server-provided tracker expiry is reached,
+  // the last cached order remains visible and all further Supabase status calls stop.
   if(renderCachedOrder()){
-    if(trackerExpired()){
-      $("content").classList.add("hidden");
-      $("error").classList.remove("hidden");
-      $("errorText").textContent="This tracking link has expired after 1 hour.";
-      updateRefreshButton();
-      return;
-    }
     updateRefreshButton();
     return;
   }
 
   $("loading").classList.remove("hidden");
-  trackerStartedAt=Date.now();
   await fetchLatestOrder();
 }
 
