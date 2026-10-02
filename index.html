@@ -151,11 +151,15 @@ html .thm-opt.pop{animation:luxPop .45s cubic-bezier(.34,1.56,.64,1)}
 @media(prefers-reduced-motion:reduce){.lux-rp,#thmHint{display:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 <style id="lux-popup-fx">
-/* rotating nebula glow behind every popup, colours follow the active theme */
+/* rotating nebula glow behind every popup; colours follow the active theme */
 .popup{isolation:isolate}.popup-inner{z-index:1}
-.popup::before{content:"";position:absolute;inset:-60%;pointer-events:none;z-index:0;opacity:.9;will-change:transform;background:conic-gradient(from 0deg at 50% 50%,transparent 0,color-mix(in srgb,var(--r) 35%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r2) 28%,transparent) 50%,transparent 68%,color-mix(in srgb,var(--r) 30%,transparent) 85%,transparent 100%)}
-.overlay.show .popup::before{animation:luxNebula 30s linear infinite}
-@keyframes luxNebula{to{transform:rotate(360deg)}}
+.popup::before{content:"";position:absolute;left:50%;top:50%;width:min(1200px,max(140vw,120dvh));aspect-ratio:1;pointer-events:none;z-index:0;opacity:.9;transform:translate3d(-50%,-50%,0);backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,opacity;background:conic-gradient(from 0deg at 50% 50%,transparent 0,color-mix(in srgb,var(--r) 35%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r2) 28%,transparent) 50%,transparent 68%,color-mix(in srgb,var(--r) 30%,transparent) 85%,transparent 100%)}
+.overlay.show .popup{will-change:transform,opacity}
+.overlay.show .popup::before{animation:luxNebula 36s linear .7s infinite backwards,luxNebulaIn 1s ease-out .3s backwards}
+@keyframes luxNebula{from{transform:translate3d(-50%,-50%,0) rotate(0deg)}to{transform:translate3d(-50%,-50%,0) rotate(360deg)}}
+@keyframes luxNebulaIn{from{opacity:0}to{opacity:.9}}
+/* page background sits behind a 85% opaque blurred overlay: pause its motion while a popup is open so the GPU isn't re-blurring it every frame */
+body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.show) .orb,body:has(.site-policy.show):before,body:has(.site-policy.show):after,body:has(.site-policy.show) .orb{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.popup::before{animation:none!important}}
 </style>
 </head>
