@@ -4,6 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shop Manager</title>
+<meta name="theme-color" content="#070605">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+/* Luxury theme engine (additive) */
+window.QS_THEMES=[
+{id:'gold',n:'Obsidian Gold',bg:'#070605',g1:'#b8913f',g2:'#5c4519',a1:'#f0d58a',a2:'#b8913f',on:'#1a1305'},
+{id:'sapphire',n:'Midnight Sapphire',bg:'#040814',g1:'#2a5fd0',g2:'#0f2a6b',a1:'#8ec5ff',a2:'#3f7bea',on:'#04112b'},
+{id:'emerald',n:'Emerald Noir',bg:'#030b08',g1:'#1fa77a',g2:'#0b4a35',a1:'#5be3b0',a2:'#1fa77a',on:'#03150d'},
+{id:'amethyst',n:'Royal Amethyst',bg:'#07040f',g1:'#7a45e0',g2:'#33196b',a1:'#c9a2ff',a2:'#8b5cf6',on:'#14052b'},
+{id:'crimson',n:'Crimson Velvet',bg:'#070307',g1:'#ef174d',g2:'#8d0829',a1:'#ff416b',a2:'#e30d40',on:'#ffffff'},
+{id:'rose',n:'Rose Gold Noir',bg:'#0b0708',g1:'#c9806b',g2:'#5a2d2d',a1:'#f2c1b0',a2:'#d9967f',on:'#2a120b'},
+{id:'onyx',n:'Onyx Platinum',bg:'#060607',g1:'#7d8596',g2:'#2b2f3a',a1:'#e6e9f0',a2:'#a3aab8',on:'#101319'},
+{id:'teal',n:'Arctic Teal',bg:'#030a0c',g1:'#12a7b3',g2:'#0a4a55',a1:'#7eeaf0',a2:'#18aebb',on:'#02171a'}
+];
+window.applyTheme=function(id){var T=QS_THEMES,t=T.filter(function(x){return x.id===id})[0]||T[0],r=document.documentElement,s=r.style;
+var m={r:t.a2,r2:t.a1,bg:t.bg,g1:t.g1,g2:t.g2,on:t.on};for(var k in m)s.setProperty('--'+k,m[k]);
+r.setAttribute('data-theme',t.id);var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t.bg;return t.id};
+try{applyTheme(localStorage.getItem('qs_theme')||'gold')}catch(e){applyTheme('gold')}
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <div class="overlay payment-confirm-front" id="paymentConfirmOverlay" aria-hidden="true">
   <div class="popup" style="width:min(560px,100%);height:auto;max-height:calc(100dvh - 30px)">
@@ -69,6 +90,65 @@ body:after{content:"";position:fixed;inset:-20px;z-index:-4;background:linear-gr
 .site-policy-doc{border:1px solid var(--line);background:#0006;border-radius:17px;padding:16px;color:#d8cbd0;font-size:12px;line-height:1.6}
 .site-policy-doc h3{font-size:14px;color:#fff;margin:17px 0 6px}.site-policy-doc h3:first-child{margin-top:0}
 .site-policy-close{display:flex;justify-content:flex-end;margin-top:12px}
+</style>
+<style id="lux-theme">
+:root{--r:#b8913f;--r2:#f0d58a;--bg:#070605;--g1:#b8913f;--g2:#5c4519;--on:#1a1305;
+--muted:color-mix(in srgb,var(--r2) 10%,#c9c9cc);--pop1:color-mix(in srgb,var(--r) 24%,#050306);--solid:color-mix(in srgb,var(--r) 9%,#060507);--serif:"Cormorant Garamond","Playfair Display",Georgia,serif}
+html{-webkit-tap-highlight-color:transparent}
+body:before{background:radial-gradient(circle at 50% 25%,var(--g1),transparent 34%),radial-gradient(circle at 15% 80%,var(--g2),transparent 35%),var(--bg)}
+.orb{background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--r2) 80%,#fff),var(--r) 32%,color-mix(in srgb,var(--r) 35%,#000) 65%,transparent 70%)}
+.brand{color:var(--r2)}
+.hero h1,.popup h2,.slide h3,.site-policy-box h2{font-family:var(--serif);font-weight:700;letter-spacing:-.02em}.hero h1{line-height:.9}.popup h2,.slide h3,.site-policy-box h2{line-height:1}
+.btn.primary{color:var(--on);box-shadow:0 15px 45px color-mix(in srgb,var(--r) 35%,transparent)}
+.popup{background:linear-gradient(145deg,color-mix(in srgb,var(--pop1) 93%,transparent),#090509f5);border-color:color-mix(in srgb,var(--r2) 22%,transparent)}
+.popup-kicker,.payment-verification-info strong:first-child,.payment-cancellation-box strong,.legal-footer button{color:var(--r2)}
+.deal,.product-offer{color:var(--r2)}.product-item input{accent-color:var(--r)}
+.product-cart{border-color:color-mix(in srgb,var(--r2) 33%,transparent);background:var(--solid)}
+.cart-badge{color:var(--r)}
+.pickup-info{border-color:color-mix(in srgb,var(--r2) 33%,transparent);background:color-mix(in srgb,var(--r) 7%,transparent)}
+.order-slot input:focus,.order-slot select:focus,.checkout-label input:focus{border-color:var(--r2);box-shadow:0 0 0 3px color-mix(in srgb,var(--r2) 20%,transparent)}
+.order-slot option{background:var(--solid)}
+.checkout-upload{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:color-mix(in srgb,var(--r) 6%,transparent)}
+.payment-verification-info{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--r) 16%,#050306),var(--solid))}
+.payment-confirm-box{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:var(--solid)}
+.payment-method-option.selected{border-color:color-mix(in srgb,var(--r2) 67%,transparent);background:color-mix(in srgb,var(--r) 9%,transparent)}
+.toast{background:var(--solid);border-color:color-mix(in srgb,var(--r2) 40%,transparent)}
+.site-policy-box{background:var(--solid)}
+.card{box-shadow:inset 0 1px 0 #ffffff14,0 22px 44px -28px #000}
+/* motion */
+@keyframes luxRise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes luxSheet{from{opacity:0;transform:translateY(34px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes luxRp{from{transform:translate(-50%,-50%) scale(0);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@keyframes luxPop{0%{scale:1}40%{scale:1.08}100%{scale:1}}
+@keyframes luxHint{0%,100%{transform:translateX(0);opacity:.3}50%{transform:translateX(-3px);opacity:.85}}
+.grid>.card{animation:luxRise .6s cubic-bezier(.22,1,.36,1) backwards}.grid>.card:nth-child(2){animation-delay:.07s}.grid>.card:nth-child(3){animation-delay:.14s}.grid>.card:nth-child(n+4){animation-delay:.2s}
+.hero>div:not(.orb){animation:luxRise .8s cubic-bezier(.22,1,.36,1) backwards}
+.overlay.show .popup,.site-policy.show .site-policy-box{animation:luxSheet .5s cubic-bezier(.22,1,.36,1)}
+.btn,.qty-btn,.close,.legal-footer button,.card{transition:scale .4s cubic-bezier(.34,1.56,.64,1),translate .3s,border-color .25s,background-color .25s}
+.btn:active,.qty-btn:active,.close:active{scale:.93}.close:active{rotate:90deg}
+@media(hover:hover){.grid>.card:hover{translate:0 -3px;border-color:color-mix(in srgb,var(--r2) 45%,transparent)}.btn:hover{border-color:color-mix(in srgb,var(--r2) 50%,transparent)}}
+.lux-rel{position:relative}.lux-host{overflow:hidden}
+.lux-rp{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,color-mix(in srgb,var(--r2) 55%,transparent),transparent 65%);animation:luxRp .65s cubic-bezier(.22,1,.36,1) forwards}
+/* theme UI */
+.nav .status{margin-left:auto}
+.thm-btn{margin-left:10px;width:38px;height:38px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:17px;color:var(--r2);border:1px solid var(--line);background:#ffffff0d;backdrop-filter:blur(18px);cursor:pointer;flex:none;transition:scale .4s cubic-bezier(.34,1.56,.64,1)}.thm-btn:active{scale:.9}
+#thmScrim{position:fixed;inset:0;z-index:290;background:#0009;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+#thmPanel{position:fixed;top:0;right:0;bottom:0;z-index:300;width:min(390px,92vw);transform:translateX(104%);visibility:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),visibility 0s .4s;background:linear-gradient(170deg,var(--pop1),var(--bg));color:#fff;border-left:1px solid var(--line);padding:calc(22px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;box-shadow:-30px 0 80px -30px #000}
+html.thm-open #thmPanel{transform:none;visibility:visible;transition-delay:0s}html.thm-open #thmScrim{opacity:1;pointer-events:auto}html.thm-open body{overflow:hidden}
+.thm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.thm-head h3{margin:2px 0 0;font:700 30px/1.1 var(--serif)}.thm-kicker{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--r2);font-weight:900}
+#thmClose{position:static;width:38px;height:38px;flex:none}
+#thmPanel p{color:var(--muted);font-size:13px;line-height:1.55;margin:12px 0 18px}
+#thmGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.thm-opt{display:block;text-align:left;padding:8px 8px 11px;border-radius:18px;background:#ffffff0d;border:1px solid var(--line);color:#fff;font:inherit;cursor:pointer;transition:scale .4s cubic-bezier(.34,1.56,.64,1)}
+.thm-opt:active{scale:.95}
+.thm-opt[aria-pressed=true]{border-color:var(--r2);box-shadow:0 0 0 1px var(--r2),0 14px 30px -14px var(--r2)}
+.thm-prev{height:78px;border-radius:12px;position:relative;overflow:hidden;border:1px solid #ffffff22}.thm-prev i{position:absolute;display:block}
+.thm-opt b{display:block;margin:10px 4px 0;font-size:13px;font-weight:800}
+html.thm-open .thm-opt{animation:luxRise .5s cubic-bezier(.22,1,.36,1) backwards}
+html.thm-open .thm-opt:nth-child(2){animation-delay:.14s}html.thm-open .thm-opt:nth-child(3){animation-delay:.18s}html.thm-open .thm-opt:nth-child(4){animation-delay:.22s}html.thm-open .thm-opt:nth-child(5){animation-delay:.26s}html.thm-open .thm-opt:nth-child(6){animation-delay:.3s}html.thm-open .thm-opt:nth-child(7){animation-delay:.34s}html.thm-open .thm-opt:nth-child(8){animation-delay:.38s}
+html .thm-opt.pop{animation:luxPop .45s cubic-bezier(.34,1.56,.64,1)}
+#thmHint{position:fixed;right:0;top:46%;width:4px;height:56px;border-radius:4px 0 0 4px;background:linear-gradient(var(--r2),var(--r));z-index:5;pointer-events:none;animation:luxHint 2.8s ease-in-out infinite}html.thm-open #thmHint{display:none}
+@media(prefers-reduced-motion:reduce){.lux-rp,#thmHint{display:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -434,4 +514,50 @@ load();
 
 
 
+<div id="thmScrim"></div>
+<div id="thmHint" aria-hidden="true"></div>
+<aside id="thmPanel" role="dialog" aria-label="Theme settings" aria-hidden="true">
+ <div class="thm-head"><div><div class="thm-kicker">Appearance</div><h3>Theme settings</h3></div><button class="close" id="thmClose" type="button" aria-label="Close theme settings">×</button></div>
+ <p>Choose one of 8 premium themes. Your pick is remembered on this device. Swipe right-to-left to open this panel.</p>
+ <div id="thmGrid"></div>
+</aside>
+<script>
+(function(){
+var root=document.documentElement,grid=document.getElementById('thmGrid'),panel=document.getElementById('thmPanel'),cur;
+try{cur=localStorage.getItem('qs_theme')}catch(e){}cur=cur||'gold';
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function isOpen(){return root.classList.contains('thm-open')}
+function openP(){root.classList.add('thm-open');panel.setAttribute('aria-hidden','false')}
+function closeP(){root.classList.remove('thm-open');panel.setAttribute('aria-hidden','true')}
+function mark(){[].forEach.call(grid.children,function(b){b.setAttribute('aria-pressed',b.dataset.id===cur)})}
+QS_THEMES.forEach(function(t){var b=document.createElement('button');b.type='button';b.className='thm-opt';b.dataset.id=t.id;b.setAttribute('aria-label',t.n);
+b.innerHTML='<div class="thm-prev" style="background:radial-gradient(circle at 50% 20%,'+t.g1+',transparent 60%),radial-gradient(circle at 15% 90%,'+t.g2+',transparent 55%),'+t.bg+'"><i style="left:10%;top:14%;width:44%;height:9px;border-radius:5px;background:'+t.a1+'"></i><i style="left:10%;right:10%;top:44%;height:34%;border-radius:9px;background:#ffffff14;border:1px solid #ffffff2a"></i><i style="left:16%;top:56%;width:36%;height:8px;border-radius:5px;background:linear-gradient(135deg,'+t.a1+','+t.a2+')"></i></div><b>'+t.n+'</b>';
+b.onclick=function(){cur=t.id;applyTheme(cur);try{localStorage.setItem('qs_theme',cur)}catch(e){}mark();b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');vib([8,30,10])};grid.appendChild(b)});
+mark();
+var nav=document.querySelector('.nav');if(nav){var hb=document.createElement('button');hb.type='button';hb.className='thm-btn';hb.setAttribute('aria-label','Theme settings');hb.textContent='◐';hb.onclick=openP;nav.appendChild(hb)}
+document.getElementById('thmClose').onclick=closeP;document.getElementById('thmScrim').onclick=closeP;
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isOpen())closeP()});
+/* swipe right->left opens; left->right inside panel closes. Ignored while any popup is open or typing. */
+var sx=0,sy=0,st=0,on=false;
+function blocked(t){return document.querySelector('.overlay.show,.site-policy.show')||(t&&t.closest&&t.closest('input,textarea,select,.slides'))}
+function begin(x,y,t){if(!isOpen()&&blocked(t)){on=false;return}sx=x;sy=y;st=Date.now();on=true}
+function finish(x,y){if(!on)return;on=false;var dx=x-sx,dy=y-sy;if(Date.now()-st>900)return;
+if(isOpen()){if(dx>70&&Math.abs(dx)>Math.abs(dy)*1.3)closeP();return}
+if(dx<-70&&Math.abs(dx)>Math.abs(dy)*1.5)openP()}
+document.addEventListener('touchstart',function(e){if(e.touches.length===1)begin(e.touches[0].clientX,e.touches[0].clientY,e.target);else on=false},{passive:true});
+document.addEventListener('touchend',function(e){if(e.changedTouches.length)finish(e.changedTouches[0].clientX,e.changedTouches[0].clientY)},{passive:true});
+document.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse')begin(e.clientX,e.clientY,e.target)});
+document.addEventListener('pointerup',function(e){if(e.pointerType==='mouse')finish(e.clientX,e.clientY)});
+/* touch ripple + haptic */
+var SEL='.btn,.qty-btn,.close,.card,.thm-opt,.thm-btn,.legal-footer button';
+document.addEventListener('pointerdown',function(e){
+var el=e.target.closest&&e.target.closest(SEL);if(!el||el.disabled)return;
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+var r=el.getBoundingClientRect(),big=el.classList.contains('card'),d=Math.min(Math.max(r.width,r.height)*(big?1.3:2.2),520),s=document.createElement('span');
+if(getComputedStyle(el).position==='static')el.classList.add('lux-rel');el.classList.add('lux-host');
+s.className='lux-rp';s.style.cssText='left:'+(e.clientX-r.left)+'px;top:'+(e.clientY-r.top)+'px;width:'+d+'px;height:'+d+'px';
+s.addEventListener('animationend',function(){s.remove()});el.appendChild(s);
+if(e.pointerType!=='mouse')vib(6)},{passive:true});
+})();
+</script>
 </body></html>
