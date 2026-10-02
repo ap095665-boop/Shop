@@ -150,38 +150,13 @@ html .thm-opt.pop{animation:luxPop .45s cubic-bezier(.34,1.56,.64,1)}
 #thmHint{position:fixed;right:0;top:46%;width:4px;height:56px;border-radius:4px 0 0 4px;background:linear-gradient(var(--r2),var(--r));z-index:5;pointer-events:none;animation:luxHint 2.8s ease-in-out infinite}html.thm-open #thmHint{display:none}
 @media(prefers-reduced-motion:reduce){.lux-rp,#thmHint{display:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
-<style id="lux-popup-fx">/* ===== premium glow-based animated popup backgrounds (per theme) ===== */
-@property --lux-r{syntax:'<length>';inherits:false;initial-value:0px}
+<style id="lux-popup-fx">
+/* rotating nebula glow behind every popup, colours follow the active theme */
 .popup{isolation:isolate}.popup-inner{z-index:1}
-.popup::before,.popup::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit}
-@keyframes luxGlow{from{opacity:.5}to{opacity:1}}
-@keyframes luxDrift{from{background-position:0% 0%}to{background-position:100% 100%}}
-@keyframes luxSpin{to{transform:rotate(360deg)}}
-@keyframes luxSway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
-@keyframes luxRings{to{--lux-r:70px}}
-@keyframes luxBeam{from{background-position:0 150%}to{background-position:0 -50%}}
-@keyframes luxSweepP{from{background-position:120% 0}to{background-position:-20% 0}}
-@keyframes luxWave{from{background-position:0 0}to{background-position:0 -100%}}
-@keyframes luxCurtain{from{background-position:0 0}to{background-position:100% 0}}
-@keyframes luxSilk{from{background-position:130% 0,0% 0}to{background-position:-30% 0,100% 0}}
-@keyframes luxIce{from{background-position:130% 0,0 0}to{background-position:-30% 0,0 0}}
-html[data-theme=gold] .overlay.show .popup::before{background:radial-gradient(60% 45% at 100% 0%,color-mix(in srgb,var(--r2) 28%,transparent),transparent 70%),radial-gradient(55% 40% at 0% 100%,color-mix(in srgb,var(--r) 24%,transparent),transparent 70%);animation:luxGlow 7s ease-in-out infinite alternate}
-html[data-theme=gold] .overlay.show .popup::after{background-image:linear-gradient(105deg,transparent 42%,color-mix(in srgb,var(--r2) 20%,transparent) 50%,transparent 58%),linear-gradient(115deg,transparent 18%,color-mix(in srgb,var(--r) 14%,transparent) 32%,transparent 46%,color-mix(in srgb,var(--r2) 12%,transparent) 64%,transparent 80%);background-size:260% 100%,200% 100%;background-repeat:no-repeat;background-position:130% 0,0% 0;animation:luxSilk 15s ease-in-out infinite alternate}
-html[data-theme=sapphire] .overlay.show .popup::before{background:radial-gradient(55% 40% at 20% 15%,color-mix(in srgb,var(--r) 38%,transparent),transparent 70%),radial-gradient(50% 38% at 85% 75%,color-mix(in srgb,var(--r2) 24%,transparent),transparent 70%);background-size:140% 140%;animation:luxDrift 14s ease-in-out infinite alternate}
-html[data-theme=sapphire] .overlay.show .popup::after{background-image:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--r2) 14%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r) 18%,transparent) 50%,transparent 66%,color-mix(in srgb,var(--r2) 12%,transparent) 84%,transparent 100%);background-size:100% 100%;background-repeat:repeat-x;-webkit-mask-image:linear-gradient(180deg,transparent,#000 35%,transparent);mask-image:linear-gradient(180deg,transparent,#000 35%,transparent);animation:luxCurtain 26s linear infinite}
-html[data-theme=emerald] .overlay.show .popup::before{background:radial-gradient(45% 35% at 25% 80%,color-mix(in srgb,var(--r) 32%,transparent),transparent 70%),radial-gradient(40% 30% at 75% 20%,color-mix(in srgb,var(--r2) 18%,transparent),transparent 70%);background-size:150% 150%;animation:luxDrift 16s ease-in-out infinite alternate}
-html[data-theme=emerald] .overlay.show .popup::after{inset:-40%;border-radius:0;transform-origin:50% 0;-webkit-mask-image:linear-gradient(180deg,#000,transparent 80%);mask-image:linear-gradient(180deg,#000,transparent 80%);background:conic-gradient(from 150deg at 50% 0%,transparent 0deg,color-mix(in srgb,var(--r2) 17%,transparent) 8deg,transparent 18deg,color-mix(in srgb,var(--r) 15%,transparent) 30deg,transparent 42deg,color-mix(in srgb,var(--r2) 12%,transparent) 52deg,transparent 60deg);animation:luxSway 9s ease-in-out infinite alternate}
-html[data-theme=amethyst] .overlay.show .popup::before{inset:-60%;border-radius:0;opacity:.9;will-change:transform;background:conic-gradient(from 0deg at 50% 50%,transparent 0,color-mix(in srgb,var(--r) 35%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r2) 28%,transparent) 50%,transparent 68%,color-mix(in srgb,var(--r) 30%,transparent) 85%,transparent 100%);animation:luxSpin 30s linear infinite}
-html[data-theme=amethyst] .overlay.show .popup::after{background:radial-gradient(38% 30% at 25% 30%,color-mix(in srgb,var(--r) 30%,transparent),transparent 72%),radial-gradient(34% 28% at 78% 72%,color-mix(in srgb,var(--r2) 24%,transparent),transparent 72%);background-size:150% 150%;animation:luxDrift 19s ease-in-out infinite alternate}
-html[data-theme=crimson] .overlay.show .popup::before{background:radial-gradient(75% 55% at 50% 115%,color-mix(in srgb,var(--r) 45%,transparent),transparent 70%),radial-gradient(40% 30% at 0% 0%,color-mix(in srgb,var(--r2) 18%,transparent),transparent 70%);animation:luxGlow 5s ease-in-out infinite alternate}
-html[data-theme=crimson] .overlay.show .popup::after{background:linear-gradient(0deg,transparent 0,color-mix(in srgb,var(--r2) 20%,transparent) 22%,transparent 46%,color-mix(in srgb,var(--r) 18%,transparent) 72%,transparent 100%);background-size:100% 100%;background-repeat:repeat-y;animation:luxWave 10s linear infinite}
-html[data-theme=rose] .overlay.show .popup::before{background:linear-gradient(115deg,transparent 35%,color-mix(in srgb,var(--r2) 18%,transparent) 50%,transparent 65%),radial-gradient(70% 40% at 50% 0%,color-mix(in srgb,var(--r) 22%,transparent),transparent 70%);background-size:300% 100%,100% 100%;background-repeat:no-repeat;background-position:120% 0,0 0;animation:luxSweepP 9s ease-in-out infinite}
-html[data-theme=rose] .overlay.show .popup::after{background:radial-gradient(45% 35% at 80% 25%,color-mix(in srgb,var(--r) 26%,transparent),transparent 72%),radial-gradient(40% 32% at 15% 78%,color-mix(in srgb,var(--r2) 20%,transparent),transparent 72%);background-size:150% 150%;animation:luxDrift 16s ease-in-out infinite alternate,luxGlow 6s ease-in-out infinite alternate}
-html[data-theme=onyx] .overlay.show .popup::before{background:linear-gradient(180deg,transparent 42%,color-mix(in srgb,var(--r2) 14%,transparent) 50%,transparent 58%);background-size:100% 300%;background-repeat:no-repeat;background-position:0 150%;animation:luxBeam 7s linear infinite}
-html[data-theme=onyx] .overlay.show .popup::after{inset:-40%;border-radius:0;transform-origin:50% 0;-webkit-mask-image:linear-gradient(180deg,#000,transparent 80%);mask-image:linear-gradient(180deg,#000,transparent 80%);background:conic-gradient(from 165deg at 50% 0%,transparent 0deg,color-mix(in srgb,var(--r2) 18%,transparent) 15deg,transparent 30deg);animation:luxSway 11s ease-in-out infinite alternate}
-html[data-theme=teal] .overlay.show .popup::before{opacity:.65;-webkit-mask-image:radial-gradient(circle at 100% 100%,#000,transparent 75%);mask-image:radial-gradient(circle at 100% 100%,#000,transparent 75%);background:repeating-radial-gradient(circle at 100% 100%,transparent 0,transparent var(--lux-r),color-mix(in srgb,var(--r2) 32%,transparent) calc(var(--lux-r) + 1.5px),transparent calc(var(--lux-r) + 3px),transparent 70px);animation:luxRings 5s linear infinite}
-html[data-theme=teal] .overlay.show .popup::after{background-image:linear-gradient(105deg,transparent 40%,color-mix(in srgb,var(--r2) 18%,transparent) 50%,transparent 60%),radial-gradient(60% 45% at 0% 0%,color-mix(in srgb,var(--r) 26%,transparent),transparent 70%);background-size:260% 100%,100% 100%;background-repeat:no-repeat;background-position:130% 0,0 0;animation:luxIce 12s ease-in-out infinite alternate}
-@media(prefers-reduced-motion:reduce){.popup::before,.popup::after{animation:none!important}}
+.popup::before{content:"";position:absolute;inset:-60%;pointer-events:none;z-index:0;opacity:.9;will-change:transform;background:conic-gradient(from 0deg at 50% 50%,transparent 0,color-mix(in srgb,var(--r) 35%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r2) 28%,transparent) 50%,transparent 68%,color-mix(in srgb,var(--r) 30%,transparent) 85%,transparent 100%)}
+.overlay.show .popup::before{animation:luxNebula 30s linear infinite}
+@keyframes luxNebula{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.popup::before{animation:none!important}}
 </style>
 </head>
 <body>
