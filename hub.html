@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Saved Shops · Shop Manager</title><style>body{margin:0;background:#070605;color:#fff;font-family:system-ui,sans-serif}.wrap{max-width:920px;margin:auto;padding:24px 16px}.card{border:1px solid #ffffff20;background:#ffffff0b;border-radius:24px;padding:20px;margin:14px 0}.hero{text-align:center;padding:50px 0}.gold{color:#f4dc98}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.info{border:1px solid #ffffff20;border-radius:15px;padding:12px}.hidden{filter:blur(12px);opacity:.2}.revealed .hidden{filter:none;opacity:1}.btn{display:inline-block;border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:#f4dc98;color:#181208}.list a{display:block;color:#fff;text-decoration:none;border:1px solid #ffffff20;border-radius:15px;padding:13px;margin:8px 0}.small{color:#aaa;font-size:12px}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style></head><body><div class="wrap"><div class="small">SHOP MANAGER · SAVED SHOPS</div><header class="hero"><div class="gold">YOUR LOCAL SHOP HUB</div><h1>Saved shops.</h1><p class="small">Saved shops are stored locally on this device. Save this Site to view all sindora associated shop sites at one place...</p></header><section class="card" id="current" hidden><div class="gold">SHOP FOUND</div><h2 id="title">Loading…</h2><div id="status" class="small"></div><div id="details" class="hidden"><div class="grid"><div class="info"><b>Shop name</b><div id="name"></div></div><div class="info"><b>Shop type</b><div id="type"></div></div><div class="info"><b>Location</b><div id="location"></div></div><div class="info"><b>Shop website</b><div id="website"></div></div><div class="info"><b>Address</b><div id="address"></div></div><div class="info"><b>Slug</b><div id="slug"></div></div></div><p><a id="open" class="btn primary">Open shop site</a></p></div><div id="save" class="small"></div></section><section class="card"><div class="gold">YOUR COLLECTION</div><h2>All saved shops.</h2><div id="list" class="list"></div></section></div><script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Saved Shops · Shop Manager</title><link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#070605"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><style>body{margin:0;background:#070605;color:#fff;font-family:system-ui,sans-serif}.wrap{max-width:920px;margin:auto;padding:24px 16px}.card{border:1px solid #ffffff20;background:#ffffff0b;border-radius:24px;padding:20px;margin:14px 0}.hero{text-align:center;padding:50px 0}.gold{color:#f4dc98}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.info{border:1px solid #ffffff20;border-radius:15px;padding:12px}.hidden{filter:blur(12px);opacity:.2}.revealed .hidden{filter:none;opacity:1}.btn{display:inline-block;border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer}.install{background:#e21b23;color:#fff;box-shadow:0 8px 24px #e21b2333}.install:active{transform:scale(.98)}.primary{background:#f4dc98;color:#181208}.list a{display:block;color:#fff;text-decoration:none;border:1px solid #ffffff20;border-radius:15px;padding:13px;margin:8px 0}.small{color:#aaa;font-size:12px}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style></head><body><div class="wrap"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px"><div class="small">SHOP MANAGER · SAVED SHOPS</div><button id="installBtn" class="btn install" type="button">Install Hub</button></div><header class="hero"><div class="gold">YOUR LOCAL SHOP HUB</div><h1>Saved shops.</h1><p class="small">Saved shops are stored locally on this device. Shop data is loaded from the Hub data file only when a shop is not already saved.</p></header><section class="card" id="current" hidden><div class="gold">SHOP FOUND</div><h2 id="title">Loading…</h2><div id="status" class="small"></div><div id="details" class="hidden"><div class="grid"><div class="info"><b>Shop name</b><div id="name"></div></div><div class="info"><b>Shop type</b><div id="type"></div></div><div class="info"><b>Location</b><div id="location"></div></div><div class="info"><b>Shop website</b><div id="website"></div></div><div class="info"><b>Address</b><div id="address"></div></div><div class="info"><b>Slug</b><div id="slug"></div></div></div><p><a id="open" class="btn primary">Open shop site</a></p></div><div id="save" class="small"></div></section><section class="card"><div class="gold">YOUR COLLECTION</div><h2>All saved shops.</h2><div id="list" class="list"></div></section></div><script>
 (()=>{
 const DATA_FILE='shop-data.json';
 const DB='shopmanager_shop_hub',STORE='shops';
@@ -24,5 +24,50 @@ async function loadData(){
 function show(s){shop=norm(s);$('current').hidden=false;$('title').textContent=shop.shop_name;$('name').textContent=shop.shop_name;$('type').textContent=shop.store_type;$('address').textContent=shop.address||'Not provided';$('slug').textContent=shop.slug;$('location').innerHTML='<a target="_blank" rel="noopener" href="'+esc(loc(shop))+'">Open location</a>';$('website').innerHTML='<a target="_blank" rel="noopener" href="'+esc(web(shop))+'">'+esc(shop.website||'Shop page')+'</a>';$('open').href=shopURL(shop);$('current').classList.add('revealed');$('status').innerHTML='<b class="gold">✓ Saved locally</b>';$('save').textContent='Saved automatically to this device.'}
 async function render(){const a=await all();$('list').innerHTML=a.length?a.sort((x,y)=>x.shop_name.localeCompare(y.shop_name)).map(s=>'<a href="'+esc(location.pathname+'?shop='+encodeURIComponent(s.slug))+'"><b>'+esc(s.shop_name)+'</b><div class="small">'+esc(s.store_type)+(s.address?' · '+esc(s.address):'')+'</div></a>').join(''):'<div class="small">No shops saved yet.</div>'}
 (async()=>{try{await render();if(!slug){$('current').hidden=false;$('title').textContent='Shop link missing';$('status').textContent='Open the Hub using a shop slug.';return}const saved=await get(slug);if(saved){show(saved);return}const shops=await loadData();const fresh=shops.map(norm).find(s=>s.slug===slug);if(!fresh){$('current').hidden=false;$('title').textContent='Shop not found';$('status').textContent='Slug not present in shop-data.json: '+slug;$('save').style.display='none';return}await put({...fresh,savedAt:Date.now()});await render();show(fresh)}catch(e){console.error(e);$('current').hidden=false;$('title').textContent='Could not load shop data';$('status').textContent=e.message||String(e);$('save').style.display='none'}})();
+})();
+</script><script>
+(()=>{
+  const installBtn=document.getElementById('installBtn');
+  let deferredPrompt=null;
+  const standalone=()=>window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  function updateInstallButton(){
+    if(!installBtn) return;
+    if(standalone()){
+      installBtn.textContent='Installed';
+      installBtn.disabled=true;
+      installBtn.style.opacity='.55';
+    }else{
+      installBtn.textContent='Install Hub';
+      installBtn.disabled=false;
+    }
+  }
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    deferredPrompt=e;
+    updateInstallButton();
+  });
+  installBtn?.addEventListener('click',async()=>{
+    if(standalone()) return;
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      try{await deferredPrompt.userChoice}catch(e){}
+      deferredPrompt=null;
+      updateInstallButton();
+      return;
+    }
+    if(!window.isSecureContext){
+      alert('Install is available when the Hub is opened from HTTPS (or localhost).');
+      return;
+    }
+    alert('If your browser has not offered installation yet, open the browser menu and choose “Install app” or “Add to Home screen”.');
+  });
+  window.addEventListener('appinstalled',()=>{
+    deferredPrompt=null;
+    updateInstallButton();
+  });
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Service worker:',err)));
+  }
+  updateInstallButton();
 })();
 </script></body></html>
