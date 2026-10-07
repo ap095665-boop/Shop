@@ -1,13 +1,13 @@
 {
   "shops": [
     {
-      "slug": "YOUR-SHOP-SLUG",
-      "shop_name": "Your Shop Name",
-      "store_type": "Shop",
-      "address": "Your shop address",
-      "latitude": null,
-      "longitude": null,
-      "website": ""
+      "slug": "d-stores-607995fa",
+      "shop_name": "D Stores",
+      "store_type": "Kirana",
+      "address": "KK Nagar, Chennai, 600078",
+      "latitude":13.0411294,
+      "longitude":80.192539,
+      "website": "https://shop.sindora.site/?shop=d-stores-607995fa"
     }
   ]
 }
