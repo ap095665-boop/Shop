@@ -1,0 +1,13 @@
+{
+  "shops": [
+    {
+      "slug": "YOUR-SHOP-SLUG",
+      "shop_name": "Your Shop Name",
+      "store_type": "Shop",
+      "address": "Your shop address",
+      "latitude": null,
+      "longitude": null,
+      "website": ""
+    }
+  ]
+}
