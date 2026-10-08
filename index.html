@@ -162,19 +162,35 @@ html .thm-opt.pop{animation:luxPop .45s cubic-bezier(.34,1.56,.64,1)}
 body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.show) .orb,body:has(.site-policy.show):before,body:has(.site-policy.show):after,body:has(.site-policy.show) .orb{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.popup::before{animation:none!important}}
 </style>
+<style id="hub-save-style">
+.hub-save-wrap{display:flex;justify-content:center;margin:26px 0 8px}
+.hub-save{--h:50px;position:relative;display:block;width:min(320px,100%);height:var(--h);padding:0;border:0;border-radius:16px;cursor:pointer;color:#fff;font:inherit;font-weight:850;background:linear-gradient(#0d070a,#0d070a) padding-box,linear-gradient(110deg,var(--r),var(--r2),var(--r),var(--r2)) border-box;border:1.5px solid transparent;background-size:100% 100%,300% 100%;animation:hubBorder 4s linear infinite;box-shadow:0 12px 34px -14px var(--r2);-webkit-tap-highlight-color:transparent;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.hub-save:active{transform:scale(.96)}
+.hub-save-win{display:block;height:calc(var(--h) - 3px);overflow:hidden;border-radius:14px;position:relative}
+.hub-save-win:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(#0d070a 0,transparent 22%,transparent 78%,#0d070a 100%)}
+.hub-save-col{display:block;animation:hubRoll 8s cubic-bezier(.65,0,.35,1) infinite}
+.hub-line{display:flex;align-items:center;justify-content:center;gap:8px;height:calc(var(--h) - 3px);font-size:15px;letter-spacing:.02em;white-space:nowrap}
+.hub-line b{color:var(--r2);font-weight:900}
+.hub-cta{color:var(--r2);text-transform:uppercase;letter-spacing:.14em;font-size:13px}
+.hub-cta b{display:inline-block;animation:hubNudge 1s ease-in-out infinite}
+@keyframes hubRoll{0%,20%{transform:translateY(0)}25%,45%{transform:translateY(-20%)}50%,70%{transform:translateY(-40%)}75%,95%{transform:translateY(-60%)}100%{transform:translateY(-80%)}}
+@keyframes hubBorder{to{background-position:0 0,-300% 0}}
+@keyframes hubNudge{50%{transform:translate(3px,-3px)}}
+@media(prefers-reduced-motion:reduce){.hub-save,.hub-save-col,.hub-cta b{animation:none!important}.hub-save-win:after{display:none}}
+</style>
 </head>
 <body>
 <div class="wrap">
 <nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main>
 <section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
+<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Save this site to our hub for future use. Click here"><span class="hub-save-win"><span class="hub-save-col"><span class="hub-line"><b>☆</b> Save this site</span><span class="hub-line">to our hub</span><span class="hub-line">for future use</span><span class="hub-line hub-cta">Click here <b>↗</b></span><span class="hub-line"><b>☆</b> Save this site</span></span></span></button></div>
 <footer id="address">—</footer>
 <div class="legal-footer" aria-label="Required policies">
 <button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
 <button type="button" data-policy="terms">Terms &amp; Conditions</button><span class="dot">·</span>
 <button type="button" data-policy="data">Data Collection</button>
 </div>
-<div class="save-site-footer"><button class="btn save-site-btn" id="saveSiteBtn" type="button">☆ Save this site</button></div>
 
 </div>
 <div class="overlay" id="payOverlay"><div class="popup"><button class="close" id="payClose">×</button><div class="popup-inner" style="align-items:center;text-align:center;justify-content:center"><div class="popup-kicker">UPI PAYMENT</div><h2 style="padding-right:0">Scan to pay.</h2><div id="qrBox" style="background:#fff;padding:16px;border-radius:20px;min-width:230px;min-height:230px;display:grid;place-items:center"></div><div id="upiName" style="font-weight:900;font-size:20px;margin-top:18px"></div><div id="upiId" class="small" style="margin-top:5px"></div><div id="upiNumber" class="small" style="margin-top:5px"></div><button id="upiShare" class="btn primary" style="margin-top:18px;display:none" type="button">Share QR</button><div class="small" style="margin-top:12px">Scan this QR with any supported UPI app.</div></div></div></div>
