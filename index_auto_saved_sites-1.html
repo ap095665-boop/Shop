@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shop Manager</title>
+<meta name="theme-color" content="#070605">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>
+/* Luxury theme engine (additive) */
+window.QS_THEMES=[
+{id:'gold',n:'Obsidian Gold',bg:'#070605',g1:'#b8913f',g2:'#5c4519',a1:'#f0d58a',a2:'#b8913f',on:'#1a1305'},
+{id:'sapphire',n:'Midnight Sapphire',bg:'#040814',g1:'#2a5fd0',g2:'#0f2a6b',a1:'#8ec5ff',a2:'#3f7bea',on:'#04112b'},
+{id:'emerald',n:'Emerald Noir',bg:'#030b08',g1:'#1fa77a',g2:'#0b4a35',a1:'#5be3b0',a2:'#1fa77a',on:'#03150d'},
+{id:'amethyst',n:'Royal Amethyst',bg:'#07040f',g1:'#7a45e0',g2:'#33196b',a1:'#c9a2ff',a2:'#8b5cf6',on:'#14052b'},
+{id:'crimson',n:'Crimson Velvet',bg:'#070307',g1:'#ef174d',g2:'#8d0829',a1:'#ff416b',a2:'#e30d40',on:'#ffffff'},
+{id:'rose',n:'Rose Gold Noir',bg:'#0b0708',g1:'#c9806b',g2:'#5a2d2d',a1:'#f2c1b0',a2:'#d9967f',on:'#2a120b'},
+{id:'onyx',n:'Onyx Platinum',bg:'#060607',g1:'#7d8596',g2:'#2b2f3a',a1:'#e6e9f0',a2:'#a3aab8',on:'#101319'},
+{id:'teal',n:'Arctic Teal',bg:'#030a0c',g1:'#12a7b3',g2:'#0a4a55',a1:'#7eeaf0',a2:'#18aebb',on:'#02171a'}
+];
+window.applyTheme=function(id){var T=QS_THEMES,t=T.filter(function(x){return x.id===id})[0]||T[0],r=document.documentElement,s=r.style;
+var m={r:t.a2,r2:t.a1,bg:t.bg,g1:t.g1,g2:t.g2,on:t.on};for(var k in m)s.setProperty('--'+k,m[k]);
+r.setAttribute('data-theme',t.id);var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t.bg;return t.id};
+try{applyTheme(localStorage.getItem('qs_theme')||'gold')}catch(e){applyTheme('gold')}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<div class="saved-sites-overlay" id="savedSitesOverlay" aria-hidden="true">
+  <div class="saved-sites-popup" role="dialog" aria-modal="true" aria-label="Saved shops">
+    <button class="close saved-sites-close" id="savedSitesClose" type="button" aria-label="Close">×</button>
+    <div class="saved-sites-head">
+      <div class="saved-sites-kicker">YOUR SHOP COLLECTION</div>
+      <h2>Saved sites.</h2>
+      <div class="saved-sites-sub" id="savedSitesCount">Saved locally on this device.</div>
+    </div>
+    <div class="saved-sites-tools">
+      <input class="saved-search" id="savedSitesSearch" type="search" placeholder="Search shop name or place…" autocomplete="off">
+      <div class="saved-filter" role="tablist" aria-label="Shop filter">
+        <button type="button" class="active" data-saved-filter="all">All</button>
+        <button type="button" data-saved-filter="fav">★ Favourites</button>
+      </div>
+    </div>
+    <div class="saved-sites-list" id="savedSitesList"></div>
+    <div class="saved-sites-foot">Your saved shops, favourites and visit history stay in this browser's local storage.</div>
+  </div>
+</div>
+
+<div class="overlay payment-confirm-front" id="paymentConfirmOverlay" aria-hidden="true">
+  <div class="popup" style="width:min(560px,100%);height:auto;max-height:calc(100dvh - 30px)">
+    <button class="close" id="paymentConfirmClose" type="button">×</button>
+    <div class="popup-inner" style="height:auto">
+      <div class="popup-kicker">FINAL PAYMENT CHECK</div>
+      <h2 style="font-size:clamp(38px,8vw,58px)">Confirm before submitting.</h2>
+      <div class="payment-confirm-box">
+        <h3>Important</h3>
+        <p>Please confirm that the payment screenshot is <strong>genuine and unedited</strong>, the transaction / UTR ID you entered is correct, and the name you provided is correct.</p>
+        <p>The shop owner will manually verify the payment. If the submitted details do not match the actual payment, the amount is not credited to the shop account, or fraud/tampering is found, the order may be <strong>rejected on the spot</strong>.</p>
+        <div class="payment-cancellation-box">
+          <strong>Cancellation Policy</strong>
+          <p>Once an order is submitted, cancellation is generally not allowed. Please review your items, quantity, pickup/visit time, and payment details carefully before submitting.</p>
+          <p>If you need to cancel or have an issue with your order, please contact the shop directly. Cancellation is subject to the shop owner's approval.</p>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn" id="paymentConfirmCancel" type="button">Go Back</button>
+          <button class="btn primary" id="paymentConfirmYes" type="button">Yes, Submit for Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--r:#e30d40;--r2:#ff416b;--bg:#070307;--glass:#ffffff10;--line:#ffffff20;--muted:#cbbbc0}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,sans-serif}body{min-height:100dvh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20%;z-index:-5;background:radial-gradient(circle at 50% 25%,#ef174d,transparent 34%),radial-gradient(circle at 15% 80%,#8d0829,transparent 35%),#080308;animation:aurora 9s ease-in-out infinite alternate}
+body:after{content:"";position:fixed;inset:-20px;z-index:-4;background:linear-gradient(100deg,#000b,#0002,#000b),url("https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=2000&q=85") center/cover;filter:blur(16px);opacity:.43}
+@keyframes aurora{to{transform:scale(1.12) rotate(3deg)}}@keyframes pulse{50%{box-shadow:0 0 0 11px #ff315e00}}
+.wrap{width:min(1160px,100%);margin:auto;padding:20px}.nav{display:flex;justify-content:space-between;align-items:center}.brand{font-size:12px;font-weight:950;letter-spacing:.22em}.status{display:flex;gap:8px;align-items:center;padding:9px 13px;border:1px solid var(--line);background:#ffffff0d;backdrop-filter:blur(18px);border-radius:999px;font-size:11px;font-weight:900}.status i{width:8px;height:8px;border-radius:50%;background:#40f49a;box-shadow:0 0 14px #40f49a;animation:pulse 1.8s infinite}.status.closed i{background:#ff315e;box-shadow:0 0 14px #ff315e}
+.hero{min-height:75vh;display:grid;place-items:center;text-align:center;position:relative}.orb{position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ff91a8,#e30d40 32%,#65041d 65%,transparent 70%);filter:blur(2px);opacity:.7;animation:float 6s ease-in-out infinite;z-index:-1}@keyframes float{50%{transform:translateY(-13px)}}
+.eyebrow{font-size:11px;letter-spacing:.25em;color:#d8c8cc;font-weight:900}.hero h1{font-size:clamp(58px,12vw,150px);line-height:.78;letter-spacing:-.09em;margin:22px 0;font-weight:1000;text-shadow:0 25px 70px #000}.hero p{max-width:620px;color:var(--muted);font-size:17px;margin:0 auto 28px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#ffffff0d;color:#fff;border-radius:16px;padding:13px 17px;font-weight:850;text-decoration:none;cursor:pointer;backdrop-filter:blur(18px)}.btn.primary{background:linear-gradient(135deg,var(--r2),var(--r));border-color:transparent;box-shadow:0 15px 45px #e30d4038}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:10px 0 65px}.card{padding:20px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(22px);border-radius:24px}.label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#ab9ca0}.value{font-weight:900;font-size:17px;margin-top:7px}footer{text-align:center;border-top:1px solid var(--line);padding:25px 0 35px;color:#bcaeb2;font-size:13px}
+.overlay{position:fixed;inset:0;z-index:50;background:#030003d9;backdrop-filter:blur(22px);display:none;align-items:center;justify-content:center;padding:9px}.overlay.show{display:flex}.payment-confirm-front{z-index:200!important}.popup{width:min(850px,100%);height:min(780px,calc(100dvh - 18px));border:1px solid var(--line);border-radius:30px;background:linear-gradient(145deg,#430718ed,#090509f5);box-shadow:0 40px 120px #000;position:relative;overflow:hidden}.close{position:absolute;right:14px;top:14px;z-index:5;width:45px;height:45px;border-radius:50%;border:1px solid var(--line);background:#0006;color:#fff;font-size:23px;cursor:pointer}.popup-inner{height:100%;display:flex;flex-direction:column;padding:clamp(20px,4vw,38px);position:relative}.popup-kicker{font-size:10px;letter-spacing:.2em;color:#ff8ba0;font-weight:950}.popup h2{font-size:clamp(38px,7vw,70px);line-height:.9;letter-spacing:-.06em;margin:9px 0 18px}.slides{flex:1;min-height:0;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}.slides::-webkit-scrollbar{display:none}.slide{min-width:100%;scroll-snap-align:center;border:1px solid var(--line);background:#ffffff0a;border-radius:24px;padding:clamp(20px,5vw,45px);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;overflow:auto}.slide h3{font-size:clamp(42px,9vw,84px);line-height:.9;letter-spacing:-.07em;margin:8px 0 18px}.slide p{max-width:680px;color:#d9c9cd;font-size:17px;line-height:1.55;margin:0 0 18px}.timer{font-size:clamp(34px,8vw,68px);font-weight:1000;font-variant-numeric:tabular-nums}.small{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#9e8f94;line-height:1.5}.old{text-decoration:line-through;color:#928389}.deal{color:#ff6a87;font-size:28px;font-weight:1000}.hint{text-align:center;color:#998a8f;font-size:11px;padding-top:9px}.error{text-align:center;padding:40px;color:#ffd1db}
+.product-slide{justify-content:flex-start!important;align-items:stretch!important;padding:18px!important;overflow:hidden!important}
+.product-list{flex:1;min-height:0;overflow:auto;padding-right:3px}
+.product-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid var(--line);background:#ffffff08;border-radius:18px;padding:13px 14px;margin-bottom:9px}
+.product-item input{width:19px;height:19px;accent-color:#e30d40}.product-main{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px}.qty-control{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:0;flex:0 0 auto;white-space:nowrap}.qty-btn{width:34px;height:34px;flex:0 0 34px;border:1px solid var(--line);border-radius:10px;background:#ffffff0d;color:#fff;font-size:20px;font-weight:900;cursor:pointer;display:grid;place-items:center}.qty-value{min-width:26px;text-align:center;font-weight:950}.product-prices{margin-top:0;justify-content:flex-start}
+.product-name{font-weight:950;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.product-prices{display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap;font-weight:900}
+.product-selling{text-decoration:line-through;color:#9e8f94;font-size:12px}
+.product-offer{color:#ff6a87;font-size:17px}
+.product-stock{font-size:11px;color:#9e8f94;line-height:1.3}
+.product-list-status{min-width:96px;text-align:right;align-self:center;font-size:11px;font-weight:900;color:#ff4b6e;line-height:1.3}
+.product-list-status.out{color:#ff4b6e}
+.product-cart{margin-top:10px;border:1px solid #ff557555;background:#17070d;backdrop-filter:blur(18px);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;z-index:2}
+.product-cart-meta{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px}.product-cart-meta strong{font-size:16px}.product-cart-total{font-size:20px;font-weight:1000;margin-top:2px}.product-cart .btn{white-space:nowrap;padding:11px 14px;width:100%}.cart-btn.reacted{animation:cartReact .42s cubic-bezier(.2,.9,.25,1.4)}@keyframes cartReact{0%{transform:scale(1)}35%{transform:scale(1.07) rotate(-1deg)}70%{transform:scale(.98) rotate(1deg)}100%{transform:scale(1)}}.cart-badge{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;margin-left:7px;border-radius:999px;background:#fff;color:#e30d40;font-size:11px;font-weight:1000;vertical-align:middle}.cart-popup{width:min(620px,100%);height:min(760px,calc(100dvh - 18px))}.cart-popup-inner{padding:24px}.cart-items{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:9px}.cart-row{border:1px solid var(--line);background:#ffffff09;border-radius:16px;padding:13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.cart-row-name{font-weight:950}.cart-row-sub{color:#bbaeb2;font-size:12px;margin-top:3px}.cart-row-total{font-weight:1000;align-self:center}.cart-summary{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.cart-summary-line{display:flex;justify-content:space-between;gap:10px;margin:6px 0}.cart-grand{font-size:22px;font-weight:1000;margin-top:10px}.cart-popup .order-slot{margin-top:10px}.pickup-info{margin-top:12px;border:1px solid #ff557555;background:#ff1f3d0d;border-radius:14px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.4;color:#d9cbd0}.pickup-info strong{color:#fff}.pickup-info span{display:block}.cart-popup-actions{display:flex;gap:9px;margin-top:12px}.cart-popup-actions .btn{flex:1}
+.order-slot{display:grid;grid-template-columns:1fr 1fr;gap:9px}.order-slot label{display:block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#b9aeb2}.order-slot input,.order-slot select{margin-top:5px;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:11px;background:#ffffff0d;color:#fff;padding:11px 10px;font:inherit;font-weight:800;outline:none}.order-slot input:focus,.order-slot select:focus{border-color:#ff5575}.order-slot option{background:#17070d;color:#fff}
+@media(max-width:650px){.product-item{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px}.product-main{min-width:0}.product-name{font-size:15px}.product-prices{justify-content:flex-start}.qty-control{gap:6px}.qty-btn{width:32px;height:32px;flex-basis:32px}.product-list-status{min-width:78px;font-size:10px}.product-cart{align-items:stretch}.product-cart .btn{flex:0 0 auto}.order-slot{grid-template-columns:1fr 1fr}}
+
+@media(max-width:650px){.wrap{padding:15px}.grid{grid-template-columns:1fr}.hero{min-height:72vh}.hero h1{font-size:68px}.popup{height:calc(100dvh - 16px);border-radius:25px}.popup-inner{padding:20px 15px 14px}.popup h2{font-size:42px;padding-right:50px}.slide{padding:22px 18px}.slide h3{font-size:clamp(40px,12vw,62px)}.slide p{font-size:16px}}
+
+
+.order-payment-popup{width:min(760px,100%);height:min(900px,calc(100dvh - 18px))}.order-payment-inner{padding:24px}.order-payment-scroll{flex:1;min-height:0;overflow:auto;padding-right:3px}.checkout-order-card,.payment-card{border:1px solid var(--line);background:#ffffff08;border-radius:20px;padding:15px;margin-bottom:10px}.checkout-items{margin-top:10px;display:flex;flex-direction:column;gap:6px}.checkout-item{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#d9cbd0}.checkout-total{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:11px;margin-top:11px;font-size:21px;font-weight:1000}.checkout-pickup{margin-top:10px;color:#bbaeb2;font-size:12px}.checkout-qr{width:230px;height:230px;background:#fff;border-radius:18px;padding:10px;margin:12px auto;display:grid;place-items:center}.checkout-qr img,.checkout-qr canvas{max-width:210px;max-height:210px}.checkout-upi-name{text-align:center;font-weight:950;font-size:17px}.checkout-actions{display:flex;gap:8px;margin-top:10px}.checkout-actions .btn{flex:1}.checkout-warning{font-size:11px;line-height:1.5;color:#bcaeb2;margin:10px 0 0}.checkout-label{display:block;font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#b9aeb2;margin-top:12px}.checkout-label input{display:block;margin-top:5px;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;background:#ffffff0d;color:#fff;padding:12px;font:inherit;font-weight:700;outline:none}.checkout-label input:focus{border-color:#ff5575}.checkout-upload{border:1px dashed #ff557588;background:#ff1f3d0a;border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:5px;cursor:pointer;margin-top:12px}.checkout-upload input{display:block;width:100%;color:#fff}.checkout-upload small{color:#9e8f94;font-size:11px}.ocr-progress{margin-top:12px}.ocr-bar{height:7px;border-radius:99px;background:#ffffff12;overflow:hidden}.ocr-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--r2),var(--r));transition:width .2s}.ocr-fields{margin-top:4px}.checkout-submit-row{display:flex;gap:9px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.payment-verification-info{margin-top:11px;border:1px solid #ff557588;background:linear-gradient(145deg,#2a0811,#15060b);border-radius:16px;padding:13px 14px;color:#eadde1;font-size:12px;line-height:1.55}.payment-verification-info strong:first-child{display:block;color:#ff9ab0;font-size:11px;letter-spacing:.09em;margin-bottom:5px}.payment-verification-info p{margin:5px 0}.payment-confirm-box{border:1px solid #ff557588;background:#16070d;border-radius:18px;padding:16px;margin-top:12px}.payment-confirm-box h3{margin:0 0 8px;font-size:18px}.payment-confirm-box p{margin:7px 0;color:#d8cbd0;font-size:12px;line-height:1.55}.payment-cancellation-box{margin-top:14px;border:1px solid #ffffff20;background:#ffffff08;border-radius:15px;padding:13px 14px;color:#eadde1;font-size:12px;line-height:1.55}.payment-cancellation-box strong{display:block;color:#ff9ab0;font-size:11px;letter-spacing:.09em;margin-bottom:6px}.payment-cancellation-box p{margin:6px 0;color:#d8cbd0;font-size:12px;line-height:1.55}.payment-confirm-box .confirm-actions{display:flex;gap:9px;margin-top:13px}.payment-confirm-box .confirm-actions .btn{flex:1}.payment-method-option{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:#ffffff08;border-radius:14px;padding:12px;margin-top:8px;cursor:pointer}.payment-method-option input{width:auto;margin:0}.payment-method-option b{display:block}.payment-method-option small{display:block;color:#a99a9f;margin-top:3px}.payment-method-option.selected{border-color:#ff5575aa;background:#ff1f3d10}.checkout-submit-row .btn{flex:1}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);z-index:120;background:#14070d;border:1px solid #ff557566;color:#fff;padding:12px 16px;border-radius:14px;box-shadow:0 20px 60px #000;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.legal-footer{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 10px 4px;font-size:11px;color:#a99a9f}
+.legal-footer button{background:none;border:0;color:#ff9ab0;text-decoration:underline;cursor:pointer;font:inherit}
+.legal-footer .dot{color:#6f6267}.save-site-footer{display:flex;justify-content:center;padding:10px 10px 34px}.save-site-btn{min-width:180px;border-color:color-mix(in srgb,var(--r2) 38%,transparent);background:color-mix(in srgb,var(--r) 7%,transparent);color:var(--r2)}.save-site-btn:hover{border-color:var(--r2);background:color-mix(in srgb,var(--r) 13%,transparent)}
+.site-policy{position:fixed;inset:0;z-index:80;background:#030003e8;backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:12px}
+.site-policy.show{display:flex}
+.site-policy-box{width:min(720px,100%);max-height:90dvh;overflow:auto;border:1px solid var(--line);border-radius:26px;background:#10070d;padding:20px;box-shadow:0 40px 120px #000}
+.site-policy-box h2{font-size:32px;letter-spacing:-.05em;margin:8px 0 14px}
+.site-policy-doc{border:1px solid var(--line);background:#0006;border-radius:17px;padding:16px;color:#d8cbd0;font-size:12px;line-height:1.6}
+.site-policy-doc h3{font-size:14px;color:#fff;margin:17px 0 6px}.site-policy-doc h3:first-child{margin-top:0}
+.site-policy-close{display:flex;justify-content:flex-end;margin-top:12px}
+</style>
+<style id="lux-theme">
+:root{--r:#b8913f;--r2:#f0d58a;--bg:#070605;--g1:#b8913f;--g2:#5c4519;--on:#1a1305;
+--muted:color-mix(in srgb,var(--r2) 10%,#c9c9cc);--pop1:color-mix(in srgb,var(--r) 24%,#050306);--solid:color-mix(in srgb,var(--r) 9%,#060507);--serif:"Cormorant Garamond","Playfair Display",Georgia,serif}
+html{-webkit-tap-highlight-color:transparent}
+body:before{background:radial-gradient(circle at 50% 25%,var(--g1),transparent 34%),radial-gradient(circle at 15% 80%,var(--g2),transparent 35%),var(--bg)}
+.orb{background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--r2) 80%,#fff),var(--r) 32%,color-mix(in srgb,var(--r) 35%,#000) 65%,transparent 70%)}
+.brand{color:var(--r2)}
+.hero h1,.popup h2,.slide h3,.site-policy-box h2{font-family:var(--serif);font-weight:700;letter-spacing:-.02em}.hero h1{line-height:.9}.popup h2,.slide h3,.site-policy-box h2{line-height:1}
+.btn.primary{color:var(--on);box-shadow:0 15px 45px color-mix(in srgb,var(--r) 35%,transparent)}
+.popup{background:linear-gradient(145deg,color-mix(in srgb,var(--pop1) 93%,transparent),#090509f5);border-color:color-mix(in srgb,var(--r2) 22%,transparent)}
+.popup-kicker,.payment-verification-info strong:first-child,.payment-cancellation-box strong,.legal-footer button{color:var(--r2)}
+.deal,.product-offer{color:var(--r2)}.product-item input{accent-color:var(--r)}
+.product-cart{border-color:color-mix(in srgb,var(--r2) 33%,transparent);background:var(--solid)}
+.cart-badge{color:var(--r)}
+.pickup-info{border-color:color-mix(in srgb,var(--r2) 33%,transparent);background:color-mix(in srgb,var(--r) 7%,transparent)}
+.order-slot input:focus,.order-slot select:focus,.checkout-label input:focus{border-color:var(--r2);box-shadow:0 0 0 3px color-mix(in srgb,var(--r2) 20%,transparent)}
+.order-slot option{background:var(--solid)}
+.checkout-upload{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:color-mix(in srgb,var(--r) 6%,transparent)}
+.payment-verification-info{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--r) 16%,#050306),var(--solid))}
+.payment-confirm-box{border-color:color-mix(in srgb,var(--r2) 53%,transparent);background:var(--solid)}
+.payment-method-option.selected{border-color:color-mix(in srgb,var(--r2) 67%,transparent);background:color-mix(in srgb,var(--r) 9%,transparent)}
+.toast{background:var(--solid);border-color:color-mix(in srgb,var(--r2) 40%,transparent)}
+.site-policy-box{background:var(--solid)}
+.card{box-shadow:inset 0 1px 0 #ffffff14,0 22px 44px -28px #000}
+/* motion */
+@keyframes luxRise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes luxSheet{from{opacity:0;transform:translateY(34px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes luxRp{from{transform:translate(-50%,-50%) scale(0);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@keyframes luxPop{0%{scale:1}40%{scale:1.08}100%{scale:1}}
+@keyframes luxHint{0%,100%{transform:translateX(0);opacity:.3}50%{transform:translateX(-3px);opacity:.85}}
+.grid>.card{animation:luxRise .6s cubic-bezier(.22,1,.36,1) backwards}.grid>.card:nth-child(2){animation-delay:.07s}.grid>.card:nth-child(3){animation-delay:.14s}.grid>.card:nth-child(n+4){animation-delay:.2s}
+.hero>div:not(.orb){animation:luxRise .8s cubic-bezier(.22,1,.36,1) backwards}
+.overlay.show .popup,.site-policy.show .site-policy-box{animation:luxSheet .5s cubic-bezier(.22,1,.36,1)}
+.btn,.qty-btn,.close,.legal-footer button,.card{transition:scale .4s cubic-bezier(.34,1.56,.64,1),translate .3s,border-color .25s,background-color .25s}
+.btn:active,.qty-btn:active,.close:active{scale:.93}.close:active{rotate:90deg}
+@media(hover:hover){.grid>.card:hover{translate:0 -3px;border-color:color-mix(in srgb,var(--r2) 45%,transparent)}.btn:hover{border-color:color-mix(in srgb,var(--r2) 50%,transparent)}}
+.lux-rel{position:relative}.lux-host{overflow:hidden}
+.lux-rp{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,color-mix(in srgb,var(--r2) 55%,transparent),transparent 65%);animation:luxRp .65s cubic-bezier(.22,1,.36,1) forwards}
+/* theme UI */
+.nav .status{margin-left:auto}
+.thm-btn{margin-left:10px;width:38px;height:38px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:17px;color:var(--r2);border:1px solid var(--line);background:#ffffff0d;backdrop-filter:blur(18px);cursor:pointer;flex:none;transition:scale .4s cubic-bezier(.34,1.56,.64,1)}.thm-btn:active{scale:.9}
+#thmScrim{position:fixed;inset:0;z-index:290;background:#0009;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+#thmPanel{position:fixed;top:0;right:0;bottom:0;z-index:300;width:min(390px,92vw);transform:translateX(104%);visibility:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),visibility 0s .4s;background:linear-gradient(170deg,var(--pop1),var(--bg));color:#fff;border-left:1px solid var(--line);padding:calc(22px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;box-shadow:-30px 0 80px -30px #000}
+html.thm-open #thmPanel{transform:none;visibility:visible;transition-delay:0s}html.thm-open #thmScrim{opacity:1;pointer-events:auto}html.thm-open body{overflow:hidden}
+.thm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.thm-head h3{margin:2px 0 0;font:700 30px/1.1 var(--serif)}.thm-kicker{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--r2);font-weight:900}
+#thmClose{position:static;width:38px;height:38px;flex:none}
+#thmPanel p{color:var(--muted);font-size:13px;line-height:1.55;margin:12px 0 18px}
+#thmGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.thm-opt{display:block;text-align:left;padding:8px 8px 11px;border-radius:18px;background:#ffffff0d;border:1px solid var(--line);color:#fff;font:inherit;cursor:pointer;transition:scale .4s cubic-bezier(.34,1.56,.64,1)}
+.thm-opt:active{scale:.95}
+.thm-opt[aria-pressed=true]{border-color:var(--r2);box-shadow:0 0 0 1px var(--r2),0 14px 30px -14px var(--r2)}
+.thm-prev{height:78px;border-radius:12px;position:relative;overflow:hidden;border:1px solid #ffffff22}.thm-prev i{position:absolute;display:block}
+.thm-opt b{display:block;margin:10px 4px 0;font-size:13px;font-weight:800}
+html.thm-open .thm-opt{animation:luxRise .5s cubic-bezier(.22,1,.36,1) backwards}
+html.thm-open .thm-opt:nth-child(2){animation-delay:.14s}html.thm-open .thm-opt:nth-child(3){animation-delay:.18s}html.thm-open .thm-opt:nth-child(4){animation-delay:.22s}html.thm-open .thm-opt:nth-child(5){animation-delay:.26s}html.thm-open .thm-opt:nth-child(6){animation-delay:.3s}html.thm-open .thm-opt:nth-child(7){animation-delay:.34s}html.thm-open .thm-opt:nth-child(8){animation-delay:.38s}
+html .thm-opt.pop{animation:luxPop .45s cubic-bezier(.34,1.56,.64,1)}
+#thmHint{position:fixed;right:0;top:46%;width:4px;height:56px;border-radius:4px 0 0 4px;background:linear-gradient(var(--r2),var(--r));z-index:5;pointer-events:none;animation:luxHint 2.8s ease-in-out infinite}html.thm-open #thmHint{display:none}
+@media(prefers-reduced-motion:reduce){.lux-rp,#thmHint{display:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<style id="lux-popup-fx">
+/* rotating nebula glow behind every popup; colours follow the active theme */
+.popup{isolation:isolate}.popup-inner{z-index:1}
+.popup::before{content:"";position:absolute;left:50%;top:50%;width:min(1200px,max(140vw,120dvh));aspect-ratio:1;pointer-events:none;z-index:0;opacity:.9;transform:translate3d(-50%,-50%,0);backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,opacity;background:conic-gradient(from 0deg at 50% 50%,transparent 0,color-mix(in srgb,var(--r) 35%,transparent) 12%,transparent 28%,color-mix(in srgb,var(--r2) 28%,transparent) 50%,transparent 68%,color-mix(in srgb,var(--r) 30%,transparent) 85%,transparent 100%)}
+.overlay.show .popup{will-change:transform,opacity}
+.overlay.show .popup::before{animation:luxNebula 36s linear .7s infinite backwards,luxNebulaIn 1s ease-out .3s backwards}
+@keyframes luxNebula{from{transform:translate3d(-50%,-50%,0) rotate(0deg)}to{transform:translate3d(-50%,-50%,0) rotate(360deg)}}
+@keyframes luxNebulaIn{from{opacity:0}to{opacity:.9}}
+/* page background sits behind a 85% opaque blurred overlay: pause its motion while a popup is open so the GPU isn't re-blurring it every frame */
+body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.show) .orb,body:has(.site-policy.show):before,body:has(.site-policy.show):after,body:has(.site-policy.show) .orb{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){.popup::before{animation:none!important}}
+</style>
+<style id="hub-save-style">
+.hub-save-wrap{display:flex;justify-content:center;margin:28px 0 10px}
+.hub-save{position:relative;display:block;width:min(340px,100%);padding:20px 18px 18px;cursor:pointer;color:#fff;font:inherit;border-radius:30px;overflow:hidden;isolation:isolate;-webkit-tap-highlight-color:transparent;
+border:1.5px solid transparent;
+background:linear-gradient(145deg,color-mix(in srgb,var(--r) 14%,var(--bg)),var(--bg) 58%,color-mix(in srgb,var(--r2) 8%,var(--bg))) padding-box,
+linear-gradient(115deg,color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent)) border-box;
+background-size:100% 100%,400% 100%;animation:hubBorder 9s linear infinite;
+box-shadow:inset 0 1px 0 #ffffff1f,inset 0 -12px 24px -16px color-mix(in srgb,var(--r2) 45%,transparent),0 18px 40px -20px var(--r2),0 2px 0 #00000055;
+transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s}
+.hub-save:hover{box-shadow:inset 0 1px 0 #ffffff2e,inset 0 -12px 24px -14px color-mix(in srgb,var(--r2) 60%,transparent),0 22px 46px -18px var(--r2),0 2px 0 #00000055}
+.hub-save:active{transform:scale(.975)}
+.hub-save:after{content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:34%;z-index:2;pointer-events:none;transform:translateX(-160%) skewX(-22deg);background:linear-gradient(90deg,transparent,#ffffff22,transparent);animation:hubSheen 7s ease-in-out 1.5s infinite}
+.hub-band{position:absolute;left:0;right:0;top:0;height:55%;z-index:3;pointer-events:none;background:linear-gradient(180deg,transparent,#ffffff2b 50%,transparent);animation:hubBand 5.5s cubic-bezier(.45,0,.55,1) infinite}
+.hub-stack{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:9px}
+.hub-stack>span{display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;text-transform:uppercase;animation:hubFloat 4.4s ease-in-out infinite}
+.hub-l1{font-size:clamp(11px,3.4vw,13px);font-weight:800;letter-spacing:.17em;color:#fff;text-shadow:0 1px 10px #0009}
+.hub-l2{font-size:10.5px;font-weight:600;letter-spacing:.3em;color:#cbbbc0;animation-delay:.35s!important}
+.hub-l3{margin-top:2px;padding-top:11px;position:relative;font-size:12px;font-weight:800;letter-spacing:.3em;color:var(--r2);animation-delay:.7s!important;width:100%}
+.hub-l3:before{content:"";position:absolute;top:0;left:18%;right:18%;height:1px;background:linear-gradient(90deg,transparent,var(--r2),transparent);opacity:.7}
+.hub-l3 svg{flex:none}
+.hub-stack .gem{display:block;width:5px;height:5px;flex:none;transform:rotate(45deg);background:linear-gradient(135deg,var(--r2),var(--r));box-shadow:0 0 9px var(--r2)}
+@keyframes hubFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes hubBand{0%{transform:translateY(-110%)}60%,100%{transform:translateY(200%)}}
+@keyframes hubBorder{to{background-position:0 0,-400% 0}}
+@keyframes hubSheen{0%,55%{transform:translateX(-160%) skewX(-22deg)}85%,100%{transform:translateX(420%) skewX(-22deg)}}
+@media(prefers-reduced-motion:reduce){.hub-save,.hub-save:after,.hub-band,.hub-stack>span{animation:none!important}.hub-save:after,.hub-band{display:none}}
+</style>
+
+<style id="saved-sites-style">
+.saved-sites-overlay{position:fixed;inset:0;z-index:340;background:#030003e8;backdrop-filter:blur(24px);display:none;align-items:center;justify-content:center;padding:10px}.saved-sites-overlay.show{display:flex}.saved-sites-popup{width:min(900px,100%);height:min(820px,calc(100dvh - 18px));border:1px solid color-mix(in srgb,var(--r2) 25%,transparent);border-radius:30px;background:linear-gradient(145deg,color-mix(in srgb,var(--pop1) 94%,transparent),#090509f7);box-shadow:0 40px 120px #000;position:relative;overflow:hidden;display:flex;flex-direction:column}.saved-sites-head,.saved-sites-tools,.saved-sites-list,.saved-sites-foot{position:relative;z-index:1}.saved-sites-head{padding:28px 28px 12px}.saved-sites-kicker{font-size:10px;letter-spacing:.2em;color:var(--r2);font-weight:950}.saved-sites-head h2{font-family:var(--serif);font-size:clamp(38px,7vw,64px);line-height:.95;letter-spacing:-.03em;margin:8px 50px 5px 0}.saved-sites-sub{color:var(--muted);font-size:12px}.saved-sites-close{position:absolute;right:14px;top:14px}.saved-sites-tools{padding:8px 28px 12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}.saved-search{flex:1 1 250px;min-width:0;border:1px solid var(--line);border-radius:15px;background:#ffffff0b;color:#fff;padding:13px 14px;font:inherit;outline:none}.saved-search:focus{border-color:var(--r2);box-shadow:0 0 0 3px color-mix(in srgb,var(--r2) 14%,transparent)}.saved-filter{display:flex;gap:5px;padding:4px;border:1px solid var(--line);border-radius:15px;background:#ffffff08}.saved-filter button{border:0;border-radius:11px;padding:9px 12px;background:transparent;color:#bdb0b4;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.saved-filter button.active{background:color-mix(in srgb,var(--r) 25%,transparent);color:var(--r2)}.saved-sites-list{flex:1;min-height:0;overflow:auto;padding:4px 28px 18px}.saved-shop-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);background:#ffffff08;border-radius:20px;padding:14px 15px;margin-bottom:9px;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}.saved-shop-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--r2) 40%,transparent);background:#ffffff0d}.saved-shop-main{min-width:0}.saved-shop-name{font-weight:950;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.saved-shop-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;color:#a99ca0;font-size:11px}.saved-shop-place{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.saved-tag{padding:4px 7px;border-radius:999px;background:color-mix(in srgb,var(--r) 15%,transparent);color:var(--r2);font-weight:900}.saved-shop-actions{display:flex;align-items:center;gap:7px}.saved-star{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#ffffff08;color:#a99ca0;display:grid;place-items:center;cursor:pointer;font-size:21px;line-height:1}.saved-star.on{color:var(--r2);background:color-mix(in srgb,var(--r) 15%,transparent);border-color:color-mix(in srgb,var(--r2) 50%,transparent)}.saved-open{border:1px solid var(--line);background:#ffffff08;color:#fff;border-radius:12px;padding:10px 12px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.saved-empty{text-align:center;padding:55px 20px;color:#b9aaaf}.saved-empty strong{display:block;color:#fff;font-size:20px;margin-bottom:7px}.saved-loader{text-align:center;padding:12px;color:#a99ca0;font-size:11px}.saved-sites-foot{padding:7px 28px calc(14px + env(safe-area-inset-bottom));text-align:center;color:#817378;font-size:10px}.saved-sites-overlay.show .saved-sites-popup{animation:luxSheet .45s cubic-bezier(.22,1,.36,1)}@media(max-width:650px){.saved-sites-popup{height:calc(100dvh - 12px);border-radius:25px}.saved-sites-head{padding:24px 17px 10px}.saved-sites-tools{padding:8px 17px 10px}.saved-sites-list{padding:4px 17px 14px}.saved-sites-foot{padding-left:17px;padding-right:17px}.saved-shop-card{grid-template-columns:minmax(0,1fr) auto}.saved-open{display:none}.saved-shop-actions{align-self:center}.saved-filter button{padding:8px 10px}}
+</style>
+  <link rel="manifest" href="./manifest.json">
+
+<style id="pwa-install-style">
+  #pwaInstallBtn {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    cursor: pointer;
+    background: rgba(226, 27, 35, 0.94);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(0,0,0,.28);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 20px;
+    line-height: 1;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+
+  #pwaInstallBtn:active {
+    transform: scale(.9);
+  }
+
+  #pwaInstallBtn:hover {
+    transform: translateY(-2px);
+  }
+
+  #pwaInstallBtn svg {
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+  }
+
+  @media (max-width: 480px) {
+    #pwaInstallBtn {
+      right: 10px;
+      bottom: 10px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
+<main class="hero"><div class="orb"></div><div><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main>
+<section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
+<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-band"></span><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
+<footer id="address">—</footer>
+<div class="legal-footer" aria-label="Required policies">
+<button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
+<button type="button" data-policy="terms">Terms &amp; Conditions</button><span class="dot">·</span>
+<button type="button" data-policy="data">Data Collection</button>
+</div>
+
+</div>
+<div class="overlay" id="payOverlay"><div class="popup"><button class="close" id="payClose">×</button><div class="popup-inner" style="align-items:center;text-align:center;justify-content:center"><div class="popup-kicker">UPI PAYMENT</div><h2 style="padding-right:0">Scan to pay.</h2><div id="qrBox" style="background:#fff;padding:16px;border-radius:20px;min-width:230px;min-height:230px;display:grid;place-items:center"></div><div id="upiName" style="font-weight:900;font-size:20px;margin-top:18px"></div><div id="upiId" class="small" style="margin-top:5px"></div><div id="upiNumber" class="small" style="margin-top:5px"></div><button id="upiShare" class="btn primary" style="margin-top:18px;display:none" type="button">Share QR</button><div class="small" style="margin-top:12px">Scan this QR with any supported UPI app.</div></div></div></div>
+<div class="overlay" id="overlay"><div class="popup"><button class="close" id="close">×</button><div class="popup-inner"><div class="popup-kicker">LIVE SHOP UPDATE</div><h2>Right now.</h2><div class="slides" id="slides"></div><div class="hint" id="hint"></div></div></div></div>
+<div class="overlay" id="cartOverlay"><div class="popup cart-popup"><button class="close" id="cartClose">×</button><div class="popup-inner cart-popup-inner"><div class="popup-kicker">YOUR CART</div><h2>Review order.</h2><div class="cart-items" id="cartItems"></div><div class="cart-summary"><div class="cart-summary-line"><span>Items</span><strong id="cartItemCount">0</strong></div><div class="cart-summary-line cart-grand"><span>Grand Total</span><strong id="cartGrandTotal">₹0</strong></div><div class="pickup-info" role="note">🕒 <strong>Choose your time</strong><span>Select a pickup / visit time <strong>at least 30 minutes from now</strong>.</span></div><div class="order-slot"><label>Pickup / Visit date<input id="cartOrderDate" type="date" aria-label="Pickup or visit date"></label><label>Time<input id="cartOrderTime" type="time" required aria-label="Pickup or visit time"></label></div><div class="cart-popup-actions"><button class="btn" type="button" id="cartBack">Back</button><button class="btn primary" type="button" id="cartSendOrder">Continue to payment</button></div></div></div></div></div>
+<div class="overlay" id="orderPaymentOverlay"><div class="popup order-payment-popup"><button class="close" id="orderPaymentClose">×</button><div class="popup-inner order-payment-inner"><div class="popup-kicker">SECURE ORDER CHECKOUT</div><h2>Pay &amp; confirm.</h2><div class="order-payment-scroll"><div class="checkout-order-card"><div class="small">ORDER</div><strong id="checkoutOrderNumber">—</strong><div id="checkoutOrderItems" class="checkout-items"></div><div class="checkout-total"><span>Total</span><strong id="checkoutTotal">₹0</strong></div><div class="checkout-pickup" id="checkoutPickup">—</div></div><div class="payment-card" id="paymentMethodCard"><div class="small">STEP 1 · PAYMENT METHOD</div><div id="paymentMethodChoices"></div><div id="codPaymentInfo" class="payment-verification-info" hidden><strong>CASH ON DELIVERY</strong><p>Pay the shop in cash when you collect your order / visit the shop.</p><p>No online payment or screenshot is required for this order.</p></div></div><div class="payment-card" id="onlinePaymentCard"><div class="small">STEP 2 · PAY THE EXACT AMOUNT</div><div id="checkoutQr" class="checkout-qr"></div><div id="checkoutUpiName" class="checkout-upi-name"></div><div id="checkoutUpiId" class="small"></div><div class="checkout-actions"><button class="btn" type="button" id="checkoutShareQr">Share QR</button><button class="btn" type="button" id="checkoutCopyUpi">Copy UPI ID</button></div><p class="checkout-warning">Verify the shop name and UPI ID in your payment app before paying. Never share your UPI PIN.</p></div><div class="payment-card"><div class="small">STEP 3 · CUSTOMER DETAILS</div><label class="checkout-label">Your name<input id="checkoutCustomerName" maxlength="80" autocomplete="name" placeholder="Enter your name"></label><div class="small" style="margin-top:8px">Your name is saved with this order. The payer name below is only an OCR suggestion and can be corrected.</div></div><div class="payment-card" id="onlineScreenshotCard"><div class="small">STEP 4 · PAYMENT SCREENSHOT</div>
+<div class="payment-verification-info">
+<strong>IMPORTANT · PAYMENT VERIFICATION</strong>
+<p>Please provide your <strong>genuine payment screenshot</strong>, the correct <strong>transaction / UTR ID</strong>, and your <strong>name</strong>.</p>
+<p>The shop owner will manually verify the payment details. If the submitted information does not match the actual payment, the amount is not credited to the shop account, or fraud/tampering is found, the order may be <strong>rejected on the spot</strong>.</p>
+</div>
+<label class="checkout-upload"><input id="paymentScreenshot" type="file" accept="image/*"><span>Choose payment screenshot</span><small>No screenshot is uploaded or stored by Shop Manager.</small></label><div class="ocr-progress" id="ocrProgress" hidden><div class="ocr-bar"><span id="ocrBar"></span></div><div id="ocrStatus" class="small">Reading screenshot…</div></div><div class="ocr-fields"><label class="checkout-label">Transaction / UTR ID<input id="ocrTransactionId" maxlength="80" placeholder="OCR will suggest this — edit if needed"></label><label class="checkout-label">Payer name<input id="ocrPayerName" maxlength="80" placeholder="OCR will suggest this — edit if needed"></label><div id="ocrAmountHint" class="small"></div></div><p class="checkout-warning">OCR only reads text from your screenshot. It does <strong>not</strong> prove that payment succeeded. The shop owner verifies the payment.</p></div></div><div class="checkout-submit-row"><button class="btn" type="button" id="checkoutBack">Back</button><button class="btn primary" type="button" id="checkoutSubmit">Submit payment for review</button></div></div></div></div>
+<div class="site-policy" id="sitePolicy">
+  <div class="site-policy-box">
+    <button class="close" id="policyClose" type="button" aria-label="Close">×</button>
+    <div class="popup-kicker">SINDORA · SHOP MANAGER</div>
+    <h2 id="policyTitle">Privacy Policy</h2>
+    <div class="site-policy-doc" id="policyDoc"></div>
+    <div class="site-policy-close"><button class="btn" id="policyClose2" type="button">Close</button></div>
+  </div>
+</div>
+<script>
+
+const $=id=>document.getElementById(id);
+
+const SITE_POLICIES={
+privacy:`<h3>What this page does</h3><p>This shop page displays business information, shop status, offers, products/services, location, UPI information and contact options provided by the shop owner.</p><h3>Public information</h3><p>Information entered by the shop owner may be visible to anyone who opens this page or scans its QR code. The shop owner is responsible for the information they publish.</p><h3>Customer information</h3><p>Ordinary visitors do not need a Shop Manager account to view this page. Shop Manager does not ask visitors for UPI PINs, banking passwords or similar payment credentials.</p><h3>Orders</h3><p>If ordering is enabled, Shop Manager creates a temporary order and sends the order details to the shop database for payment review. The customer receives a tracker link. The shop is responsible for accepting, preparing and fulfilling the order.</p><h3>Payments</h3><p>UPI details and QR codes shown here are provided by the shop. Verify the recipient before making a payment. Shop Manager does not hold customer payment funds through this page.</p><h3>Location and third parties</h3><p>The Location button may open Google Maps. WhatsApp and UPI functionality may also use third-party services with their own policies.</p><h3>Contact</h3><p>For questions about this particular shop's information, contact the shop directly.</p>`,
+terms:`<h3>Using this shop page</h3><p>This page is provided as a digital information and ordering interface for the participating shop. Information, prices, offers, opening status and availability are supplied by the shop owner.</p><h3>Orders</h3><p>An order submitted through Shop Manager is first placed into payment review. Submission does not by itself guarantee payment verification, acceptance, availability or fulfillment.</p><h3>Prices and offers</h3><p>Prices, discounts and offers can change. Confirm the final price and availability with the shop before payment or collection.</p><h3>Payments</h3><p>Customers should verify the UPI recipient details before paying. Any payment, refund or order dispute is primarily between the customer and the shop/payment provider, as applicable.</p><h3>Service limitations</h3><p>Shop Manager does not guarantee uninterrupted availability of this page or third-party services such as WhatsApp, Google Maps or UPI services.</p>`,
+data:`<h3>Short Data Collection Notice</h3><p>Shop Manager's ordinary public shop page is designed to work without requiring a customer account.</p><h3>Information you may provide</h3><p>If you use the ordering feature, the information you enter for your order, customer name, pickup/visit details and payment-review details is processed to create and track the order. Payment screenshots are processed locally in your browser for OCR and are not intentionally uploaded or stored by Shop Manager.</p><h3>Browser technologies</h3><p>The page may use essential browser functionality for the interface. It does not intentionally ask customers for passwords, UPI PINs or banking credentials.</p><h3>Owner-provided information</h3><p>Business information displayed on this page is supplied by the shop owner. For correction of shop information, contact the shop.</p>`
+};
+function openSitePolicy(type){$("policyTitle").textContent=type==="terms"?"Terms & Conditions":type==="data"?"Data Collection":"Privacy Policy";$("policyDoc").innerHTML=SITE_POLICIES[type]||SITE_POLICIES.privacy;$("sitePolicy").classList.add("show")}
+document.querySelectorAll("[data-policy]").forEach(b=>b.onclick=()=>openSitePolicy(b.dataset.policy));
+$("policyClose").onclick=$("policyClose2").onclick=()=>$("sitePolicy").classList.remove("show");
+$("sitePolicy").addEventListener("click",e=>{if(e.target===$("sitePolicy"))$("sitePolicy").classList.remove("show")});
+
+const SUPABASE_URL="https://wzoatpjewfphxcclxpmz.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6b2F0cGpld2ZwaHhjY2x4cG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk4MjE5MDksImV4cCI6MjEwNTM5NzkwOX0.MpcEGav98i-wAWgsD3ep8DNcUr-Jg0N-hYm4bTWFTqU";
+const params=new URLSearchParams(location.search);
+const SLUG=(params.get("shop")||params.get("slug")||"").trim().replace(/^\/+|\/+$/g,"").toLowerCase();
+let shop=null,lastClosed=null,popupSig="",selectedProducts=new Map(),lastProductCatalogKey="";
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+function countdown(iso){let n=new Date(iso)-Date.now();if(n<=0)return"00:00:00";let s=Math.floor(n/1000),d=Math.floor(s/86400);s%=86400;let h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;return(d?d+"d ":"")+`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+function hm(v){let a=String(v||"").slice(0,5).split(":").map(Number);return(a[0]||0)*60+(a[1]||0)}
+function schedule(){if(!shop?.schedule_enabled||!shop.daily_open_time||!shop.daily_close_time)return{enabled:false,closed:false,next:null};let o=hm(shop.daily_open_time),c=hm(shop.daily_close_time),n=new Date(),x=n.getHours()*60+n.getMinutes();if(o===c)return{enabled:true,closed:true,next:null};let open=o<c?(x>=o&&x<c):(x>=o||x<c);if(open)return{enabled:true,closed:false,next:null};let d=new Date();d.setSeconds(0,0);d.setMilliseconds(0);d.setHours(Math.floor(o/60),o%60,0,0);if(d<=n)d.setDate(d.getDate()+1);return{enabled:true,closed:true,next:d.toISOString()}}
+function state(){if(!shop)return{closed:false,next:null,reason:null};if(shop.quick_closed)return{closed:true,next:null,reason:"quick"};if(shop.status==="closed"&&shop.reopen_at&&new Date(shop.reopen_at)>new Date())return{closed:true,next:shop.reopen_at,reason:"manual"};let s=schedule();return s.closed?{closed:true,next:s.next,reason:"schedule"}:{closed:false,next:null,reason:null}}
+function infoPayload(){const i=shop?.info;if(!i)return null;const type=i.displayType||i.type||"notes";if(type==="products"){const meta=i.productsMeta||i.productsData||{};return{type:"products",products:Array.isArray(i.products)?i.products:[],endAt:meta.endAt??i.productsEndAt??(i.type==="products"?i.endAt:null),title:"Products & Services",displayMode:i.productDisplayMode==="list"?"list":"cart"}}const n=i.notes||((i.title||i.message)?{title:i.title,message:i.message,endAt:i.endAt,resetMode:i.resetMode}:null);return n?{type:"notes",title:n.title||"",message:n.message||"",endAt:n.endAt}:null}
+function infoActive(){const i=shop?.info;if(!i||i.enabled===false)return false;const p=infoPayload();if(!p)return false;if(p.endAt===null||p.endAt===undefined||p.endAt==="")return true;const t=new Date(p.endAt).getTime();return Number.isFinite(t)&&t>Date.now()}
+function offerActive(){let o=shop?.offer;return !!(o?.endAt&&new Date(o.endAt)>new Date())}
+function signature(){let s=state();return JSON.stringify({closed:s.closed,next:s.next,offer:shop?.offer,info:shop?.info})}
+function render(){if(!shop)return;let s=state();$("brand").textContent=shop.shop_name;$("name").innerHTML=esc(shop.shop_name).replace(/\s+/g,"<br>");$("type").textContent=shop.store_type;$("type2").textContent=shop.store_type;$("owner").textContent=shop.owner_name;$("phone").textContent=shop.phone;$("address").textContent=shop.address||"";$("call").href="tel:"+String(shop.phone||"").replace(/[^\d+]/g,"");$("wa").href="https://wa.me/"+String(shop.phone||"").replace(/\D/g,"")+"?text="+encodeURIComponent("Hello, I'd like to enquire.");$("map").href=shop.latitude!=null&&shop.longitude!=null?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.latitude+","+shop.longitude):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.address||shop.shop_name||"");$("status").classList.toggle("closed",s.closed);$("statusText").textContent=s.closed?"CLOSED":"OPEN";$("tagline").textContent=s.closed?(s.reason==="manual"?(shop.closed_message||"Shop is currently closed."):s.reason==="quick"?"The shop is temporarily closed.":"Shop is currently outside today's opening hours."):"A live digital presence for this shop.";renderSlides()}
+function productItems(){const list=shop?.info?.products;return Array.isArray(list)?list.slice(0,20).filter(x=>x&&String(x.name||"").trim()!==""&&x.sellingPrice!==""&&x.sellingPrice!=null).map(x=>({...x,id:String(x.id||x.productId||""),stock:(Number.isFinite(Number(x.stock))&&Number(x.stock)>=0)?Math.floor(Number(x.stock)):0})):[]}
+function itemPrice(item){const offer=Number(item.offerPrice);return item.offerPrice!==""&&!Number.isNaN(offer)?offer:Number(item.sellingPrice)||0}
+function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
+function productCatalogKey(){const i=infoPayload();if(!i||i.type!=="products")return "";return JSON.stringify({displayMode:i.displayMode||"cart",products:i.products||[]})}
+function syncProductSelectionState(){const key=productCatalogKey();if(key!==lastProductCatalogKey){selectedProducts.clear();lastProductCatalogKey=key}}
+function productSelectedCount(){let n=0;for(const q of selectedProducts.values())n+=q;return n}
+function whatsappNumber(){let d=String(shop?.phone||"").replace(/\D/g,"");if(d.length===10)d="91"+d;if(d.startsWith("0")&&d.length===11)d="91"+d.slice(1);return d}
+function renderProductSlide(){const items=productItems();if(!items.length)return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Nothing listed yet.</h3><p>The shop has not published any products or services.</p></article>`;const info=infoPayload()||{};const mode=info.displayMode==="list"?"list":"cart";if(mode==="list"){const rows=items.map(x=>{const offer=x.offerPrice!==""?money(x.offerPrice):"";const selling=money(x.sellingPrice);const soldOut=x.stock<=0;return `<div class="product-item list-only"><div class="product-main"><span class="product-name">${esc(x.name)}</span><span class="product-prices">${offer?`<span class="product-selling">${selling}</span><span class="product-offer">${offer}</span>`:`<span class="product-offer">${selling}</span>`}</span></div><div class="product-list-status${soldOut?" out":""}">${soldOut?"Out of stock":`${x.stock} available`}</div></div>`}).join("");return `<article class="slide product-slide"><div class="popup-kicker">MENU / PRODUCT LIST</div><h3>Our products.</h3><div class="product-list">${rows}</div></article>`}const closed=state().closed;const available=items.map((x,i)=>({x,i})).filter(v=>v.x.stock>0);const rows=available.map(({x,i})=>{const qty=Math.min(selectedProducts.get(i)||0,x.stock);const offer=x.offerPrice!==""?money(x.offerPrice):"";const selling=money(x.sellingPrice);return `<div class="product-item"><div class="product-main"><span class="product-name">${esc(x.name)}</span><span class="product-prices">${offer?`<span class="product-selling">${selling}</span><span class="product-offer">${offer}</span>`:`<span class="product-offer">${selling}</span>`}</span><span class="small">${x.stock} available</span></div><div class="qty-control"><button type="button" class="qty-btn" data-qty="${i}" data-dir="-1" aria-label="Decrease quantity">−</button><span class="qty-value" data-qty-value="${i}">${qty}</span><button type="button" class="qty-btn" data-qty="${i}" data-dir="1" aria-label="Increase quantity">＋</button></div></div>`}).join("");let total=0;items.forEach((x,i)=>{if(x.stock>0)total+=itemPrice(x)*Math.min(selectedProducts.get(i)||0,x.stock)});const n=available.reduce((sum,{i,x})=>sum+Math.min(selectedProducts.get(i)||0,x.stock),0);const disabled=closed||n===0;const emptyAvailable=!available.length;return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Choose items.</h3>${closed?`<div class="note">Store is currently closed. Orders are temporarily disabled.</div>`:""}${emptyAvailable?`<div class="note">All products are currently out of stock.</div>`:`<div class="product-list">${rows}</div>`}<div class="product-cart"><div class="product-cart-meta"><div id="selectedCount"><strong>${n}</strong> item${n===1?"":"s"} selected</div><div class="product-cart-total" id="selectedTotal">Grand Total ${money(total)}</div></div><button class="btn primary cart-btn" type="button" id="viewCart" ${disabled?"disabled":""}>${closed?"Store Closed":"View Cart"}${!closed&&n?`<span class="cart-badge" id="cartBadge">${n}</span>`:""}</button></div></article>`}
+function cartLocalToday(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`}
+function cartMinPickupDateTime(){return new Date(Date.now()+30*60*1000)}
+function cartTimeValue(d){return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`}
+function syncPickupConstraints(){const d=$("cartOrderDate"),t=$("cartOrderTime");if(!d||!t)return;const today=cartLocalToday();d.min=today;const minDateTime=cartMinPickupDateTime();const minDate=minDateTime.getFullYear()+"-"+String(minDateTime.getMonth()+1).padStart(2,"0")+"-"+String(minDateTime.getDate()).padStart(2,"0");if(!d.value||d.value<today)d.value=today;if(d.value===today){t.min=cartTimeValue(minDateTime);if(t.value&&!pickupTimeIsValid(d.value,t.value))t.value=""}else{t.removeAttribute("min")}}
+function pickupTimeIsValid(date,time){if(!date||!time)return false;const m=String(time).match(/^(\d{2}):(\d{2})$/);if(!m)return false;const selected=new Date(date+"T"+m[1]+":"+m[2]+":00");if(Number.isNaN(selected.getTime()))return false;const minimum=Date.now()+30*60*1000;return selected.getTime()>=minimum}
+function cartSelectionItems(){return productItems().map((x,i)=>({...x,qty:Math.min(selectedProducts.get(i)||0,x.stock)})).filter(x=>x.qty>0&&x.stock>0)}
+function updateProductCart(){const count=$("selectedCount"),totalEl=$("selectedTotal"),view=$("viewCart");let total=0,n=0;productItems().forEach((x,i)=>{const qty=Math.min(selectedProducts.get(i)||0,x.stock);if(qty>0&&x.stock>0){n+=qty;total+=itemPrice(x)*qty}else if(selectedProducts.has(i)){selectedProducts.delete(i)}});if(count)count.innerHTML="<strong>"+n+"</strong> item"+(n===1?"":"s")+" selected";if(totalEl)totalEl.textContent="Grand Total "+money(total);if(view){view.disabled=state().closed||n===0;view.innerHTML=state().closed?"Store Closed":"View Cart"+(n?`<span class="cart-badge" id="cartBadge">${n}</span>`:"")}}
+function reactCartButton(){const b=$("viewCart");if(!b)return;b.classList.remove("reacted");void b.offsetWidth;b.classList.add("reacted");setTimeout(()=>b.classList.remove("reacted"),450)}
+function openCart(){if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");const items=cartSelectionItems();if(!items.length)return toastOrder("Select at least one item.");const d=$("cartOrderDate"),t=$("cartOrderTime");if(d){const today=cartLocalToday();d.min=today;if(!d.value||d.value<today)d.value=today}if(t)t.value="";syncPickupConstraints();const box=$("cartItems");box.innerHTML=items.map((x,i)=>`<div class="cart-row"><div><div class="cart-row-name">${esc(x.name)}</div><div class="cart-row-sub">${x.qty} × ${money(itemPrice(x))}</div></div><div class="cart-row-total">${money(itemPrice(x)*x.qty)}</div></div>`).join("");$("cartItemCount").textContent=productSelectedCount();$("cartGrandTotal").textContent=money(items.reduce((sum,x)=>sum+itemPrice(x)*x.qty,0));$("cartOverlay").classList.add("show")}
+function closeCart(){$("cartOverlay").classList.remove("show")}
+function wireProductCart(){document.querySelectorAll("[data-qty]").forEach(btn=>btn.onclick=()=>{if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");const i=Number(btn.dataset.qty),dir=Number(btn.dataset.dir),item=productItems()[i],maxStock=Math.max(0,Number(item?.stock||0)),next=Math.max(0,Math.min(maxStock,(selectedProducts.get(i)||0)+dir));if(next===0)selectedProducts.delete(i);else selectedProducts.set(i,next);const v=document.querySelector(`[data-qty-value="${i}"]`);if(v)v.textContent=next;updateProductCart();if(next>0)reactCartButton()});const view=$("viewCart");if(view)view.onclick=openCart;updateProductCart()}
+const PENDING_KEY_PREFIX="shopmanager_pending_order_";
+function pendingKey(){return PENDING_KEY_PREFIX+SLUG}
+function savePendingOrder(o){try{localStorage.setItem(pendingKey(),JSON.stringify(o))}catch(e){console.warn("Could not save pending order",e)}}
+function loadPendingOrder(){try{const o=JSON.parse(localStorage.getItem(pendingKey())||"null");if(!o)return null;if(!o.tracker_token||new Date(o.tracker_expires_at)<=new Date()){localStorage.removeItem(pendingKey());return null}return o}catch(e){return null}}
+function clearPendingOrder(){try{localStorage.removeItem(pendingKey())}catch(e){}}
+function normalizeRpc(x){if(Array.isArray(x))return x[0]||null;if(typeof x==="string"){try{return JSON.parse(x)}catch(e){return null}}return x}
+async function rpc(fn,body){const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});const t=await r.text();if(!r.ok)throw Error(t||("HTTP "+r.status));try{return JSON.parse(t)}catch(e){return t}}
+function pickupWithinSchedule(date,time){if(!shop?.schedule_enabled||!shop.daily_open_time||!shop.daily_close_time)return true;const o=hm(shop.daily_open_time),cl=hm(shop.daily_close_time);if(o===cl)return false;const m=hm(time);return o<cl?(m>=o&&m<cl):(m>=o||m<cl)}
+function orderErrorMessage(e){const s=String(e?.message||e||"");if(s.includes("SHOP_CLOSED"))return"The shop is currently closed.";if(s.includes("PICKUP_OUTSIDE_SCHEDULE"))return"The selected pickup / visit time is outside the shop's scheduled opening hours.";if(s.includes("INVALID_PICKUP_TIME"))return"Pickup / visit time must be at least 30 minutes from now.";if(s.includes("EMPTY_ORDER"))return"Your cart is empty.";return"Could not create the order. Please try again."}
+function checkoutDateText(iso){const d=new Date(iso);return Number.isNaN(d.getTime())?"—":d.toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}
+let checkoutQrLink="";
+let currentPaymentMethod="online";
+function configuredPaymentMode(){const m=String(shop?.info?.paymentMode||"online");return ["both","online","cod"].includes(m)?m:"online"}
+function renderPaymentMethodChoices(){const mode=configuredPaymentMode(),wrap=$("paymentMethodChoices");if(!wrap)return;let html="";if(mode==="both"){html=`<label class="payment-method-option"><input type="radio" name="checkoutPaymentMethod" value="online" ${currentPaymentMethod==="online"?"checked":""}> <span><b>Online payment</b><small>Pay now by UPI / QR</small></span></label><label class="payment-method-option"><input type="radio" name="checkoutPaymentMethod" value="cod" ${currentPaymentMethod==="cod"?"checked":""}> <span><b>Cash on Delivery</b><small>Pay in cash at pickup / visit</small></span></label>`}else if(mode==="cod"){currentPaymentMethod="cod";html=`<div class="payment-method-option selected"><span><b>Cash on Delivery</b><small>Pay in cash at pickup / visit</small></span></div>`}else{currentPaymentMethod="online";html=`<div class="payment-method-option selected"><span><b>Online payment</b><small>Pay now by UPI / QR</small></span></div>`}wrap.innerHTML=html;const inputs=wrap.querySelectorAll("input[name=checkoutPaymentMethod]");inputs.forEach(i=>i.onchange=()=>{currentPaymentMethod=i.value;updatePaymentMethodUI()});updatePaymentMethodUI()}
+function updatePaymentMethodUI(){const online=currentPaymentMethod==="online";const oc=$("onlinePaymentCard"),sc=$("onlineScreenshotCard"),ci=$("codPaymentInfo");if(oc)oc.hidden=!online;if(sc)sc.hidden=!online;if(ci)ci.hidden=online;const b=$("checkoutSubmit");if(b)b.textContent=online?"Submit payment for review":"Place COD order"}
+function renderCheckoutOrder(o){$("checkoutOrderNumber").textContent=o.order_number||"—";$("checkoutTotal").textContent=money(o.total);$("checkoutPickup").textContent="Pickup / Visit · "+checkoutDateText(o.pickup_at);$("checkoutOrderItems").innerHTML=(o.items||[]).map(x=>`<div class="checkout-item"><span>${esc(x.name)} × ${Number(x.qty||0)}</span><strong>${money(x.line_total??(Number(x.unit_price||0)*Number(x.qty||0)))}</strong></div>`).join("")}
+function renderCheckoutQr(){const d=upiData();$("checkoutQr").innerHTML="";$("checkoutUpiName").textContent=d.name||"UPI Payment";$("checkoutUpiId").textContent=d.upi||"UPI ID not configured";checkoutQrLink="";if(!d.upi){$("checkoutQr").innerHTML='<div style="color:#222;font-size:12px;text-align:center;padding:15px">UPI is not configured for this shop.</div>';return}checkoutQrLink="upi://pay?pa="+encodeURIComponent(d.upi)+"&pn="+encodeURIComponent(d.name||shop.shop_name||"Shop")+"&am="+encodeURIComponent(Number(currentCheckoutOrder?.total||0).toFixed(2))+"&cu=INR";try{new QRCode($("checkoutQr"),{text:checkoutQrLink,width:210,height:210,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M})}catch(e){$("checkoutQr").innerHTML='<div style="color:#222;font-size:12px">QR generation failed. Use the UPI ID above.</div>'}}
+let currentCheckoutOrder=null;
+function openCheckout(o){currentCheckoutOrder=o;currentPaymentMethod=o.payment_method==="cod"?"cod":configuredPaymentMode()==="cod"?"cod":"online";renderCheckoutOrder(o);renderPaymentMethodChoices();renderCheckoutQr();$("checkoutCustomerName").value=o.customer_name||localStorage.getItem("shopmanager_customer_name")||"";$("ocrTransactionId").value="";$("ocrPayerName").value="";$("ocrAmountHint").textContent="";$("ocrProgress").hidden=true;$("checkoutSubmit").disabled=false;$("orderPaymentOverlay").classList.add("show")}
+function closeCheckout(){if(currentCheckoutOrder){currentCheckoutOrder.payment_method=currentPaymentMethod;savePendingOrder(currentCheckoutOrder)}$("orderPaymentOverlay").classList.remove("show")}
+async function shareCheckoutQr(){const canvas=$("checkoutQr").querySelector("canvas");if(!canvas)return;if(navigator.share){try{const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));const file=blob?new File([blob],"payment-qr.png",{type:"image/png"}):null;if(file&&navigator.canShare?.({files:[file]}))return navigator.share({files:[file],title:"Payment QR",text:"Pay "+money(currentCheckoutOrder?.total||0)+" to "+(shop?.shop_name||"the shop")});return navigator.share({title:"Payment QR",text:checkoutQrLink})}catch(e){if(e.name!=="AbortError")toastOrder("QR sharing was not available.")}}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download="payment-qr.png";a.click()}}
+async function copyCheckoutUpi(){const d=upiData();if(!d.upi)return toastOrder("UPI ID is not configured.");try{await navigator.clipboard.writeText(d.upi);toastOrder("UPI ID copied.")}catch(e){toastOrder("Could not copy UPI ID.")}}
+function cleanOcrText(s){return String(s||"").replace(/\r/g,"\n").replace(/[ \t]+/g," ").replace(/\n{3,}/g,"\n\n")}
+function extractTransactionId(text){const t=cleanOcrText(text);const labeled=/(?:upi\s*)?(?:transaction|txn|reference|ref(?:erence)?|utr)\s*(?:id|no|number|#)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-]{7,30})/i.exec(t);if(labeled)return labeled[1].trim();const nums=t.match(/\b\d{10,18}\b/g)||[];const banned=new Set([String(currentCheckoutOrder?.total||"").replace(/\.00$/,""),String(shop?.upi_number||"").replace(/\D/g,"")]);const candidate=nums.find(x=>!banned.has(x)&&!/^(19|20)\d{6,}$/.test(x));return candidate||""}
+function extractPayerName(text){const lines=cleanOcrText(text).split("\n").map(x=>x.trim()).filter(Boolean);for(let i=0;i<lines.length;i++){const m=/(?:paid\s*(?:by|from)|from|sender|payer|name)\s*[:\-]?\s*(.+)$/i.exec(lines[i]);if(m&&m[1].length>=2&&m[1].length<=60)return m[1].replace(/[^A-Za-z .'-]/g,"").trim()}for(let i=0;i<lines.length-1;i++){if(/^(paid by|from|sender|payer|name)$/i.test(lines[i]))return lines[i+1].replace(/[^A-Za-z .'-]/g,"").trim()}return""}
+function extractAmount(text){const vals=[...cleanOcrText(text).matchAll(/(?:₹|rs\.?|inr)\s*([0-9,]+(?:\.\d{1,2})?)/ig)].map(m=>Number(m[1].replace(/,/g,""))).filter(Number.isFinite);return vals.length?vals[0]:null}
+async function runPaymentOcr(file){if(!file)return;const progress=$("ocrProgress"),bar=$("ocrBar"),status=$("ocrStatus");progress.hidden=false;bar.style.width="1%";status.textContent="Preparing OCR…";try{if(!window.Tesseract)throw Error("OCR library did not load.");const result=await Tesseract.recognize(file,"eng",{logger:m=>{if(m.status==="recognizing text"){const pct=Math.round((m.progress||0)*100);bar.style.width=pct+"%";status.textContent="Reading screenshot… "+pct+"%"}}});const text=result?.data?.text||"";const tx=extractTransactionId(text),payer=extractPayerName(text),amount=extractAmount(text);$("ocrTransactionId").value=tx;$("ocrPayerName").value=payer;$("ocrAmountHint").textContent=amount!=null?"OCR detected amount: "+money(amount)+" · Compare it with the order total before submitting.":"OCR could not confidently detect the amount.";bar.style.width="100%";status.textContent=tx?"OCR complete — review the detected details.":"OCR complete — transaction ID not found. Enter it manually."}catch(e){console.error("OCR failed:",e);status.textContent="OCR failed. Enter the transaction ID manually.";bar.style.width="0%"}}
+async function submitPaymentReview(){if(!currentCheckoutOrder)return;const customer=$("checkoutCustomerName").value.trim(),payer=$("ocrPayerName").value.trim();if(!customer)return toastOrder("Enter your name.");const online=currentPaymentMethod==="online";const tx=online?$("ocrTransactionId").value.trim():"CASH_ON_DELIVERY";if(online&&!tx)return toastOrder("Enter the transaction / UTR ID.");const btn=$("checkoutSubmit");btn.disabled=true;btn.textContent=online?"Submitting…":"Placing COD order…";try{localStorage.setItem("shopmanager_customer_name",customer);const r=await rpc("finalize_public_order",{p_tracker_token:currentCheckoutOrder.tracker_token,p_customer_name:customer,p_payer_name:payer,p_transaction_id:tx,p_payment_amount:Number(currentCheckoutOrder.total||0)});const done=normalizeRpc(r)||currentCheckoutOrder;done.payment_method=online?"online":"cod";clearPendingOrder();const url="track.html?t="+encodeURIComponent(done.tracker_token||currentCheckoutOrder.tracker_token);$("orderPaymentOverlay").classList.remove("show");toastOrder(online?"Order submitted for payment review.":"COD order placed successfully.");setTimeout(()=>{location.href=url},700)}catch(e){console.error("Finalize order failed:",e);toastOrder("Could not submit the order. Please try again.");btn.disabled=false;btn.textContent=online?"Submit payment for review":"Place COD order"}}
+function currentCartValidationPayload(items){
+  return items.map(x=>({
+    name:String(x.name||"").trim(),
+    product_id:String(x.id||x.productId||"").trim(),
+    qty:Number(x.qty||0),
+    unit_price:Number(itemPrice(x)),
+    line_total:Number((itemPrice(x)*Number(x.qty||0)).toFixed(2))
+  })).filter(x=>x.name&&x.qty>0);
+}
+function staleCartErrorMessage(e){
+  const s=String(e?.message||e||"");
+  if(s.includes("PRODUCT_CATALOG_CHANGED"))return"The shop updated its products or prices. Please refresh the page and try again.";
+  if(s.includes("PRODUCT_NOT_FOUND"))return"One of the selected products is no longer available. Please refresh the page.";
+  if(s.includes("PRODUCT_PRICE_CHANGED"))return"A product price was updated. Please refresh the page and try again.";
+  if(s.includes("INVALID_ORDER_ITEMS"))return"The cart has changed. Please refresh the page and try again.";if(s.includes("PRODUCT_OUT_OF_STOCK")||s.includes("INSUFFICIENT_STOCK"))return"One or more selected products are out of stock. Please refresh the page and try again.";
+  return orderErrorMessage(e);
+}
+async function sendSelectedOrder(){
+  if(state().closed)return toastOrder("The store is currently closed. Orders are disabled.");
+  const items=cartSelectionItems();
+  if(!items.length)return toastOrder("Select at least one item.");
+  const dateEl=$("cartOrderDate"),timeEl=$("cartOrderTime");
+  const date=dateEl?.value||"",time=timeEl?.value||"";const today=cartLocalToday();syncPickupConstraints();
+  if(!date){dateEl?.focus();return toastOrder("Please select a pickup / visit date.")}
+  if(date<today){dateEl?.focus();return toastOrder("Please select today or a future date.")}
+  if(!time){timeEl?.focus();return toastOrder("Please select a pickup / visit time at least 30 minutes from now.")}
+  if(!pickupTimeIsValid(date,time)){syncPickupConstraints();timeEl?.focus();return toastOrder("Pickup / visit time must be at least 30 minutes from now.")}
+  if(!pickupWithinSchedule(date,time)){timeEl?.focus();return toastOrder("Please choose a pickup / visit time within the shop's scheduled opening hours.")}
+  const pickupAt=new Date(date+"T"+time+":00");
+  if(Number.isNaN(pickupAt.getTime()))return toastOrder("Invalid pickup / visit time.");
+  const payloadItems=currentCartValidationPayload(items);
+  const total=payloadItems.reduce((sum,x)=>sum+x.line_total,0);
+  const previous=loadPendingOrder();
+  if(previous&&previous.slug===SLUG&&new Date(previous.tracker_expires_at)>new Date()){
+    openCheckout(previous);
+    closeCart();
+    return;
+  }
+  const btn=$("cartSendOrder");btn.disabled=true;btn.textContent="Checking cart…";
+  try{
+    /*
+      The browser may be showing a cached catalog. create_public_order now
+      re-validates every submitted item and price against the current shop
+      catalog inside Supabase before creating the order.
+    */
+    const r=await rpc("create_public_order",{
+      p_shop_slug:SLUG,
+      p_items:payloadItems,
+      p_total:Number(total.toFixed(2)),
+      p_pickup_at:pickupAt.toISOString()
+    });
+    const order=normalizeRpc(r);
+    if(!order?.tracker_token)throw Error("Order token was not returned.");
+    const pending={...order,slug:SLUG,shop_name:shop.shop_name,items:payloadItems,total:Number(total.toFixed(2)),pickup_at:pickupAt.toISOString(),created_local:Date.now()};
+    savePendingOrder(pending);
+    closeCart();openCheckout(pending);
+  }catch(e){
+    console.error("Create order failed:",e);
+    toastOrder(staleCartErrorMessage(e));
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Continue to payment";
+  }
+}
+function toastOrder(message){let t=$("orderToast");if(!t){t=document.createElement("div");t.id="orderToast";t.className="toast";document.body.appendChild(t)}t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+function renderSlides(keepScroll=true){if(!shop)return;syncProductSelectionState();let a=[],s=state();if(s.closed)a.push(`<article class="slide"><div class="popup-kicker">SHOP STATUS</div><h3>We're<br>closed.</h3><p>${esc(s.reason==="manual"?(shop.closed_message||"Please check back later."):s.reason==="quick"?"The shop is temporarily closed.":"We're currently outside today's opening hours.")}</p>${s.next?`<div class="timer" data-count="${esc(s.next)}">${countdown(s.next)}</div><div class="small">Until next opening · live countdown</div>`:""}</article>`);let o=shop.offer;if(offerActive())a.push(`<article class="slide"><div class="popup-kicker">LIMITED OFFER</div><h3>${esc(o.name)}</h3><p>${esc(o.message||"Limited-time offer.")}</p><p><span class="old">${esc(o.oldPrice)}</span> &nbsp; <span class="deal">${esc(o.deal)}</span></p><div class="timer" data-count="${esc(o.endAt)}">${countdown(o.endAt)}</div><div class="small">Offer ends · live countdown</div></article>`);let i=infoPayload();if(infoActive()&&i){if(i.type==="products"&&productItems().length)a.push(renderProductSlide());else if(i.type==="notes")a.push(`<article class="slide"><div class="popup-kicker">CUSTOM INFORMATION</div><h3>${esc(i.title)}</h3><p style="white-space:pre-wrap">${esc(i.message)}</p><div class="small">${i.endAt?`Expires · ${new Date(i.endAt).toLocaleString()}`:"No automatic expiry"}</div></article>`)}$("slides").innerHTML=a.length?a.join(""):`<article class="slide"><div class="popup-kicker">ALL CLEAR</div><h3>No active updates.</h3><p>New shop updates will appear here.</p></article>`;$("hint").textContent=a.length>1?"Swipe to see all updates":"";wireProductCart()}
+function active(){let s=state();return s.closed||offerActive()||infoActive()}
+const SITE_CACHE_TTL=10*60*1000;
+const SITE_CACHE_VERSION=5;
+let siteFetchInFlight=false;
+
+function siteCacheKey(){return "shopmanager_site_cache_v"+SITE_CACHE_VERSION+"_"+encodeURIComponent(SLUG)}
+function siteFetchLockKey(){return "shopmanager_site_fetch_lock_v2_"+encodeURIComponent(SLUG)}
+function readSiteCache(){
+  try{
+    const x=JSON.parse(localStorage.getItem(siteCacheKey())||"null");
+    if(!x||x.v!==SITE_CACHE_VERSION||!x.savedAt||!x.shop?.id)return null;
+    return x;
+  }catch(e){return null}
+}
+function writeSiteCache(data){
+  try{
+    localStorage.setItem(siteCacheKey(),JSON.stringify({v:SITE_CACHE_VERSION,savedAt:Date.now(),shop:data}));
+  }catch(e){console.warn("Site cache could not be saved:",e)}
+}
+function claimSiteFetch(){
+  const now=Date.now(),key=siteFetchLockKey();
+  try{
+    const old=Number(localStorage.getItem(key)||0);
+    if(old&&now-old<30000)return false;
+    localStorage.setItem(key,String(now));
+    return true;
+  }catch(e){return true}
+}
+function releaseSiteFetch(){try{localStorage.removeItem(siteFetchLockKey())}catch(e){}}
+function applyShopData(data){
+  shop=data;
+  popupSig="";
+  render();
+  const pending=loadPendingOrder();
+  if(pending&&pending.slug===SLUG&&new Date(pending.tracker_expires_at)>new Date())setTimeout(()=>openCheckout(pending),450);
+  const sig=signature();
+  if(active()){popupSig=sig;$("overlay").classList.add("show")}else{$("overlay").classList.remove("show")}
+}
+async function fetchShopFromSupabase(){
+  if(siteFetchInFlight)return null;
+  if(!claimSiteFetch())return null;
+  siteFetchInFlight=true;
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/rpc/get_shop_public_by_slug",{
+      method:"POST",
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+SUPABASE_ANON_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({shop_slug:SLUG})
+    });
+    const t=await r.text();
+    if(!r.ok)throw Error("HTTP "+r.status+" "+t);
+    const data=t?JSON.parse(t):null;
+    if(!data||!data.id)throw Error("No shop matched slug: "+SLUG);
+    writeSiteCache(data);
+    return data;
+  }finally{
+    siteFetchInFlight=false;
+    releaseSiteFetch();
+  }
+}
+async function load(){
+  if(!SLUG){
+    $("name").textContent="SHOP LINK MISSING";
+    $("type").textContent="ADD ?shop=YOUR-SLUG";
+    return;
+  }
+
+  const cached=readSiteCache();
+
+  if(cached){
+    // Always render cached data first. A normal refresh does not contact Supabase
+    // until the cached data is at least 10 minutes old.
+    applyShopData(cached.shop);
+
+    const age=Date.now()-cached.savedAt;
+    if(age<SITE_CACHE_TTL)return;
+
+    // The customer refreshed after 10 minutes: perform exactly one fresh fetch.
+    try{
+      const fresh=await fetchShopFromSupabase();
+      if(fresh)applyShopData(fresh);
+    }catch(e){
+      console.error("Shop refresh failed:",e);
+      // Keep the cached site visible if the refresh fails.
+    }
+    return;
+  }
+
+  // First visit: fetch once, then cache the complete public shop payload locally.
+  try{
+    const fresh=await fetchShopFromSupabase();
+    if(fresh)applyShopData(fresh);
+  }catch(e){
+    console.error("Initial shop load failed:",e);
+    $("name").textContent="SHOP NOT FOUND";
+    $("type").textContent="CHECK SHOP LINK";
+    $("tagline").textContent="Slug: "+SLUG;
+  }
+}
+
+function upiData(){return{upi:String(shop?.upi_id||"").trim(),name:String(shop?.upi_name||shop?.shop_name||"").trim(),number:String(shop?.upi_number||"").trim()}}
+let currentQrLink="";
+function openPayment(){
+  let d=upiData();
+  $("qrBox").innerHTML="";
+  $("upiName").textContent=d.name||"UPI Payment";
+  $("upiId").textContent=d.upi?d.upi:"UPI ID not configured";
+  $("upiNumber").textContent=d.number?"UPI number · "+d.number:"";
+  $("upiShare").style.display="none";
+  if(!d.upi){
+    $("qrBox").innerHTML='<div class="qr-error">UPI payment is not configured for this shop yet.</div>';
+    $("payOverlay").classList.add("show");
+    return;
+  }
+  currentQrLink="upi://pay?pa="+encodeURIComponent(d.upi)+"&pn="+encodeURIComponent(d.name||shop.shop_name||"Shop");
+  try{
+    new QRCode($("qrBox"),{
+      text:currentQrLink,
+      width:210,
+      height:210,
+      colorDark:"#000000",
+      colorLight:"#ffffff",
+      correctLevel:QRCode.CorrectLevel.M
+    });
+    $("upiShare").style.display="inline-block";
+  }catch(e){
+    $("qrBox").innerHTML='<div class="qr-error">QR could not be generated. Please try again.</div>';
+  }
+  $("payOverlay").classList.add("show");
+}
+async function shareQr(){
+  const canvas=$("qrBox").querySelector("canvas");
+  if(!canvas)return;
+  try{
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png"));
+    if(!blob)throw Error("Could not prepare QR image.");
+    const file=new File([blob],"shop-upi-qr.png",{type:"image/png"});
+    const shareData={files:[file],title:"UPI Payment QR",text:"Scan this QR to pay "+(shop?.shop_name||"the shop")};
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share(shareData);
+    }else if(navigator.share){
+      await navigator.share({title:"UPI Payment QR",text:"Scan this QR to pay "+(shop?.shop_name||"the shop")});
+    }else{
+      const a=document.createElement("a");
+      a.href=canvas.toDataURL("image/png");
+      a.download="shop-upi-qr.png";
+      a.click();
+    }
+  }catch(e){
+    if(e.name!=="AbortError")alert("Sharing is not supported on this device. You can screenshot the QR.");
+  }
+}
+$("payQr").onclick=openPayment;$("upiShare").onclick=shareQr;$("payClose").onclick=()=>$("payOverlay").classList.remove("show");$("payOverlay").addEventListener("click",e=>{if(e.target===$("payOverlay"))$("payOverlay").classList.remove("show")});
+$("updates").onclick=()=>{$("overlay").classList.add("show");renderSlides()};$("close").onclick=()=>$("overlay").classList.remove("show");
+$("cartClose").onclick=closeCart;$("orderPaymentClose").onclick=closeCheckout;$("checkoutBack").onclick=closeCheckout;$("checkoutShareQr").onclick=shareCheckoutQr;$("checkoutCopyUpi").onclick=copyCheckoutUpi;$("paymentScreenshot").addEventListener("change",e=>runPaymentOcr(e.target.files?.[0]||null));function openPaymentSubmitConfirmation(){
+  if(!currentCheckoutOrder)return;
+  const customer=$("checkoutCustomerName").value.trim();
+  const tx=$("ocrTransactionId").value.trim();
+  if(!customer)return toastOrder("Enter your name.");
+  if(!tx)return toastOrder("Enter the transaction / UTR ID.");
+  $("paymentConfirmOverlay").classList.add("show");
+  $("paymentConfirmOverlay").setAttribute("aria-hidden","false");
+}
+function closePaymentSubmitConfirmation(){
+  $("paymentConfirmOverlay").classList.remove("show");
+  $("paymentConfirmOverlay").setAttribute("aria-hidden","true");
+}
+$("checkoutSubmit").onclick=()=>{
+  if(currentPaymentMethod==="cod"){
+    // COD has no UTR/screenshot. Submit directly.
+    submitPaymentReview();
+  }else{
+    // Keep the existing online-payment confirmation flow unchanged.
+    openPaymentSubmitConfirmation();
+  }
+};
+$("paymentConfirmClose").onclick=closePaymentSubmitConfirmation;
+$("paymentConfirmCancel").onclick=closePaymentSubmitConfirmation;
+$("paymentConfirmYes").onclick=async()=>{
+  closePaymentSubmitConfirmation();
+  await submitPaymentReview();
+};$("orderPaymentOverlay").addEventListener("click",e=>{if(e.target===$("orderPaymentOverlay"))closeCheckout()});
+$("paymentConfirmOverlay").addEventListener("click",e=>{if(e.target===$("paymentConfirmOverlay"))closePaymentSubmitConfirmation()});$("cartBack").onclick=closeCart;$("cartSendOrder").onclick=sendSelectedOrder;$("cartOrderDate").addEventListener("change",syncPickupConstraints);$("cartOrderTime").addEventListener("focus",syncPickupConstraints);$("cartOverlay").addEventListener("click",e=>{if(e.target===$("cartOverlay"))closeCart()});
+setInterval(()=>{if(!shop)return;document.querySelectorAll("[data-count]").forEach(e=>e.textContent=countdown(e.dataset.count));let c=state().closed;if(c!==lastClosed){lastClosed=c;render()}},1000);
+load();
+</script>
+
+
+
+
+<div id="thmScrim"></div>
+<div id="thmHint" aria-hidden="true"></div>
+<aside id="thmPanel" role="dialog" aria-label="Theme settings" aria-hidden="true">
+ <div class="thm-head"><div><div class="thm-kicker">Appearance</div><h3>Theme settings</h3></div><button class="close" id="thmClose" type="button" aria-label="Close theme settings">×</button></div>
+ <p>Choose one of 8 premium themes. Your pick is remembered on this device. Swipe right-to-left to open this panel.</p>
+ <div id="thmGrid"></div>
+</aside>
+<script>
+(function(){
+var root=document.documentElement,grid=document.getElementById('thmGrid'),panel=document.getElementById('thmPanel'),cur;
+try{cur=localStorage.getItem('qs_theme')}catch(e){}cur=cur||'gold';
+function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function isOpen(){return root.classList.contains('thm-open')}
+function openP(){root.classList.add('thm-open');panel.setAttribute('aria-hidden','false')}
+function closeP(){root.classList.remove('thm-open');panel.setAttribute('aria-hidden','true')}
+function mark(){[].forEach.call(grid.children,function(b){b.setAttribute('aria-pressed',b.dataset.id===cur)})}
+QS_THEMES.forEach(function(t){var b=document.createElement('button');b.type='button';b.className='thm-opt';b.dataset.id=t.id;b.setAttribute('aria-label',t.n);
+b.innerHTML='<div class="thm-prev" style="background:radial-gradient(circle at 50% 20%,'+t.g1+',transparent 60%),radial-gradient(circle at 15% 90%,'+t.g2+',transparent 55%),'+t.bg+'"><i style="left:10%;top:14%;width:44%;height:9px;border-radius:5px;background:'+t.a1+'"></i><i style="left:10%;right:10%;top:44%;height:34%;border-radius:9px;background:#ffffff14;border:1px solid #ffffff2a"></i><i style="left:16%;top:56%;width:36%;height:8px;border-radius:5px;background:linear-gradient(135deg,'+t.a1+','+t.a2+')"></i></div><b>'+t.n+'</b>';
+b.onclick=function(){cur=t.id;applyTheme(cur);try{localStorage.setItem('qs_theme',cur)}catch(e){}mark();b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');vib([8,30,10])};grid.appendChild(b)});
+mark();
+var nav=document.querySelector('.nav');if(nav){var hb=document.createElement('button');hb.type='button';hb.className='thm-btn';hb.setAttribute('aria-label','Theme settings');hb.textContent='◐';hb.onclick=openP;nav.appendChild(hb)}
+document.getElementById('thmClose').onclick=closeP;document.getElementById('thmScrim').onclick=closeP;
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&isOpen())closeP()});
+/* swipe right->left opens; left->right inside panel closes. Ignored while any popup is open or typing. */
+var sx=0,sy=0,st=0,on=false;
+function blocked(t){return document.querySelector('.overlay.show,.site-policy.show')||(t&&t.closest&&t.closest('input,textarea,select,.slides'))}
+function begin(x,y,t){if(!isOpen()&&blocked(t)){on=false;return}sx=x;sy=y;st=Date.now();on=true}
+function finish(x,y){if(!on)return;on=false;var dx=x-sx,dy=y-sy;if(Date.now()-st>900)return;
+if(isOpen()){if(dx>70&&Math.abs(dx)>Math.abs(dy)*1.3)closeP();return}
+if(dx<-70&&Math.abs(dx)>Math.abs(dy)*1.5)openP()}
+document.addEventListener('touchstart',function(e){if(e.touches.length===1)begin(e.touches[0].clientX,e.touches[0].clientY,e.target);else on=false},{passive:true});
+document.addEventListener('touchend',function(e){if(e.changedTouches.length)finish(e.changedTouches[0].clientX,e.changedTouches[0].clientY)},{passive:true});
+document.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse')begin(e.clientX,e.clientY,e.target)});
+document.addEventListener('pointerup',function(e){if(e.pointerType==='mouse')finish(e.clientX,e.clientY)});
+/* touch ripple + haptic */
+var SEL='.btn,.qty-btn,.close,.card,.thm-opt,.thm-btn,.legal-footer button';
+document.addEventListener('pointerdown',function(e){
+var el=e.target.closest&&e.target.closest(SEL);if(!el||el.disabled)return;
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+var r=el.getBoundingClientRect(),big=el.classList.contains('card'),d=Math.min(Math.max(r.width,r.height)*(big?1.3:2.2),520),s=document.createElement('span');
+if(getComputedStyle(el).position==='static')el.classList.add('lux-rel');el.classList.add('lux-host');
+s.className='lux-rp';s.style.cssText='left:'+(e.clientX-r.left)+'px;top:'+(e.clientY-r.top)+'px;width:'+d+'px;height:'+d+'px';
+s.addEventListener('animationend',function(){s.remove()});el.appendChild(s);
+if(e.pointerType!=='mouse')vib(6)},{passive:true});
+})();
+</script>
+<script id="saved-sites-engine">
+(function(){
+  const DB_NAME="shopmanager_saved_sites_v1", DB_VERSION=1, STORE="shops", JSON_FILE="shop-data.json", PAGE_SIZE=10;
+  let db=null, allShops=[], filtered=[], page=0, filter="all", search="", loading=false, more=true;
+  const overlay=document.getElementById("savedSitesOverlay"), list=document.getElementById("savedSitesList"), input=document.getElementById("savedSitesSearch"), count=document.getElementById("savedSitesCount"), btn=document.getElementById("saveSiteBtn");
+  if(!overlay||!list||!btn)return;
+  function openDb(){return new Promise((resolve,reject)=>{if(db)return resolve(db);const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const st=d.createObjectStore(STORE,{keyPath:"slug"});st.createIndex("lastVisited","lastVisited");st.createIndex("visits","visits");st.createIndex("favourite","favourite")}};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+  function tx(mode,fn){return openDb().then(d=>new Promise((resolve,reject)=>{const t=d.transaction(STORE,mode),st=t.objectStore(STORE),v=fn(st);t.oncomplete=()=>resolve(v);t.onerror=()=>reject(t.error)}))}
+  function getAll(){return tx("readonly",st=>new Promise((resolve,reject)=>{const r=st.getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)}))}
+  function put(x){return tx("readwrite",st=>st.put(x))}
+  function norm(x){if(!x)return null;const slug=String(x.slug||x.shop_slug||x.id||"").trim().toLowerCase();if(!slug)return null;return {slug,shop_name:String(x.shop_name||x.name||slug),store_type:String(x.store_type||x.type||"Shop"),address:String(x.address||x.place||x.location||""),latitude:x.latitude??null,longitude:x.longitude??null,website:x.website||x.shop_website||x.website_url||x.site_url||"",owner_name:x.owner_name||"",phone:x.phone||"",lastVisited:Number(x.lastVisited||0),visits:Number(x.visits||0),favourite:!!x.favourite,savedAt:Number(x.savedAt||Date.now())}}
+  function merge(base,extra){const m=new Map();base.forEach(x=>{const n=norm(x);if(n)m.set(n.slug,n)});extra.forEach(x=>{const n=norm(x);if(!n)return;const old=m.get(n.slug);m.set(n.slug,{...(old||{}),...n,lastVisited:Math.max(Number(old?.lastVisited||0),Number(n.lastVisited||0)),visits:Math.max(Number(old?.visits||0),Number(n.visits||0)),favourite:!!(old?.favourite||n.favourite),savedAt:old?.savedAt||n.savedAt})});return [...m.values()]}
+  async function importJson(){try{const r=await fetch(JSON_FILE,{cache:"no-store"});if(!r.ok)throw Error("JSON "+r.status);const j=await r.json();return Array.isArray(j?.shops)?j.shops.map(norm).filter(Boolean):[]}catch(e){return []}}
+  async function saveCurrent(){try{if(typeof SLUG==="undefined"||!SLUG||!shop)return null;const current=norm({...shop,slug:SLUG});const old=(await getAll()).find(x=>x.slug===SLUG);const now=Date.now();const saved={...(old||{}),...current,slug:SLUG,lastVisited:now,visits:Number(old?.visits||0)+1,favourite:!!old?.favourite,savedAt:old?.savedAt||now};await put(saved);return saved}catch(e){console.warn("Saved sites unavailable",e);return null}}
+  async function recordVisit(slug){try{const a=await getAll(),old=a.find(x=>x.slug===slug);if(!old)return;old.lastVisited=Date.now();old.visits=Number(old.visits||0)+1;await put(old)}catch(e){}}
+  function fmtTime(t){if(!t)return"";const d=new Date(t),diff=Date.now()-d.getTime();if(diff<60000)return"Just visited";if(diff<3600000)return Math.floor(diff/60000)+" min ago";if(diff<86400000)return Math.floor(diff/3600000)+" hr ago";if(diff<604800000)return Math.floor(diff/86400000)+" day"+(Math.floor(diff/86400000)===1?"":"s")+" ago";return d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
+  function applyFilter(){const q=search.toLowerCase().trim();filtered=allShops.filter(x=>(filter!=="fav"||x.favourite)&&(!q||(x.shop_name+" "+x.address+" "+x.store_type).toLowerCase().includes(q)));filtered.sort((a,b)=>Number(b.lastVisited||0)-Number(a.lastVisited||0)||Number(b.favourite)-Number(a.favourite)||a.shop_name.localeCompare(b.shop_name));page=0;more=true;list.innerHTML="";renderMore()}
+  function renderCard(x){const tags=[];if(x.lastVisited)tags.push('<span class="saved-tag">Last visited · '+escSaved(fmtTime(x.lastVisited))+'</span>');if(Number(x.visits||0)>=3)tags.push('<span class="saved-tag">Frequently visited</span>');const place=x.address||x.store_type||"Saved shop";const el=document.createElement("article");el.className="saved-shop-card";el.innerHTML='<div class="saved-shop-main"><div class="saved-shop-name">'+escSaved(x.shop_name)+'</div><div class="saved-shop-meta"><span class="saved-shop-place">'+escSaved(place)+'</span>'+tags.join("")+'</div></div><div class="saved-shop-actions"><button class="saved-star '+(x.favourite?"on":"")+'" type="button" aria-label="'+(x.favourite?"Remove from favourites":"Add to favourites")+'">'+(x.favourite?"★":"☆")+'</button><button class="saved-open" type="button">Open</button></div>';el.querySelector(".saved-star").onclick=async e=>{e.stopPropagation();x.favourite=!x.favourite;await put(x);applyFilter()};el.querySelector(".saved-open").onclick=e=>{e.stopPropagation();openShop(x)};el.onclick=()=>openShop(x);list.appendChild(el)}
+  function escSaved(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+  function renderMore(){if(loading||!more)return;loading=true;const start=page*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,filtered.length);for(let i=start;i<end;i++)renderCard(filtered[i]);page++;more=end<filtered.length;const ld=document.getElementById("savedSitesLoader");if(ld)ld.remove();if(more){const d=document.createElement("div");d.id="savedSitesLoader";d.className="saved-loader";d.textContent="Scroll for more…";list.appendChild(d)}else if(!filtered.length){list.innerHTML='<div class="saved-empty"><strong>No shops found</strong><span>Try another shop name or place, or switch to All.</span></div>'}loading=false;count.textContent=filtered.length+" shop"+(filtered.length===1?"":"s")+(filter==="fav"?" · favourites":"")}
+  async function prepare(){const saved=await getAll();const directory=await importJson();allShops=merge(saved,directory);const current=allShops.find(x=>x.slug===SLUG);if(current){const savedCurrent=saved.find(x=>x.slug===SLUG);if(savedCurrent){current.lastVisited=savedCurrent.lastVisited;current.visits=savedCurrent.visits;current.favourite=savedCurrent.favourite}}applyFilter()}
+  async function openSaved(){overlay.classList.add("show");overlay.setAttribute("aria-hidden","false");try{await prepare()}catch(e){console.warn("Saved sites prepare failed:",e);try{const saved=await getAll();allShops=saved;applyFilter()}catch(err){list.innerHTML='<div class="saved-empty"><strong>Saved sites unavailable</strong><span>Please allow site storage in your browser and try again.</span></div>'}}try{input.focus({preventScroll:true})}catch(e){input.focus()}}
+  function closeSaved(){overlay.classList.remove("show");overlay.setAttribute("aria-hidden","true")}
+  function openShop(x){location.href="index.html?shop="+encodeURIComponent(x.slug)}
+  btn.onclick=openSaved;document.getElementById("savedSitesClose").onclick=closeSaved;overlay.addEventListener("click",e=>{if(e.target===overlay)closeSaved()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("show"))closeSaved()});input.addEventListener("input",()=>{search=input.value;applyFilter()});document.querySelectorAll("[data-saved-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.savedFilter;document.querySelectorAll("[data-saved-filter]").forEach(x=>x.classList.toggle("active",x===b));applyFilter()});list.addEventListener("scroll",()=>{if(list.scrollTop+list.clientHeight>=list.scrollHeight-180)renderMore()});
+  // Automatically save every shop that is actually loaded/visited.
+  // The public shop JSON is used as the directory source for names/details, while
+  // IndexedDB stores only shops the visitor has actually opened.
+  if(typeof applyShopData==="function"){const oldApply=applyShopData;window.applyShopData=async function(data){oldApply(data);setTimeout(async()=>{try{if(typeof SLUG==="undefined"||!SLUG||!data)return;const current=norm({...data,slug:SLUG});if(!current)return;const saved=(await getAll()).find(v=>v.slug===SLUG);const now=Date.now();const item={...(saved||{}),...current,slug:SLUG,lastVisited:now,visits:Number(saved?.visits||0)+1,favourite:!!saved?.favourite,savedAt:saved?.savedAt||now};await put(item)}catch(e){console.warn("Automatic saved-site update failed",e)}},0)}}
+})();
+</script>
+<script>
+/* Shop Manager Service Worker */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" })
+      .catch(function (error) {
+        console.warn("Service worker registration failed:", error);
+      });
+  });
+}
+</script>
+
+<button id="pwaInstallBtn"
+        type="button"
+        aria-label="Install Shop Manager"
+        title="Install Shop Manager"
+        aria-hidden="true">
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 20h14"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </svg>
+</button>
+
+
+<script id="pwa-install-script">
+(function () {
+  var button = document.getElementById("pwaInstallBtn");
+  if (!button) return;
+
+  var deferredPrompt = null;
+  var promptReady = false;
+
+  function standalone() {
+    return !!(
+      (window.matchMedia &&
+       window.matchMedia("(display-mode: standalone)").matches) ||
+      window.navigator.standalone === true
+    );
+  }
+
+  function show() {
+    if (!standalone()) {
+      button.style.display = "flex";
+      button.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function hide() {
+    button.style.display = "none";
+    button.setAttribute("aria-hidden", "true");
+  }
+
+  function toast(message) {
+    var t = document.getElementById("pwaInstallToast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "pwaInstallToast";
+      t.style.cssText =
+        "position:fixed;left:50%;bottom:68px;transform:translateX(-50%);" +
+        "z-index:100000;max-width:calc(100vw - 28px);padding:12px 15px;" +
+        "border:1px solid rgba(255,255,255,.18);border-radius:14px;" +
+        "background:rgba(12,7,10,.96);color:#fff;font:700 12px/1.45 Inter,system-ui,sans-serif;" +
+        "box-shadow:0 18px 50px rgba(0,0,0,.45);text-align:center;" +
+        "backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);";
+      document.body.appendChild(t);
+    }
+    t.textContent = message;
+    t.style.display = "block";
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () {
+      t.style.display = "none";
+    }, 4200);
+  }
+
+  hide();
+
+  window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    deferredPrompt = event;
+    promptReady = true;
+    show();
+  });
+
+  button.addEventListener("click", async function () {
+    if (standalone()) {
+      hide();
+      return;
+    }
+
+    if (!deferredPrompt) {
+      toast("To install: open your browser menu and choose “Add to Home screen” or “Install app”.");
+      return;
+    }
+
+    var event = deferredPrompt;
+    deferredPrompt = null;
+    promptReady = false;
+
+    try {
+      await event.prompt();
+      await event.userChoice;
+    } catch (error) {
+      console.warn("PWA install prompt failed:", error);
+    }
+
+    if (!standalone()) {
+      // The prompt may have been dismissed; allow a future prompt event.
+      if (!promptReady) show();
+    } else {
+      hide();
+    }
+  });
+
+  window.addEventListener("appinstalled", function () {
+    deferredPrompt = null;
+    promptReady = false;
+    hide();
+  });
+
+  function checkStandalone() {
+    if (standalone()) hide();
+    else if (deferredPrompt) show();
+    // If beforeinstallprompt has not fired yet, keep the button available
+    // so Android users can use the browser's built-in install option.
+    else show();
+  }
+
+  if (window.matchMedia) {
+    var media = window.matchMedia("(display-mode: standalone)");
+    if (media.addEventListener) {
+      media.addEventListener("change", checkStandalone);
+    } else if (media.addListener) {
+      media.addListener(checkStandalone);
+    }
+  }
+
+  window.addEventListener("pageshow", checkStandalone);
+  window.addEventListener("load", function () {
+    setTimeout(checkStandalone, 800);
+  });
+})();
+</script>
+
+</body></html>
