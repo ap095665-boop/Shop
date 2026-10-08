@@ -1,8 +1,8 @@
 {
-  "name": "Shop Manager Hub",
-  "short_name": "Shop Hub",
-  "description": "Save and access all your Shop Manager shops in one place.",
-  "start_url": "./hub.html",
+  "name": "Shop Manager",
+  "short_name": "Shop Manager",
+  "description": "Shop Manager digital storefront.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#070605",
