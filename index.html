@@ -163,20 +163,31 @@ body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.s
 @media(prefers-reduced-motion:reduce){.popup::before{animation:none!important}}
 </style>
 <style id="hub-save-style">
-.hub-save-wrap{display:flex;justify-content:center;margin:26px 0 8px}
-.hub-save{--h:50px;position:relative;display:block;width:min(320px,100%);height:var(--h);padding:0;border:0;border-radius:16px;cursor:pointer;color:#fff;font:inherit;font-weight:850;background:linear-gradient(#0d070a,#0d070a) padding-box,linear-gradient(110deg,var(--r),var(--r2),var(--r),var(--r2)) border-box;border:1.5px solid transparent;background-size:100% 100%,300% 100%;animation:hubBorder 4s linear infinite;box-shadow:0 12px 34px -14px var(--r2);-webkit-tap-highlight-color:transparent;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-.hub-save:active{transform:scale(.96)}
-.hub-save-win{display:block;height:calc(var(--h) - 3px);overflow:hidden;border-radius:14px;position:relative}
-.hub-save-win:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(#0d070a 0,transparent 22%,transparent 78%,#0d070a 100%)}
-.hub-save-col{display:block;animation:hubRoll 8s cubic-bezier(.65,0,.35,1) infinite}
-.hub-line{display:flex;align-items:center;justify-content:center;gap:8px;height:calc(var(--h) - 3px);font-size:15px;letter-spacing:.02em;white-space:nowrap}
-.hub-line b{color:var(--r2);font-weight:900}
-.hub-cta{color:var(--r2);text-transform:uppercase;letter-spacing:.14em;font-size:13px}
-.hub-cta b{display:inline-block;animation:hubNudge 1s ease-in-out infinite}
-@keyframes hubRoll{0%,20%{transform:translateY(0)}25%,45%{transform:translateY(-20%)}50%,70%{transform:translateY(-40%)}75%,95%{transform:translateY(-60%)}100%{transform:translateY(-80%)}}
-@keyframes hubBorder{to{background-position:0 0,-300% 0}}
-@keyframes hubNudge{50%{transform:translate(3px,-3px)}}
-@media(prefers-reduced-motion:reduce){.hub-save,.hub-save-col,.hub-cta b{animation:none!important}.hub-save-win:after{display:none}}
+.hub-save-wrap{display:flex;justify-content:center;margin:28px 0 10px}
+.hub-save{position:relative;display:block;width:min(340px,100%);padding:20px 18px 18px;cursor:pointer;color:#fff;font:inherit;border-radius:30px;overflow:hidden;isolation:isolate;-webkit-tap-highlight-color:transparent;
+border:1.5px solid transparent;
+background:linear-gradient(145deg,color-mix(in srgb,var(--r) 14%,var(--bg)),var(--bg) 58%,color-mix(in srgb,var(--r2) 8%,var(--bg))) padding-box,
+linear-gradient(115deg,color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent)) border-box;
+background-size:100% 100%,400% 100%;animation:hubBorder 9s linear infinite;
+box-shadow:inset 0 1px 0 #ffffff1f,inset 0 -12px 24px -16px color-mix(in srgb,var(--r2) 45%,transparent),0 18px 40px -20px var(--r2),0 2px 0 #00000055;
+transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s}
+.hub-save:hover{box-shadow:inset 0 1px 0 #ffffff2e,inset 0 -12px 24px -14px color-mix(in srgb,var(--r2) 60%,transparent),0 22px 46px -18px var(--r2),0 2px 0 #00000055}
+.hub-save:active{transform:scale(.975)}
+.hub-save:after{content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:34%;z-index:2;pointer-events:none;transform:translateX(-160%) skewX(-22deg);background:linear-gradient(90deg,transparent,#ffffff22,transparent);animation:hubSheen 7s ease-in-out 1.5s infinite}
+.hub-band{position:absolute;left:0;right:0;top:0;height:55%;z-index:3;pointer-events:none;background:linear-gradient(180deg,transparent,#ffffff2b 50%,transparent);animation:hubBand 5.5s cubic-bezier(.45,0,.55,1) infinite}
+.hub-stack{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:9px}
+.hub-stack>span{display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;text-transform:uppercase;animation:hubFloat 4.4s ease-in-out infinite}
+.hub-l1{font-size:clamp(11px,3.4vw,13px);font-weight:800;letter-spacing:.17em;color:#fff;text-shadow:0 1px 10px #0009}
+.hub-l2{font-size:10.5px;font-weight:600;letter-spacing:.3em;color:#cbbbc0;animation-delay:.35s!important}
+.hub-l3{margin-top:2px;padding-top:11px;position:relative;font-size:12px;font-weight:800;letter-spacing:.3em;color:var(--r2);animation-delay:.7s!important;width:100%}
+.hub-l3:before{content:"";position:absolute;top:0;left:18%;right:18%;height:1px;background:linear-gradient(90deg,transparent,var(--r2),transparent);opacity:.7}
+.hub-l3 svg{flex:none}
+.hub-stack .gem{display:block;width:5px;height:5px;flex:none;transform:rotate(45deg);background:linear-gradient(135deg,var(--r2),var(--r));box-shadow:0 0 9px var(--r2)}
+@keyframes hubFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes hubBand{0%{transform:translateY(-110%)}60%,100%{transform:translateY(200%)}}
+@keyframes hubBorder{to{background-position:0 0,-400% 0}}
+@keyframes hubSheen{0%,55%{transform:translateX(-160%) skewX(-22deg)}85%,100%{transform:translateX(420%) skewX(-22deg)}}
+@media(prefers-reduced-motion:reduce){.hub-save,.hub-save:after,.hub-band,.hub-stack>span{animation:none!important}.hub-save:after,.hub-band{display:none}}
 </style>
 </head>
 <body>
@@ -184,7 +195,7 @@ body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.s
 <nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main>
 <section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
-<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Save this site to our hub for future use. Click here"><span class="hub-save-win"><span class="hub-save-col"><span class="hub-line"><b>☆</b> Save this site</span><span class="hub-line">to our hub</span><span class="hub-line">for future use</span><span class="hub-line hub-cta">Click here <b>↗</b></span><span class="hub-line"><b>☆</b> Save this site</span></span></span></button></div>
+<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Save this site to our hub for future use. Click here"><span class="hub-band"></span><span class="hub-stack"><span class="hub-l1">Save this site to our hub</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
 <footer id="address">—</footer>
 <div class="legal-footer" aria-label="Required policies">
 <button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
