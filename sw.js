@@ -1,20 +1,19 @@
-const CACHE_NAME = "shop-manager-hub-v2";
+const CACHE_NAME = "shop-manager-v3";
 
 const FILES_TO_CACHE = [
   "./",
-  "./hub.html",
+  "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./shop-data.json"
+  "./shop-data.json",
+  "./track.html"
 ];
 
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
 
-      // Cache files individually.
-      // One missing file will NOT break the whole service worker.
       for (const file of FILES_TO_CACHE) {
         try {
           await cache.add(file);
@@ -62,8 +61,8 @@ self.addEventListener("fetch", event => {
    * HTML navigation
    *
    * Network first:
-   * - gets newest hub.html when online
-   * - uses cached hub.html when offline
+   * - gets the newest HTML page when online
+   * - uses its cached copy when offline
    */
   if (request.mode === "navigate") {
 
@@ -75,14 +74,36 @@ self.addEventListener("fetch", event => {
             const copy = response.clone();
 
             caches.open(CACHE_NAME).then(cache => {
-              cache.put("./hub.html", copy);
+              cache.put(request, copy);
             });
           }
 
           return response;
         })
         .catch(() => {
-          return caches.match("./hub.html");
+
+          return caches.match(request).then(cached => {
+
+            if (cached) {
+              return cached;
+            }
+
+            const path = new URL(request.url).pathname;
+
+            if (
+              path.endsWith("/") ||
+              path.endsWith("/index.html")
+            ) {
+              return caches.match("./index.html");
+            }
+
+            if (path.endsWith("/track.html")) {
+              return caches.match("./track.html");
+            }
+
+            return caches.match("./index.html");
+          });
+
         })
     );
 
