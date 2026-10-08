@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shop Manager</title>
 <meta name="theme-color" content="#070605">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script>
@@ -28,6 +26,27 @@ try{applyTheme(localStorage.getItem('qs_theme')||'gold')}catch(e){applyTheme('go
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<div class="saved-sites-overlay" id="savedSitesOverlay" aria-hidden="true">
+  <div class="saved-sites-popup" role="dialog" aria-modal="true" aria-label="Saved shops">
+    <button class="close saved-sites-close" id="savedSitesClose" type="button" aria-label="Close">×</button>
+    <div class="saved-sites-head">
+      <div class="saved-sites-kicker">YOUR SHOP COLLECTION</div>
+      <h2>Saved sites.</h2>
+      <div class="saved-sites-sub" id="savedSitesCount">Saved locally on this device.</div>
+    </div>
+    <div class="saved-sites-tools">
+      <input class="saved-search" id="savedSitesSearch" type="search" placeholder="Search shop name or place…" autocomplete="off">
+      <div class="saved-filter" role="tablist" aria-label="Shop filter">
+        <button type="button" class="active" data-saved-filter="all">All</button>
+        <button type="button" data-saved-filter="fav">★ Favourites</button>
+      </div>
+    </div>
+    <div class="saved-sites-list" id="savedSitesList"></div>
+    <div class="saved-sites-foot">Your saved shops, favourites and visit history stay in this browser's local storage.</div>
+  </div>
+</div>
+
 <div class="overlay payment-confirm-front" id="paymentConfirmOverlay" aria-hidden="true">
   <div class="popup" style="width:min(560px,100%);height:auto;max-height:calc(100dvh - 30px)">
     <button class="close" id="paymentConfirmClose" type="button">×</button>
@@ -191,13 +210,18 @@ transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s}
 @keyframes hubSheen{0%,55%{transform:translateX(-160%) skewX(-22deg)}85%,100%{transform:translateX(420%) skewX(-22deg)}}
 @media(prefers-reduced-motion:reduce){.hub-save,.hub-save:after,.hub-band,.hub-stack>span{animation:none!important}.hub-save:after,.hub-band{display:none}}
 </style>
+
+<style id="saved-sites-style">
+.saved-sites-overlay{position:fixed;inset:0;z-index:340;background:#030003e8;backdrop-filter:blur(24px);display:none;align-items:center;justify-content:center;padding:10px}.saved-sites-overlay.show{display:flex}.saved-sites-popup{width:min(900px,100%);height:min(820px,calc(100dvh - 18px));border:1px solid color-mix(in srgb,var(--r2) 25%,transparent);border-radius:30px;background:linear-gradient(145deg,color-mix(in srgb,var(--pop1) 94%,transparent),#090509f7);box-shadow:0 40px 120px #000;position:relative;overflow:hidden;display:flex;flex-direction:column}.saved-sites-popup:before{content:"";position:absolute;inset:-40%;pointer-events:none;background:conic-gradient(from 0deg,transparent,color-mix(in srgb,var(--r) 18%,transparent),transparent 30%,color-mix(in srgb,var(--r2) 14%,transparent),transparent 65%);animation:savedSpin 34s linear infinite}.saved-sites-head,.saved-sites-tools,.saved-sites-list,.saved-sites-foot{position:relative;z-index:1}.saved-sites-head{padding:28px 28px 12px}.saved-sites-kicker{font-size:10px;letter-spacing:.2em;color:var(--r2);font-weight:950}.saved-sites-head h2{font-family:var(--serif);font-size:clamp(38px,7vw,64px);line-height:.95;letter-spacing:-.03em;margin:8px 50px 5px 0}.saved-sites-sub{color:var(--muted);font-size:12px}.saved-sites-close{position:absolute;right:14px;top:14px}.saved-sites-tools{padding:8px 28px 12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}.saved-search{flex:1 1 250px;min-width:0;border:1px solid var(--line);border-radius:15px;background:#ffffff0b;color:#fff;padding:13px 14px;font:inherit;outline:none}.saved-search:focus{border-color:var(--r2);box-shadow:0 0 0 3px color-mix(in srgb,var(--r2) 14%,transparent)}.saved-filter{display:flex;gap:5px;padding:4px;border:1px solid var(--line);border-radius:15px;background:#ffffff08}.saved-filter button{border:0;border-radius:11px;padding:9px 12px;background:transparent;color:#bdb0b4;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.saved-filter button.active{background:color-mix(in srgb,var(--r) 25%,transparent);color:var(--r2)}.saved-sites-list{flex:1;min-height:0;overflow:auto;padding:4px 28px 18px}.saved-shop-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);background:#ffffff08;border-radius:20px;padding:14px 15px;margin-bottom:9px;cursor:pointer;transition:transform .25s,border-color .25s,background .25s}.saved-shop-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--r2) 40%,transparent);background:#ffffff0d}.saved-shop-main{min-width:0}.saved-shop-name{font-weight:950;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.saved-shop-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;color:#a99ca0;font-size:11px}.saved-shop-place{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.saved-tag{padding:4px 7px;border-radius:999px;background:color-mix(in srgb,var(--r) 15%,transparent);color:var(--r2);font-weight:900}.saved-shop-actions{display:flex;align-items:center;gap:7px}.saved-star{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#ffffff08;color:#a99ca0;display:grid;place-items:center;cursor:pointer;font-size:21px;line-height:1}.saved-star.on{color:var(--r2);background:color-mix(in srgb,var(--r) 15%,transparent);border-color:color-mix(in srgb,var(--r2) 50%,transparent)}.saved-open{border:1px solid var(--line);background:#ffffff08;color:#fff;border-radius:12px;padding:10px 12px;font:inherit;font-size:11px;font-weight:900;cursor:pointer}.saved-empty{text-align:center;padding:55px 20px;color:#b9aaaf}.saved-empty strong{display:block;color:#fff;font-size:20px;margin-bottom:7px}.saved-loader{text-align:center;padding:12px;color:#a99ca0;font-size:11px}.saved-sites-foot{padding:7px 28px calc(14px + env(safe-area-inset-bottom));text-align:center;color:#817378;font-size:10px}.saved-sites-overlay.show .saved-sites-popup{animation:luxSheet .45s cubic-bezier(.22,1,.36,1)}@keyframes savedSpin{to{transform:rotate(360deg)}}
+@media(max-width:650px){.saved-sites-popup{height:calc(100dvh - 12px);border-radius:25px}.saved-sites-head{padding:24px 17px 10px}.saved-sites-tools{padding:8px 17px 10px}.saved-sites-list{padding:4px 17px 14px}.saved-sites-foot{padding-left:17px;padding-right:17px}.saved-shop-card{grid-template-columns:minmax(0,1fr) auto}.saved-open{display:none}.saved-shop-actions{align-self:center}.saved-filter button{padding:8px 10px}}
+</style>
 </head>
 <body>
 <div class="wrap">
 <nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main>
 <section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
-<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Save this site to our hub for future use. Click here"><span class="hub-band"></span><span class="hub-stack"><span class="hub-l1">Save this site to our hub</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
+<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Save this site for future use. Click here"><span class="hub-band"></span><span class="hub-stack"><span class="hub-l1">Save this site</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
 <footer id="address">—</footer>
 <div class="legal-footer" aria-label="Required policies">
 <button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
@@ -602,7 +626,33 @@ s.addEventListener('animationend',function(){s.remove()});el.appendChild(s);
 if(e.pointerType!=='mouse')vib(6)},{passive:true});
 })();
 </script>
-<script>
-(function(){var b=document.getElementById("saveSiteBtn");if(!b)return;b.onclick=function(){var u=new URL("hub.html",location.href);if(typeof SLUG!=="undefined"&&SLUG)u.searchParams.set("shop",SLUG);location.href=u.toString()}})();
+<script id="saved-sites-engine">
+(function(){
+  const DB_NAME="shopmanager_saved_sites_v1", DB_VERSION=1, STORE="shops", JSON_FILE="shop-data.json", PAGE_SIZE=10;
+  let db=null, allShops=[], filtered=[], page=0, filter="all", search="", loading=false, more=true;
+  const overlay=document.getElementById("savedSitesOverlay"), list=document.getElementById("savedSitesList"), input=document.getElementById("savedSitesSearch"), count=document.getElementById("savedSitesCount"), btn=document.getElementById("saveSiteBtn");
+  if(!overlay||!list||!btn)return;
+  function openDb(){return new Promise((resolve,reject)=>{if(db)return resolve(db);const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const st=d.createObjectStore(STORE,{keyPath:"slug"});st.createIndex("lastVisited","lastVisited");st.createIndex("visits","visits");st.createIndex("favourite","favourite")}};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+  function tx(mode,fn){return openDb().then(d=>new Promise((resolve,reject)=>{const t=d.transaction(STORE,mode),st=t.objectStore(STORE),v=fn(st);t.oncomplete=()=>resolve(v);t.onerror=()=>reject(t.error)}))}
+  function getAll(){return tx("readonly",st=>new Promise((resolve,reject)=>{const r=st.getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)}))}
+  function put(x){return tx("readwrite",st=>st.put(x))}
+  function norm(x){if(!x)return null;const slug=String(x.slug||x.shop_slug||x.id||"").trim().toLowerCase();if(!slug)return null;return {slug,shop_name:String(x.shop_name||x.name||slug),store_type:String(x.store_type||x.type||"Shop"),address:String(x.address||x.place||x.location||""),latitude:x.latitude??null,longitude:x.longitude??null,website:x.website||x.shop_website||x.website_url||x.site_url||"",owner_name:x.owner_name||"",phone:x.phone||"",lastVisited:Number(x.lastVisited||0),visits:Number(x.visits||0),favourite:!!x.favourite,savedAt:Number(x.savedAt||Date.now())}}
+  function merge(base,extra){const m=new Map();base.forEach(x=>{const n=norm(x);if(n)m.set(n.slug,n)});extra.forEach(x=>{const n=norm(x);if(!n)return;const old=m.get(n.slug);m.set(n.slug,{...(old||{}),...n,lastVisited:Math.max(Number(old?.lastVisited||0),Number(n.lastVisited||0)),visits:Math.max(Number(old?.visits||0),Number(n.visits||0)),favourite:!!(old?.favourite||n.favourite),savedAt:old?.savedAt||n.savedAt})});return [...m.values()]}
+  async function importJson(){try{const r=await fetch(JSON_FILE,{cache:"no-store"});if(!r.ok)throw Error("JSON "+r.status);const j=await r.json();return Array.isArray(j?.shops)?j.shops.map(norm).filter(Boolean):[]}catch(e){return []}}
+  async function saveCurrent(){try{if(typeof SLUG==="undefined"||!SLUG||!shop)return null;const current=norm({...shop,slug:SLUG});const old=(await getAll()).find(x=>x.slug===SLUG);const now=Date.now();const saved={...(old||{}),...current,slug:SLUG,lastVisited:now,visits:Number(old?.visits||0)+1,favourite:!!old?.favourite,savedAt:old?.savedAt||now};await put(saved);return saved}catch(e){console.warn("Saved sites unavailable",e);return null}}
+  async function recordVisit(slug){try{const a=await getAll(),old=a.find(x=>x.slug===slug);if(!old)return;old.lastVisited=Date.now();old.visits=Number(old.visits||0)+1;await put(old)}catch(e){}}
+  function fmtTime(t){if(!t)return"";const d=new Date(t),diff=Date.now()-d.getTime();if(diff<60000)return"Just visited";if(diff<3600000)return Math.floor(diff/60000)+" min ago";if(diff<86400000)return Math.floor(diff/3600000)+" hr ago";if(diff<604800000)return Math.floor(diff/86400000)+" day"+(Math.floor(diff/86400000)===1?"":"s")+" ago";return d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
+  function applyFilter(){const q=search.toLowerCase().trim();filtered=allShops.filter(x=>(filter!=="fav"||x.favourite)&&(!q||(x.shop_name+" "+x.address+" "+x.store_type).toLowerCase().includes(q)));filtered.sort((a,b)=>Number(b.lastVisited||0)-Number(a.lastVisited||0)||Number(b.favourite)-Number(a.favourite)||a.shop_name.localeCompare(b.shop_name));page=0;more=true;list.innerHTML="";renderMore()}
+  function renderCard(x){const tags=[];if(x.lastVisited)tags.push('<span class="saved-tag">Last visited · '+escSaved(fmtTime(x.lastVisited))+'</span>');if(Number(x.visits||0)>=3)tags.push('<span class="saved-tag">Frequently visited</span>');const place=x.address||x.store_type||"Saved shop";const el=document.createElement("article");el.className="saved-shop-card";el.innerHTML='<div class="saved-shop-main"><div class="saved-shop-name">'+escSaved(x.shop_name)+'</div><div class="saved-shop-meta"><span class="saved-shop-place">'+escSaved(place)+'</span>'+tags.join("")+'</div></div><div class="saved-shop-actions"><button class="saved-star '+(x.favourite?"on":"")+'" type="button" aria-label="'+(x.favourite?"Remove from favourites":"Add to favourites")+'">'+(x.favourite?"★":"☆")+'</button><button class="saved-open" type="button">Open</button></div>';el.querySelector(".saved-star").onclick=async e=>{e.stopPropagation();x.favourite=!x.favourite;await put(x);applyFilter()};el.querySelector(".saved-open").onclick=e=>{e.stopPropagation();openShop(x)};el.onclick=()=>openShop(x);list.appendChild(el)}
+  function escSaved(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+  function renderMore(){if(loading||!more)return;loading=true;const start=page*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,filtered.length);for(let i=start;i<end;i++)renderCard(filtered[i]);page++;more=end<filtered.length;const ld=document.getElementById("savedSitesLoader");if(ld)ld.remove();if(more){const d=document.createElement("div");d.id="savedSitesLoader";d.className="saved-loader";d.textContent="Scroll for more…";list.appendChild(d)}else if(!filtered.length){list.innerHTML='<div class="saved-empty"><strong>No shops found</strong><span>Try another shop name or place, or switch to All.</span></div>'}loading=false;count.textContent=filtered.length+" shop"+(filtered.length===1?"":"s")+(filter==="fav"?" · favourites":"")}
+  async function prepare(){const saved=await getAll();const directory=await importJson();allShops=merge(saved,directory);const current=allShops.find(x=>x.slug===SLUG);if(current){const savedCurrent=saved.find(x=>x.slug===SLUG);if(savedCurrent){current.lastVisited=savedCurrent.lastVisited;current.visits=savedCurrent.visits;current.favourite=savedCurrent.favourite}}applyFilter()}
+  async function openSaved(){overlay.classList.add("show");overlay.setAttribute("aria-hidden","false");await saveCurrent();await prepare();input.focus({preventScroll:true})}
+  function closeSaved(){overlay.classList.remove("show");overlay.setAttribute("aria-hidden","true")}
+  function openShop(x){recordVisit(x.slug).finally(()=>{location.href="index.html?shop="+encodeURIComponent(x.slug)})}
+  btn.onclick=openSaved;document.getElementById("savedSitesClose").onclick=closeSaved;overlay.addEventListener("click",e=>{if(e.target===overlay)closeSaved()});document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("show"))closeSaved()});input.addEventListener("input",()=>{search=input.value;applyFilter()});document.querySelectorAll("[data-saved-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.savedFilter;document.querySelectorAll("[data-saved-filter]").forEach(x=>x.classList.toggle("active",x===b));applyFilter()});list.addEventListener("scroll",()=>{if(list.scrollTop+list.clientHeight>=list.scrollHeight-180)renderMore()});
+  // Save the current shop on normal visits only after its live data has loaded; this preserves the user's explicit Save button as the entry point while keeping visit history accurate for already-saved shops.
+  if(typeof applyShopData==="function"){const oldApply=applyShopData;window.applyShopData=function(data){oldApply(data);setTimeout(async()=>{try{const saved=await getAll(),x=saved.find(v=>v.slug===SLUG);if(x){x.lastVisited=Date.now();x.visits=Number(x.visits||0)+1;await put(x)}}catch(e){}},0)}}
+})();
 </script>
 </body></html>
