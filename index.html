@@ -121,6 +121,116 @@ body:after{content:"";position:fixed;inset:-20px;z-index:-4;background:linear-gr
 .hero-content:has(.shop-hero-image:not([hidden])):before{top:7%!important;height:59%!important;bottom:auto!important;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.5) 60%,#000 100%)!important}
 .hero-content:has(.shop-hero-image:not([hidden])) h1{ text-shadow:0 0 8px #000,0 0 18px #000,0 0 34px #000,0 0 55px #000!important}
 .hero-content:has(.shop-hero-image:not([hidden])) .eyebrow{ text-shadow:0 0 12px #000,0 0 24px #000!important}
+
+/* Premium responsive storefront refinement */
+/* Restore readable, premium outlined buttons consistently across the site. */
+.btn,
+button.btn,
+a.btn,
+.product-cart .btn,
+.checkout-actions .btn,
+.cart-popup-actions .btn,
+.checkout-submit-row .btn,
+.payment-confirm-box .confirm-actions .btn,
+#upiShare,#checkoutShareQr,#checkoutCopyUpi,#cartBack,#cartSendOrder,#checkoutBack,#checkoutSubmit,#paymentConfirmCancel,#paymentConfirmYes {
+  color:#fff !important;
+  border:1px solid rgba(126,176,255,.62) !important;
+  background:linear-gradient(135deg,rgba(38,59,94,.96),rgba(16,25,45,.98)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 5px 18px rgba(0,0,0,.25) !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.35);
+  transition:transform .18s ease,border-color .18s ease,filter .18s ease,box-shadow .18s ease;
+}
+.btn.primary,
+button.btn.primary,
+a.btn.primary {
+  color:#fff !important;
+  border-color:rgba(255,190,112,.85) !important;
+  background:linear-gradient(135deg,#e9b96e 0%,#bd8139 48%,#805022 100%) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 20px rgba(190,129,57,.2) !important;
+}
+.btn:hover,button.btn:hover,a.btn:hover,.qty-btn:hover,#upiShare:hover,#checkoutShareQr:hover,#checkoutCopyUpi:hover {
+  filter:brightness(1.12);border-color:#d9e7ff !important;transform:translateY(-1px);
+}
+.btn:focus-visible,button:focus-visible,a.btn:focus-visible,.qty-btn:focus-visible {
+  outline:2px solid #f2c783 !important;outline-offset:3px;
+}
+.close,.product-preview-close,.qty-btn,.saved-sites-close {
+  color:#fff !important;border:1px solid rgba(142,180,238,.48) !important;
+  background:linear-gradient(145deg,#202e48,#0b1220) !important;
+  box-shadow:inset 0 1px 0 #ffffff18,0 4px 14px #0005;
+}
+/* No hero photo: remove the empty hero backdrop/glow so the shop header blends into the normal page background. */
+.hero:has(.shop-hero-image[hidden]){background:var(--bg)!important;box-shadow:none!important;}
+.hero:has(.shop-hero-image[hidden]) .hero-content{background:var(--bg)!important;}
+.hero-content:has(.shop-hero-image[hidden]):before{display:none!important;content:none!important;background:none!important;}
+.hero:has(.shop-hero-image[hidden]) .orb{display:none!important;opacity:0!important;visibility:hidden!important;}
+/* Let the hero photo fill the whole hero region; fade it into the page background. */
+.hero{min-height:clamp(590px,82vh,850px);border-radius:0 0 32px 32px;background:#070b16;}
+.hero-content{min-height:inherit;padding:clamp(34px,6vw,76px) 20px;}
+.shop-hero-image{inset:0;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 45%;opacity:.48;}
+.hero-content:has(.shop-hero-image:not([hidden])):before{content:"";position:absolute;inset:0;height:100%;z-index:-1;background:linear-gradient(180deg,rgba(3,7,17,.22) 0%,rgba(3,7,17,.28) 28%,rgba(3,7,17,.72) 65%,#070b16 100%);}
+.hero-content:has(.shop-hero-image:not([hidden])) h1{text-shadow:0 2px 3px #000,0 0 16px #000,0 0 38px #000,0 8px 36px #000;}
+.hero-content:has(.shop-hero-image:not([hidden])) .eyebrow{text-shadow:0 2px 8px #000,0 0 20px #000;}
+/* Consistent product rows: image at left, readable details in the middle, controls at right. */
+.product-item,
+.product-item:has(.product-image-open){
+  display:grid !important;grid-template-columns:clamp(54px,8vw,76px) minmax(0,1fr) auto !important;
+  grid-template-rows:auto !important;column-gap:13px !important;row-gap:0 !important;
+  align-items:center !important;padding:13px !important;min-height:98px;
+}
+.product-item:has(.product-image-open) .product-image-open,
+.product-item:has(.product-image-open) .product-thumb{
+  grid-column:1 !important;grid-row:1 !important;justify-self:center !important;align-self:center !important;
+  width:clamp(52px,7vw,72px) !important;height:clamp(52px,7vw,72px) !important;max-width:100%;
+  flex:0 0 auto !important;object-fit:contain !important;border-radius:13px !important;
+  background:linear-gradient(145deg,#ffffff12,#ffffff04) !important;border:1px solid rgba(174,198,238,.3) !important;
+}
+.product-item:has(.product-image-open) .product-main{
+  grid-column:2 !important;grid-row:1 !important;align-items:flex-start !important;text-align:left !important;
+  width:auto !important;min-width:0 !important;
+}
+.product-item:has(.product-image-open) .qty-control{
+  grid-column:3 !important;grid-row:1 !important;align-self:center !important;gap:7px !important;
+}
+.product-item:not(:has(.product-image-open)){grid-template-columns:minmax(0,1fr) auto !important;}
+.product-main{min-width:0 !important;}
+.product-name{font-size:clamp(14px,1.6vw,17px);line-height:1.3;}
+.product-prices{justify-content:flex-start !important;gap:7px;}
+.qty-btn{width:34px;height:34px;flex:0 0 34px;border-radius:11px;font-size:20px;}
+.product-stock{overflow-wrap:anywhere;}
+.product-cart{border-color:rgba(126,176,255,.48);background:linear-gradient(145deg,rgba(17,28,48,.98),rgba(8,14,26,.98));}
+.product-item{background:linear-gradient(115deg,rgba(255,255,255,.07),rgba(255,255,255,.025));border-color:rgba(166,191,231,.22);}
+.product-preview-dialog{background:linear-gradient(145deg,#1b2c49f5,#080d18f8);border-color:rgba(126,176,255,.45);}
+@media(max-width:650px){
+ .hero{min-height:clamp(540px,78svh,720px);border-radius:0 0 24px 24px;}
+ .hero-content{padding:38px 16px 32px;}
+ .hero h1{font-size:clamp(58px,17vw,82px);line-height:.92;letter-spacing:-.07em;margin:18px 0 22px;overflow-wrap:anywhere;}
+ .hero p{font-size:15px;margin-bottom:23px;}
+ .actions{gap:8px;max-width:440px;}
+ .actions .btn{padding:11px 12px;font-size:13px;}
+ .product-item,.product-item:has(.product-image-open){grid-template-columns:54px minmax(0,1fr) auto !important;column-gap:9px !important;padding:10px !important;min-height:84px;}
+ .product-item:has(.product-image-open) .product-thumb,.product-item:has(.product-image-open) .product-image-open{width:50px !important;height:50px !important;}
+ .product-item:has(.product-image-open) .product-main{align-items:flex-start !important;text-align:left !important;}
+ .product-item:has(.product-image-open) .qty-control{gap:4px !important;}
+ .qty-btn{width:29px;height:31px;flex-basis:29px;border-radius:9px;font-size:18px;}
+ .qty-value{min-width:17px;font-size:13px;}
+ .product-name{font-size:13px;}
+ .product-offer{font-size:15px;}
+ .product-selling{font-size:11px;}
+ .product-stock{font-size:9px;}
+ .product-list-status{min-width:0;font-size:9px;}
+ .product-cart-meta strong{font-size:13px;}
+ .product-cart-total{font-size:17px;}
+ .product-cart{padding:10px;}
+}
+@media(max-width:370px){
+ .product-item,.product-item:has(.product-image-open){grid-template-columns:44px minmax(0,1fr) auto !important;column-gap:7px !important;padding:8px !important;}
+ .product-item:has(.product-image-open) .product-thumb,.product-item:has(.product-image-open) .product-image-open{width:42px !important;height:42px !important;}
+ .qty-btn{width:25px;height:28px;flex-basis:25px;}
+ .qty-control{gap:3px !important;}
+ .actions .btn{padding:10px;font-size:12px;}
+}
+
 </style>
 <style id="lux-theme">
 :root{--r:#b8913f;--r2:#f0d58a;--bg:#070605;--g1:#b8913f;--g2:#5c4519;--on:#1a1305;
@@ -892,4 +1002,35 @@ if ("serviceWorker" in navigator) {
   document.addEventListener("keydown",function(event){if(event.key==="Escape"&&overlay.classList.contains("show"))closeProductImage()});
 })();
 </script>
+
+<style id="fix-empty-hero-black-space-v8">
+/* When there is no valid shop hero photo, remove the entire photo-stage backdrop and its oversized empty area. */
+.hero:has(#shopHeroImage[hidden]),
+.hero:has(#shopHeroImage[hidden]) .hero-content {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+.hero:has(#shopHeroImage[hidden]) {
+  min-height: 0 !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.hero:has(#shopHeroImage[hidden]) .hero-content {
+  min-height: 0 !important;
+  padding: clamp(28px, 5vw, 54px) 20px clamp(28px, 4vw, 44px) !important;
+}
+.hero:has(#shopHeroImage[hidden]) .hero-content::before,
+.hero:has(#shopHeroImage[hidden]) .orb {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+/* Keep the regular page background; do not add a separate black rectangle behind the shop header. */
+</style>
+
 </body></html>
