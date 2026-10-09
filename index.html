@@ -231,6 +231,44 @@ a.btn.primary {
  .actions .btn{padding:10px;font-size:12px;}
 }
 
+
+/* v10: softer hero image and spacious, aligned three-column action buttons */
+.shop-hero-image{opacity:.27!important;}
+.hero-content:has(.shop-hero-image:not([hidden])):before{
+  background:linear-gradient(180deg,rgba(3,7,17,.32) 0%,rgba(3,7,17,.38) 32%,rgba(3,7,17,.68) 68%,#070b16 100%)!important;
+}
+.actions{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+  width:min(100%,690px)!important;
+  max-width:690px!important;
+  margin:0 auto!important;
+  align-items:stretch!important;
+}
+.actions .btn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  padding:12px 10px!important;
+  white-space:normal!important;
+  text-align:center!important;
+  line-height:1.25!important;
+  overflow-wrap:anywhere!important;
+}
+@media(max-width:650px){
+  .actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;width:100%!important;}
+  .actions .btn{min-height:45px!important;padding:10px 6px!important;font-size:12px!important;border-radius:12px!important;}
+}
+@media(max-width:360px){
+  .actions{gap:7px!important;}
+  .actions .btn{font-size:11px!important;padding:9px 4px!important;}
+}
+
 </style>
 <style id="lux-theme">
 :root{--r:#b8913f;--r2:#f0d58a;--bg:#070605;--g1:#b8913f;--g2:#5c4519;--on:#1a1305;
