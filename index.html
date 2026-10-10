@@ -350,13 +350,13 @@ body:has(.overlay.show):before,body:has(.overlay.show):after,body:has(.overlay.s
 border:1.5px solid transparent;
 background:linear-gradient(145deg,color-mix(in srgb,var(--r) 14%,var(--bg)),var(--bg) 58%,color-mix(in srgb,var(--r2) 8%,var(--bg))) padding-box,
 linear-gradient(115deg,color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent),var(--r2),color-mix(in srgb,var(--r) 35%,transparent)) border-box;
-background-size:100% 100%,400% 100%;animation:hubBorder 9s linear infinite;
+background-size:100% 100%;
 box-shadow:inset 0 1px 0 #ffffff1f,inset 0 -12px 24px -16px color-mix(in srgb,var(--r2) 45%,transparent),0 18px 40px -20px var(--r2),0 2px 0 #00000055;
 transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s}
 .hub-save:hover{box-shadow:inset 0 1px 0 #ffffff2e,inset 0 -12px 24px -14px color-mix(in srgb,var(--r2) 60%,transparent),0 22px 46px -18px var(--r2),0 2px 0 #00000055}
 .hub-save:active{transform:scale(.975)}
-.hub-save:after{content:"";position:absolute;top:-30%;bottom:-30%;left:0;width:34%;z-index:2;pointer-events:none;transform:translateX(-160%) skewX(-22deg);background:linear-gradient(90deg,transparent,#ffffff22,transparent);animation:hubSheen 7s ease-in-out 1.5s infinite}
-.hub-band{position:absolute;left:0;right:0;top:0;height:55%;z-index:3;pointer-events:none;background:linear-gradient(180deg,transparent,#ffffff2b 50%,transparent);animation:hubBand 5.5s cubic-bezier(.45,0,.55,1) infinite}
+.hub-save:after{content:none!important;display:none!important}
+.hub-band{display:none!important}
 .hub-stack{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:9px}
 .hub-stack>span{display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;text-transform:uppercase;animation:hubFloat 4.4s ease-in-out infinite}
 .hub-l1{font-size:clamp(11px,3.4vw,13px);font-weight:800;letter-spacing:.17em;color:#fff;text-shadow:0 1px 10px #0009}
@@ -582,13 +582,20 @@ a.btn.primary,
 }
 </style>
 
+<style id="production-hero-video-support">
+.hero-shell{position:relative}
+.shop-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;opacity:.42;pointer-events:none;z-index:0}
+.shop-hero-video[hidden]{display:none!important}
+.hero-shell.has-shop-hero-video{background-image:linear-gradient(180deg,rgba(0,0,0,.68) 0%,rgba(0,0,0,.56) 38%,rgba(0,0,0,.72) 70%,var(--bg,#070605) 100%)!important}
+.hero-shell.has-shop-hero-video .nav,.hero-shell.has-shop-hero-video .hero{position:relative;z-index:1}
+</style>
 </head>
 <body>
 <div class="wrap">
-<div class="hero-shell" id="heroShell"><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
+<div class="hero-shell" id="heroShell"><video id="shopHeroVideo" class="shop-hero-video" aria-hidden="true" muted loop playsinline autoplay hidden></video><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div class="hero-content"><img id="shopHeroImage" class="shop-hero-image" alt="Shop" hidden><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main></div>
 <section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
-<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-band"></span><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
+<div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
 <footer id="address">—</footer>
 <div class="legal-footer" aria-label="Required policies">
 <button type="button" data-policy="privacy">Privacy Policy</button><span class="dot">·</span>
@@ -645,7 +652,7 @@ function infoActive(){const i=shop?.info;if(!i||i.enabled===false)return false;c
 function offerActive(){let o=shop?.offer;return !!(o?.endAt&&new Date(o.endAt)>new Date())}
 function signature(){let s=state();return JSON.stringify({closed:s.closed,next:s.next,offer:shop?.offer,info:shop?.info})}
 function safeImageUrl(value){try{const raw=String(value??"").trim();if(!raw)return "";const u=new URL(raw,window.location.href);return (u.protocol==="https:"||u.protocol==="http:")?u.href:""}catch(e){return ""}}
-function renderShopHeroImage(){const img=$("shopHeroImage"),shell=$("heroShell");if(!img||!shell)return;const clear=()=>{img.hidden=true;img.removeAttribute("src");shell.style.removeProperty("--shop-hero-bg");shell.classList.remove("has-shop-hero")};const url=safeImageUrl(shop?.hero_image_url);if(!url){clear();return}const probe=new Image();probe.onload=()=>{shell.style.setProperty("--shop-hero-bg","url(\""+url.replace(/[\"\\]/g,"\\$&")+"\")");shell.classList.add("has-shop-hero");img.hidden=true;img.removeAttribute("src")};probe.onerror=clear;probe.src=url;img.alt=String(shop?.shop_name||"Shop")+" hero image"}
+function renderShopHeroImage(){const img=$("shopHeroImage"),video=$("shopHeroVideo"),shell=$("heroShell");if(!img||!shell)return;const clear=()=>{img.hidden=true;img.removeAttribute("src");if(video){video.pause();video.hidden=true;video.removeAttribute("src");video.load()}shell.style.removeProperty("--shop-hero-bg");shell.classList.remove("has-shop-hero","has-shop-hero-video")};const url=safeImageUrl(shop?.hero_image_url);if(!url){clear();return}const isVideo=/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i.test(url);if(isVideo&&video){img.hidden=true;img.removeAttribute("src");shell.style.removeProperty("--shop-hero-bg");video.onloadeddata=()=>{video.hidden=false;shell.classList.add("has-shop-hero","has-shop-hero-video");const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==="function")playAttempt.catch(()=>{})};video.onerror=clear;video.src=url;video.load();return}if(video){video.pause();video.hidden=true;video.removeAttribute("src");video.load()}shell.classList.remove("has-shop-hero-video");const probe=new Image();probe.onload=()=>{shell.style.setProperty("--shop-hero-bg","url(\""+url.replace(/[\"\\]/g,"\\$&")+"\")");shell.classList.add("has-shop-hero");img.hidden=true;img.removeAttribute("src")};probe.onerror=clear;probe.src=url;img.alt=String(shop?.shop_name||"Shop")+" hero image"}
 function productImageMarkup(item){const url=safeImageUrl(item?.image_url);if(!url)return "";return `<button type="button" class="product-image-open" data-product-image="${esc(url)}" data-product-name="${esc(item.name)}" aria-label="Preview image of ${esc(item.name)}" style="padding:0;border:0;background:transparent;display:flex;align-items:center;cursor:zoom-in"><img class="product-thumb" src="${esc(url)}" alt="${esc(item.name)}" loading="lazy" decoding="async" onerror="this.closest('.product-image-open').hidden=true"></button>`}
 function openProductImage(url,name){const safe=safeImageUrl(url);if(!safe)return;const overlay=$("productPreviewOverlay"),img=$("productPreviewImage"),title=$("productPreviewTitle");if(!overlay||!img||!title)return;img.onerror=()=>{closeProductImage()};img.alt=String(name||"Product image");img.src=safe;title.textContent=String(name||"");overlay.classList.add("show");overlay.setAttribute("aria-hidden","false");$("productPreviewClose")?.focus()}
 function closeProductImage(){const overlay=$("productPreviewOverlay"),img=$("productPreviewImage");if(!overlay)return;overlay.classList.remove("show");overlay.setAttribute("aria-hidden","true");if(img){img.removeAttribute("src");img.onerror=null}}
