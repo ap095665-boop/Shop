@@ -612,7 +612,7 @@ a.btn.primary,
 </head>
 <body>
 <div class="wrap">
-<div class="hero-shell" id="heroShell"><video id="shopHeroVideo" class="shop-hero-video" aria-hidden="true" muted loop playsinline preload="none" hidden></video><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
+<div class="hero-shell" id="heroShell"><video id="shopHeroVideo" class="shop-hero-video" aria-hidden="true" muted autoplay loop playsinline preload="auto" hidden></video><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div class="hero-content"><img id="shopHeroImage" class="shop-hero-image" alt="Shop" hidden><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main></div>
 <section class="grid"><div class="card"><div class="label">Store type</div><div class="value" id="type2">—</div></div><div class="card"><div class="label">Owner</div><div class="value" id="owner">—</div></div><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
 <div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
@@ -717,13 +717,18 @@ function renderShopHeroImage(){
   if(isVideo&&video){
     img.hidden=true;img.removeAttribute("src");
     shell.style.removeProperty("--shop-hero-bg");
-    video.pause();video.hidden=true;video.preload="none";video.loop=true;video.muted=true;video.playsInline=true;
-    video.onloadeddata=()=>{
+    video.pause();video.hidden=true;video.preload="auto";video.loop=true;video.muted=true;video.autoplay=true;video.playsInline=true;
+    video.onloadedmetadata=()=>{
       video.hidden=false;
       shell.classList.add("has-shop-hero","has-shop-hero-video");
       syncHeroVideoPlayback();
     };
-    video.onerror=clear;
+    video.oncanplay=()=>{
+      video.hidden=false;
+      shell.classList.add("has-shop-hero","has-shop-hero-video");
+      syncHeroVideoPlayback();
+    };
+    video.onerror=()=>{console.warn("Hero video could not load; showing the image fallback.");clear()};
     if(video.getAttribute("src")!==url){video.src=url;video.load()}
     return;
   }
