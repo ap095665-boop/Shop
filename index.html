@@ -1294,4 +1294,28 @@ if ("serviceWorker" in navigator) {
 @media(max-width:420px){.cart-badge{min-width:23px!important;height:23px!important;margin-left:7px!important;font-size:11px!important}.qty-value{min-width:24px;}}
 </style>
 
+<style id="store-owner-card-centering-theme">
+/* Requested-only change: center Store type and Owner cards on laptop/desktop and tint them to the active theme. */
+@media (min-width: 651px) {
+  .grid:has(> .card #type2) {
+    grid-template-columns: repeat(2, minmax(0, 392px)) !important;
+    justify-content: center !important;
+  }
+  .grid > .card:has(#type2),
+  .grid > .card:has(#owner) {
+    text-align: center !important;
+    background: linear-gradient(145deg,
+      color-mix(in srgb, var(--r, #b8913f) 17%, var(--bg, #070605)),
+      color-mix(in srgb, var(--r2, #f0d58a) 9%, var(--bg, #070605))) !important;
+    border-color: color-mix(in srgb, var(--r, #b8913f) 42%, var(--line, #ffffff20)) !important;
+  }
+  .grid > .card:has(#type2) .label,
+  .grid > .card:has(#owner) .label,
+  .grid > .card:has(#type2) .value,
+  .grid > .card:has(#owner) .value {
+    text-align: center !important;
+    width: 100%;
+  }
+}
+</style>
 </body></html>
