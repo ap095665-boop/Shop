@@ -742,7 +742,7 @@ function renderProductSlide(){
   // Show all products by default, including products without images. When a
   // search query is entered, show only products whose names match it.
   const items=allItems.filter(x=>!query||String(x.name||"").toLocaleLowerCase().includes(query));
-  const searchBox=`<label class="product-search-label"><span class="small">SEARCH PRODUCTS</span><input id="productSearchInput" class="product-search-input" type="search" autocomplete="off" placeholder="Search products or services…" value="${esc(productSearchQuery)}" aria-label="Search products or services"></label>`;
+  const searchBox=`<label class="product-search-label"><input id="productSearchInput" class="product-search-input" type="search" autocomplete="off" placeholder="Search products or services…" value="${esc(productSearchQuery)}" aria-label="Search products or services"></label>`;
   if(!allItems.length)return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Nothing listed yet.</h3><p>The shop has not published any products or services.</p></article>`;
   if(!items.length){const msg="No products match your search.";return `<article class="slide product-slide"><div class="popup-kicker">PRODUCTS & SERVICES</div><h3>Find products.</h3>${searchBox}<div class="product-search-empty">${esc(msg)}</div></article>`}
   if(mode==="list"){
