@@ -242,7 +242,7 @@ function render(o){
   $("statusBadge").className="badge "+statusClass(o.order_status);
 
   $("customer").textContent=o.customer_name||"—";
-  $("payment").textContent=o.transaction_id==="CASH_ON_DELIVERY"?"Cash on Delivery":statusText(o.payment_status);
+  $("payment").textContent=o.transaction_id==="CASH_ON_DELIVERY"?"Pay on Pickup":statusText(o.payment_status);
   $("pickup").textContent=dateTime(o.pickup_at);
   $("total").textContent=money(o.total);
 
