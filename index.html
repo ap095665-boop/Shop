@@ -933,14 +933,42 @@ function claimSiteFetch(){
   }catch(e){return true}
 }
 function releaseSiteFetch(){try{localStorage.removeItem(siteFetchLockKey())}catch(e){}}
+let initialUpdatesTimer=null;
+let initialUpdatesPopupHandled=false;
+function scheduleInitialUpdatesPopup(){
+  if(initialUpdatesPopupHandled||initialUpdatesTimer||!active())return;
+  // Give the storefront three seconds to settle before presenting shop updates.
+  initialUpdatesTimer=setTimeout(()=>{
+    initialUpdatesTimer=null;
+    if(initialUpdatesPopupHandled||!active())return;
+    // Do not cover checkout, payment, or another customer dialog.
+    if($("cartOverlay")?.classList.contains("show")||$("orderPaymentOverlay")?.classList.contains("show")||$("payOverlay")?.classList.contains("show")||$("sitePolicy")?.classList.contains("show"))return;
+    initialUpdatesPopupHandled=true;
+    renderSlides();
+    $("overlay").classList.add("show");
+    popupSig=signature();
+    scheduleProductBrowse();
+    syncShopHeroVideoPlayback();
+  },3000);
+}
+function cancelInitialUpdatesPopup(){
+  if(initialUpdatesTimer){clearTimeout(initialUpdatesTimer);initialUpdatesTimer=null}
+  initialUpdatesPopupHandled=true;
+}
 function applyShopData(data){
   shop=data;
   popupSig="";
   render();
   const pending=loadPendingOrder();
   if(pending&&pending.slug===SLUG&&new Date(pending.tracker_expires_at)>new Date())setTimeout(()=>openCheckout(pending),450);
-  const sig=signature();
-  if(active()){$("overlay").classList.add("show");popupSig=sig;scheduleProductBrowse()}else{$("overlay").classList.remove("show");if(productBrowseTimer){clearTimeout(productBrowseTimer);productBrowseTimer=null}}
+  if(active()){
+    scheduleInitialUpdatesPopup();
+  }else{
+    if(initialUpdatesTimer){clearTimeout(initialUpdatesTimer);initialUpdatesTimer=null}
+    $("overlay").classList.remove("show");
+    if(productBrowseTimer){clearTimeout(productBrowseTimer);productBrowseTimer=null}
+    syncShopHeroVideoPlayback();
+  }
 }
 async function fetchShopFromSupabase(){
   if(siteFetchInFlight)return null;
@@ -1056,7 +1084,7 @@ async function shareQr(){
   }
 }
 $("payQr").onclick=openPayment;$("upiShare").onclick=shareQr;$("payClose").onclick=()=>$("payOverlay").classList.remove("show");$("payOverlay").addEventListener("click",e=>{if(e.target===$("payOverlay"))$("payOverlay").classList.remove("show")});
-$("updates").onclick=()=>{$("overlay").classList.add("show");renderSlides();scheduleProductBrowse()};$("close").onclick=()=>{$("overlay").classList.remove("show");if(productBrowseTimer){clearTimeout(productBrowseTimer);productBrowseTimer=null}};
+$("updates").onclick=()=>{cancelInitialUpdatesPopup();renderSlides();$("overlay").classList.add("show");scheduleProductBrowse();syncShopHeroVideoPlayback()};$("close").onclick=()=>{cancelInitialUpdatesPopup();$("overlay").classList.remove("show");if(productBrowseTimer){clearTimeout(productBrowseTimer);productBrowseTimer=null}syncShopHeroVideoPlayback()};
 $("cartClose").onclick=closeCart;$("orderPaymentClose").onclick=closeCheckout;$("checkoutBack").onclick=closeCheckout;$("checkoutShareQr").onclick=shareCheckoutQr;$("checkoutCopyUpi").onclick=copyCheckoutUpi;$("paymentScreenshot").addEventListener("change",e=>runPaymentOcr(e.target.files?.[0]||null));function openPaymentSubmitConfirmation(){
   if(!currentCheckoutOrder)return;
   const customer=$("checkoutCustomerName").value.trim();
