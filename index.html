@@ -684,6 +684,9 @@ a.btn.primary,
 
 </head>
 <body>
+<div id="welcomeIntroOverlay" class="welcome-intro-overlay" aria-hidden="true" hidden>
+  <div class="welcome-intro-frame"><img id="welcomeIntroImage" class="welcome-intro-image" alt="Welcome" decoding="async" fetchpriority="high"></div>
+</div>
 <div class="wrap">
 <div class="hero-shell" id="heroShell"><video id="shopHeroVideo" class="shop-hero-video" aria-hidden="true" muted loop playsinline autoplay hidden></video><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div class="hero-content"><img id="shopHeroImage" class="shop-hero-image" alt="Shop" hidden><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><a class="btn" id="rateUs" target="_blank" rel="noopener noreferrer" hidden>⭐ Rate Us</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main></div>
@@ -753,8 +756,43 @@ function offerActive(){let o=shop?.offer;return !!(o?.endAt&&new Date(o.endAt)>n
 function signature(){let s=state();return JSON.stringify({closed:s.closed,next:s.next,offer:shop?.offer,info:shop?.info})}
 function safeImageUrl(value){try{const raw=String(value??"").trim();if(!raw)return "";const u=new URL(raw,window.location.href);return (u.protocol==="https:"||u.protocol==="http:")?u.href:""}catch(e){return ""}}
 function addressDetails(value){let raw=String(value??"").trim();let aboutUs="";const aboutMatch=raw.match(/-aboutus\(([\s\S]*?)\)/i);if(aboutMatch){aboutUs=aboutMatch[1].trim();raw=raw.replace(aboutMatch[0]," ").replace(/[ \t]{2,}/g," ").trim()}const match=raw.match(/https?:\/\/[^\s<>"'`]+/i);let rateUrl="";if(match){rateUrl=safeImageUrl(match[0].replace(/[),.;]+$/,""));if(rateUrl)raw=raw.replace(match[0]," ").replace(/[\s,;|]+$/g,"").replace(/^[\s,;|]+/g,"").trim()}return{address:raw,rateUrl,aboutUs}}
+let welcomeIntroStarted=false,welcomeIntroTimer=null,welcomeIntroExitTimer=null,welcomeIntroVisible=false;
+function welcomeImageFromAboutUs(value){
+  const about=String(value??"");
+  const matches=about.match(/https?:\/\/[^\s<>"'`]+?\.webp(?:\?[^\s<>"'`]*)?/ig)||[];
+  for(const candidate of matches){const url=safeImageUrl(candidate.replace(/[),.;]+$/,""));if(url)return url}
+  return "";
+}
+function closeWelcomeIntro(){
+  const overlay=$("welcomeIntroOverlay");if(!overlay||!welcomeIntroVisible)return;
+  welcomeIntroVisible=false;
+  if(welcomeIntroTimer){clearTimeout(welcomeIntroTimer);welcomeIntroTimer=null}
+  overlay.classList.add("is-exiting");
+  if(welcomeIntroExitTimer)clearTimeout(welcomeIntroExitTimer);
+  welcomeIntroExitTimer=setTimeout(()=>{overlay.hidden=true;overlay.classList.remove("is-exiting");overlay.setAttribute("aria-hidden","true");const img=$("welcomeIntroImage");if(img){img.onerror=null;img.removeAttribute("src")}welcomeIntroExitTimer=null;syncShopHeroVideoPlayback()},740);
+}
+function startWelcomeIntroFromAboutUs(aboutUs){
+  if(welcomeIntroStarted)return;
+  const url=welcomeImageFromAboutUs(aboutUs);if(!url)return;
+  const overlay=$("welcomeIntroOverlay"),img=$("welcomeIntroImage");if(!overlay||!img)return;
+  welcomeIntroStarted=true;
+  let introBegan=false;
+  const begin=()=>{
+    if(!welcomeIntroVisible||introBegan)return;
+    introBegan=true;
+    overlay.hidden=false;overlay.classList.remove("is-exiting");overlay.setAttribute("aria-hidden","false");
+    syncShopHeroVideoPlayback();
+    welcomeIntroTimer=setTimeout(closeWelcomeIntro,2600);
+  };
+  welcomeIntroVisible=true;
+  img.onload=begin;
+  img.onerror=()=>{welcomeIntroVisible=false;overlay.hidden=true;overlay.setAttribute("aria-hidden","true");if(welcomeIntroTimer){clearTimeout(welcomeIntroTimer);welcomeIntroTimer=null}};
+  img.src=url;
+  if(img.complete&&img.naturalWidth>0)begin();
+}
+
 let shopHeroVideoUrl="",shopHeroVideoObserver=null,shopHeroVideoMutationObserver=null;
-function shopHeroVideoBlocked(){return document.hidden||!!document.querySelector('.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
+function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
 function syncShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.hidden||!video.src)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopHeroVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(video.paused){const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}}
 function initShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.autoplay=false;video.preload="auto";if("IntersectionObserver" in window){shopHeroVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopHeroVideoPlayback()},{threshold:0.01});shopHeroVideoObserver.observe(video)}const sync=()=>syncShopHeroVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopHeroVideoMutationObserver=new MutationObserver(sync);shopHeroVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 function renderShopHeroImage(){const img=$("shopHeroImage"),video=$("shopHeroVideo"),shell=$("heroShell");if(!img||!shell)return;const clear=()=>{img.hidden=true;img.removeAttribute("src");if(video){video.pause();video.hidden=true;video.removeAttribute("src");video.load();shopHeroVideoUrl=""}shell.style.removeProperty("--shop-hero-bg");shell.classList.remove("has-shop-hero","has-shop-hero-video")};const url=safeImageUrl(shop?.hero_image_url);if(!url){clear();return}const isVideo=/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i.test(url);if(isVideo&&video){initShopHeroVideoPlayback();img.hidden=true;img.removeAttribute("src");shell.style.removeProperty("--shop-hero-bg");shell.classList.add("has-shop-hero","has-shop-hero-video");video.hidden=false;video.onerror=()=>{video.pause();video.hidden=true;shell.classList.remove("has-shop-hero-video");shell.classList.remove("has-shop-hero")};video.onloadeddata=()=>{video.hidden=false;shell.classList.add("has-shop-hero","has-shop-hero-video");syncShopHeroVideoPlayback()};if(shopHeroVideoUrl!==url||video.getAttribute("src")!==url){shopHeroVideoUrl=url;video.src=url;video.load()}else{syncShopHeroVideoPlayback()}return}if(video){video.pause();video.hidden=true;if(shopHeroVideoUrl){video.removeAttribute("src");video.load();shopHeroVideoUrl=""}}shell.classList.remove("has-shop-hero-video");const probe=new Image();probe.onload=()=>{shell.style.setProperty("--shop-hero-bg","url(\""+url.replace(/["\\]/g,"\\$&")+"\")");shell.classList.add("has-shop-hero");img.hidden=true;img.removeAttribute("src")};probe.onerror=clear;probe.src=url;img.alt=String(shop?.shop_name||"Shop")+" hero image"}
@@ -941,6 +979,8 @@ function scheduleInitialUpdatesPopup(){
   initialUpdatesTimer=setTimeout(()=>{
     initialUpdatesTimer=null;
     if(initialUpdatesPopupHandled||!active())return;
+    // Let the welcome intro finish its exit animation before showing shop updates.
+    if(welcomeIntroVisible||!$("welcomeIntroOverlay")?.hidden){initialUpdatesTimer=setTimeout(()=>{initialUpdatesTimer=null;scheduleInitialUpdatesPopupRetry()},200);return}
     // Do not cover checkout, payment, or another customer dialog.
     if($("cartOverlay")?.classList.contains("show")||$("orderPaymentOverlay")?.classList.contains("show")||$("payOverlay")?.classList.contains("show")||$("sitePolicy")?.classList.contains("show"))return;
     initialUpdatesPopupHandled=true;
@@ -951,12 +991,19 @@ function scheduleInitialUpdatesPopup(){
     syncShopHeroVideoPlayback();
   },3000);
 }
+function scheduleInitialUpdatesPopupRetry(){
+  if(initialUpdatesPopupHandled||!active())return;
+  if(welcomeIntroVisible||!$("welcomeIntroOverlay")?.hidden){initialUpdatesTimer=setTimeout(()=>{initialUpdatesTimer=null;scheduleInitialUpdatesPopupRetry()},200);return}
+  if($("cartOverlay")?.classList.contains("show")||$("orderPaymentOverlay")?.classList.contains("show")||$("payOverlay")?.classList.contains("show")||$("sitePolicy")?.classList.contains("show"))return;
+  initialUpdatesPopupHandled=true;renderSlides();$("overlay").classList.add("show");popupSig=signature();scheduleProductBrowse();syncShopHeroVideoPlayback();
+}
 function cancelInitialUpdatesPopup(){
   if(initialUpdatesTimer){clearTimeout(initialUpdatesTimer);initialUpdatesTimer=null}
   initialUpdatesPopupHandled=true;
 }
 function applyShopData(data){
   shop=data;
+  startWelcomeIntroFromAboutUs(addressDetails(shop?.address).aboutUs);
   popupSig="";
   render();
   const pending=loadPendingOrder();
@@ -1125,7 +1172,7 @@ load();
 <div id="thmHint" aria-hidden="true"></div>
 <aside id="thmPanel" role="dialog" aria-label="Theme settings" aria-hidden="true">
  <div class="thm-head"><div><div class="thm-kicker">Appearance</div><h3>Theme settings</h3></div><button class="close" id="thmClose" type="button" aria-label="Close theme settings">×</button></div>
- <p>Choose one of 8 themes. Swipe right-to-left to open this panel.</p>
+ <p>Choose one of 8 premium themes. Your pick is remembered on this device. Swipe right-to-left to open this panel.</p>
  <div id="thmGrid"></div>
 </aside>
 <script>
@@ -1507,5 +1554,24 @@ if ("serviceWorker" in navigator) {
 
 <style id="product-search-enhancement">
 .product-search-label{display:flex;flex-direction:column;gap:6px;margin:2px 0 12px;flex:0 0 auto}.product-search-input{width:100%;border:1px solid color-mix(in srgb,var(--r2) 35%,transparent);border-radius:13px;background:#ffffff0b;color:#fff;padding:12px 13px;font:inherit;outline:none}.product-search-input:focus{border-color:var(--r2);box-shadow:0 0 0 3px color-mix(in srgb,var(--r2) 14%,transparent)}.product-search-input::placeholder{color:#a99ca0}.product-search-empty{border:1px dashed var(--line);border-radius:14px;padding:22px 14px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+<style id="premium-welcome-intro-styles">
+.welcome-intro-overlay{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;overflow:hidden;padding:0;background:#050406;opacity:1;visibility:visible;isolation:isolate}
+.welcome-intro-overlay[hidden]{display:none!important}
+.welcome-intro-overlay:before{content:"";position:absolute;inset:-20%;background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--r2,#f0d58a) 24%,transparent),transparent 54%),linear-gradient(145deg,#050406,#11090d 55%,#050406);animation:welcomeAura 2.8s ease-in-out both;z-index:-1}
+.welcome-intro-frame{position:relative;width:100%;height:100%;display:grid;place-items:center;overflow:hidden;animation:welcomeFrameIn .9s cubic-bezier(.16,1,.3,1) both}
+.welcome-intro-frame:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 22%,#ffffff08 42%,#fff4 50%,#ffffff08 58%,transparent 78%);transform:translateX(-130%);animation:welcomeSheen 1.5s .25s ease-out both}
+.welcome-intro-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transform:scale(1.09);filter:saturate(1.04) contrast(1.02);animation:welcomeImageIn 1s .08s cubic-bezier(.16,1,.3,1) forwards}
+.welcome-intro-overlay.is-exiting{pointer-events:none;animation:welcomeOverlayOut .72s cubic-bezier(.7,0,.84,0) forwards}
+.welcome-intro-overlay.is-exiting .welcome-intro-frame{animation:welcomeFrameOut .72s cubic-bezier(.7,0,.84,0) forwards}
+.welcome-intro-overlay.is-exiting .welcome-intro-image{animation:welcomeImageOut .72s cubic-bezier(.7,0,.84,0) forwards}
+@keyframes welcomeAura{0%{transform:scale(.88);opacity:.35}100%{transform:scale(1.08);opacity:1}}
+@keyframes welcomeFrameIn{from{opacity:0;transform:scale(1.045);filter:blur(10px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+@keyframes welcomeImageIn{to{opacity:1;transform:scale(1)}}
+@keyframes welcomeSheen{to{transform:translateX(130%)}}
+@keyframes welcomeOverlayOut{to{opacity:0;visibility:hidden}}
+@keyframes welcomeFrameOut{to{transform:scale(.965);filter:blur(7px);opacity:0}}
+@keyframes welcomeImageOut{to{transform:scale(1.055);filter:blur(3px);opacity:0}}
+@media(prefers-reduced-motion:reduce){.welcome-intro-overlay:before,.welcome-intro-frame,.welcome-intro-image,.welcome-intro-frame:after{animation-duration:.01ms!important;animation-delay:0ms!important}.welcome-intro-overlay.is-exiting,.welcome-intro-overlay.is-exiting .welcome-intro-frame,.welcome-intro-overlay.is-exiting .welcome-intro-image{animation-duration:.01ms!important}}
 </style>
 </body></html>
