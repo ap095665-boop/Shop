@@ -682,7 +682,8 @@ a.btn.primary,
 @media(max-height:620px){.product-preview-dialog.product-browse-dialog{padding-top:52px;gap:6px}.product-browse-qty .qty-btn{height:34px;width:34px;flex-basis:34px}.product-browse-footer{padding-top:6px}.product-browse-footer .btn{min-height:40px}}
 </style>
 
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">\n
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+
 <style id="shop-timing-banner-draft-css">
 /* Timing banner uses the supplied working draft's exact 3:1 layout and text coordinates.
    This video is independent of #shopHeroVideo and never participates in popup pause logic. */
@@ -708,7 +709,7 @@ a.btn.primary,
 #shopTimingBanner video{pointer-events:none!important}
 
 </style>
-\n</head>
+</head>
 <body>
 <div id="welcomeIntroOverlay" class="welcome-intro-overlay" aria-hidden="true" hidden>
   <div class="welcome-intro-frame"><img id="welcomeIntroImage" class="welcome-intro-image" alt="Welcome" decoding="async" fetchpriority="high"></div>
@@ -853,33 +854,41 @@ function shopTimingVideoBlocked(){return document.hidden||welcomeIntroVisible||!
 function syncShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video)return;if(shopTimingVideoBlocked()){if(!video.paused)video.pause();return}if(!video.paused){return}const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}
 function initShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.controls=false;if("IntersectionObserver" in window){shopTimingVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopTimingVideoPlayback()},{threshold:0.01});shopTimingVideoObserver.observe(video)}const sync=()=>syncShopTimingVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopTimingVideoMutationObserver=new MutationObserver(sync);shopTimingVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 function parseShopTimingSlides(raw){
-  const text=String(raw||"").replace(/\s+/g," ").trim();
+  const text=String(raw||"").replace(/[\r\n]+/g," ").replace(/\s+/g," ").trim();
   if(!text)return [{top:"",bottom:""}];
-  const hasClosed=/\bclosed\b/i.test(text);
-  // Detect a weekday specifically associated with "closed", whether written as
-  // "Sunday closed", "Closed on Sunday", or "Sunday: Closed".
-  const dayNames="(?:MONDAY|MON|TUESDAY|TUE|WEDNESDAY|WED|THURSDAY|THU|FRIDAY|FRI|SATURDAY|SAT|SUNDAY|SUN)";
-  let closedDay="";
-  if(hasClosed){
-    const before=text.match(new RegExp('('+dayNames+'(?:\\s*(?:,|&|and|\\/|–|-|—)\\s*'+dayNames+')*)\\s*(?:is\\s+)?(?:closed|: ?closed)','i'));
-    const after=text.match(new RegExp('closed\\s+(?:on\\s+)?('+dayNames+'(?:\\s*(?:,|&|and|\\/|–|-|—)\\s*'+dayNames+')*)','i'));
-    const rawDays=(before&&before[1])||(after&&after[1])||"";
-    closedDay=rawDays.toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN");
-  }
-  if(hasClosed && !/\d/.test(text))return [{top:"CLOSED",bottom:closedDay?closedDay+" · CLOSED":"CLOSED"}];
-  const dayMatch=text.match(/\b(?:MON|MONDAY|TUE|TUESDAY|WED|WEDNESDAY|THU|THURSDAY|FRI|FRIDAY|SAT|SATURDAY|SUN|SUNDAY)\b(?:\s*(?:TO|–|-|—)\s*(?:MON|MONDAY|TUE|TUESDAY|WED|WEDNESDAY|THU|THURSDAY|FRI|FRIDAY|SAT|SATURDAY|SUN|SUNDAY))?/i);
-  const days=dayMatch?dayMatch[0].toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN"):"";
-  const times=[...text.matchAll(/(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)\s*(?:-|–|—|to)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)/ig)];
+  const dayToken="(?:MONDAY|MON|TUESDAY|TUE|WEDNESDAY|WED|THURSDAY|THU|FRIDAY|FRI|SATURDAY|SAT|SUNDAY|SUN)";
+  const normalizeDays=value=>String(value||"").toUpperCase()
+    .replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE")
+    .replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU")
+    .replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT")
+    .replace(/\bSUNDAY\b/g,"SUN").replace(/\s*(?:TO|–|—|-)\s*/g,"–");
+  const timePattern=/(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)\s*(?:-|–|—|to)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)/ig;
   const fmt=(h,m,ap)=>`${Number(h)}${m&&Number(m)?":"+String(m).padStart(2,"0"):""} ${ap.toUpperCase()}`;
-  const out=[];
-  for(let i=0;i<times.length;i++){
-    const t=times[i];
-    const bottom=closedDay?closedDay+" · CLOSED":(days||"SHOP TIMINGS");
-    out.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom});
+  const segments=text.split(/\s*(?:,|;|\|)\s*/).map(x=>x.trim()).filter(Boolean);
+  const slides=[];
+  for(const segment of segments){
+    const closed=/\bclosed\b/i.test(segment);
+    const dayRe=new RegExp(`(${dayToken}(?:\\s*(?:,|&|and|\\/|–|-|—|to)\\s*${dayToken})*)`,"i");
+    const dayMatch=dayRe.exec(segment);
+    const days=normalizeDays(dayMatch?.[1]||"");
+    const times=[...segment.matchAll(timePattern)];
+    if(closed){
+      slides.push({top:"CLOSED",bottom:(days?days+" · ":"")+"CLOSED"});
+      continue;
+    }
+    if(times.length){
+      for(const t of times){
+        slides.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom:days||"SHOP TIMINGS"});
+      }
+      continue;
+    }
+    // Preserve useful schedule text even when it does not match a standard time format.
+    if(days||segment){
+      const remainder=segment.replace(dayRe,"").trim().replace(/^[:\-–—]+|[:\-–—]+$/g,"").trim();
+      slides.push({top:remainder||days||segment,bottom:days&&remainder?days:"SHOP TIMINGS"});
+    }
   }
-  if(!out.length)out.push({top:text.slice(0,36),bottom:closedDay?closedDay+" · CLOSED":(days||(hasClosed?"CLOSED":"SHOP TIMINGS"))});
-  if(hasClosed && out.length===1 && !closedDay)out[0].bottom=(days?days+" · ":"")+"CLOSED";
-  return out;
+  return slides.length?slides:[{top:text.slice(0,36),bottom:"SHOP TIMINGS"}];
 }
 function showShopTimingSlide(i){
   const top=$("shopTimingTopText"),bottom=$("shopTimingBottomText");
