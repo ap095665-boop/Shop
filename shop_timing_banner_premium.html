@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop Timing Video Banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #090609;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  body { padding: 0; }
+
+  /* The banner keeps the source video's original 3:1 aspect ratio. */
+  .timing-banner {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 1;
+    overflow: hidden;
+    isolation: isolate;
+    background: #170a08;
+  }
+
+  /* Fill the banner without stretching or changing the video proportions. */
+  .timing-banner video {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: -2;
+  }
+
+  .text-slot {
+    position: absolute;
+    left: 42%;
+    width: 38%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.5%;
+    color: #fff8e8;
+    text-shadow: 0 2px 4px rgba(0,0,0,.8);
+    font-family: "Manrope", sans-serif;
+    font-weight: 800;
+    line-height: 1.05;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  #topText {
+    top: 28%;
+    height: 21%;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(13px, 3.1vw, 48px);
+    font-weight: 400;
+    letter-spacing: .015em;
+    color: #fff4d8;
+    text-shadow: 0 1px 0 #fff1c4, 0 3px 0 rgba(95,38,9,.9),
+                 0 5px 14px rgba(0,0,0,.88), 0 0 18px rgba(255,183,65,.42);
+  }
+  #bottomText {
+    top: 55%;
+    height: 13%;
+    font-size: clamp(10px, 1.9vw, 28px);
+    letter-spacing: .09em;
+    color: #fff9ef;
+    text-shadow: 0 2px 0 rgba(110,20,8,.9), 0 4px 10px rgba(0,0,0,.9),
+                 0 0 12px rgba(255,120,50,.3);
+  }
+  .fade {
+    animation: premiumReveal .85s cubic-bezier(.18,.8,.25,1) both;
+  }
+  @keyframes premiumReveal {
+    0% {
+      opacity: 0;
+      transform: translateY(9px) scale(.965);
+      filter: blur(5px);
+      letter-spacing: .12em;
+    }
+    65% {
+      opacity: 1;
+      filter: blur(0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+  @media (max-width: 520px) {
+    #topText { font-size: clamp(10px, 3vw, 16px); }
+    #bottomText { font-size: clamp(8px, 2.1vw, 12px); letter-spacing: .04em; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fade { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <section class="timing-banner" aria-label="Shop timing banner">
+    <video autoplay muted loop playsinline preload="auto">
+      <source src="https://shoppy.sindora.site/T.webm" type="video/webm">
+    </video>
+    <div id="topText" class="text-slot" aria-live="polite">6:00 AM – 1:00 PM</div>
+    <div id="bottomText" class="text-slot" aria-live="polite">MONDAY – SATURDAY</div>
+  </section>
+
+<script>
+(() => {
+  const video = document.querySelector('.timing-banner video');
+  const topText = document.getElementById('topText');
+  const bottomText = document.getElementById('bottomText');
+
+  const slides = [
+    { top: '6:00 AM – 1:00 PM', bottom: 'MONDAY – SATURDAY' },
+    { top: '2:00 PM – 10:00 PM', bottom: 'SUNDAY CLOSED' }
+  ];
+
+  let index = 0;
+  let previousTime = 0;
+  let hasStarted = false;
+
+  function showSlide(nextIndex) {
+    index = nextIndex;
+    topText.classList.remove('fade');
+    bottomText.classList.remove('fade');
+    topText.textContent = slides[index].top;
+    bottomText.textContent = slides[index].bottom;
+    topText.style.opacity = '1';
+    bottomText.style.opacity = '1';
+    void topText.offsetWidth;
+    topText.classList.add('fade');
+    bottomText.classList.add('fade');
+  }
+
+  // First schedule appears when the page/video starts.
+  showSlide(0);
+
+  // Detect the video's actual loop restart by its playback time returning to zero.
+  // Change to the next schedule only at that moment; no 2-second blank interval.
+  video.addEventListener('timeupdate', () => {
+    const currentTime = video.currentTime || 0;
+
+    if (hasStarted && previousTime > 1 && currentTime < 0.5) {
+      showSlide((index + 1) % slides.length);
+    }
+
+    if (currentTime > 0.1) hasStarted = true;
+    previousTime = currentTime;
+  });
+
+  // If playback is restarted manually, reset to the first schedule.
+  video.addEventListener('play', () => {
+    if (!hasStarted) showSlide(0);
+  });
+})();
+</script>
+</body>
+</html>
