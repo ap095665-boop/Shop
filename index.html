@@ -686,7 +686,7 @@ a.btn.primary,
 <style id="shop-timing-banner-draft-css">
 /* Timing banner uses the supplied working draft's exact 3:1 layout and text coordinates.
    This video is independent of #shopHeroVideo and never participates in popup pause logic. */
-.timing-banner-wrap{width:min(100%,1100px);margin:22px auto 0;padding:0 12px}
+.timing-banner-wrap{width:100%;max-width:none;box-sizing:border-box;margin:22px auto 0;padding:0}
 .timing-banner{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate;background:#170a08;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
 .timing-banner video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-2}
 .timing-banner .text-slot{position:absolute;left:42%;width:38%;display:flex;align-items:center;justify-content:center;text-align:center;padding:.5%;color:#fff8e8;text-shadow:0 2px 4px rgba(0,0,0,.8);font-family:"Manrope",sans-serif;font-weight:800;line-height:1.05;white-space:nowrap;pointer-events:none;opacity:1;-webkit-font-smoothing:antialiased}
@@ -694,7 +694,7 @@ a.btn.primary,
 #shopTimingBottomText{top:55%;height:13%;font-size:clamp(10px,1.9vw,28px);letter-spacing:.09em;color:#fff9ef;text-shadow:0 2px 0 rgba(110,20,8,.9),0 4px 10px rgba(0,0,0,.9),0 0 12px rgba(255,120,50,.3)}
 #shopTimingTopText.fade,#shopTimingBottomText.fade{animation:shopTimingPremiumReveal .85s cubic-bezier(.18,.8,.25,1) both}
 @keyframes shopTimingPremiumReveal{0%{opacity:0;transform:translateY(9px) scale(.965);filter:blur(5px);letter-spacing:.12em}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-@media(max-width:520px){.timing-banner-wrap{padding:0 12px}.timing-banner{border-radius:16px}#shopTimingTopText{font-size:clamp(10px,3vw,16px)}#shopTimingBottomText{font-size:clamp(8px,2.1vw,12px);letter-spacing:.04em}}
+@media(max-width:520px){.timing-banner-wrap{padding:0}.timing-banner{border-radius:16px}#shopTimingTopText{font-size:clamp(10px,3vw,16px)}#shopTimingBottomText{font-size:clamp(8px,2.1vw,12px);letter-spacing:.04em}}
 @media(prefers-reduced-motion:reduce){#shopTimingTopText.fade,#shopTimingBottomText.fade{animation:none}}
 /* Premium emerald glass shadow matching the Saved Sites button. */
 .timing-banner-wrap{position:relative;isolation:isolate;filter:drop-shadow(0 18px 28px color-mix(in srgb,var(--r2,#61e7b7) 24%,transparent));}
@@ -855,18 +855,30 @@ function initShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!vide
 function parseShopTimingSlides(raw){
   const text=String(raw||"").replace(/\s+/g," ").trim();
   if(!text)return [{top:"",bottom:""}];
-  if(/\bclosed\b/i.test(text) && !/\d/.test(text))return [{top:"CLOSED",bottom:"CLOSED"}];
+  const hasClosed=/\bclosed\b/i.test(text);
+  // Detect a weekday specifically associated with "closed", whether written as
+  // "Sunday closed", "Closed on Sunday", or "Sunday: Closed".
+  const dayNames="(?:MONDAY|MON|TUESDAY|TUE|WEDNESDAY|WED|THURSDAY|THU|FRIDAY|FRI|SATURDAY|SAT|SUNDAY|SUN)";
+  let closedDay="";
+  if(hasClosed){
+    const before=text.match(new RegExp('('+dayNames+'(?:\\s*(?:,|&|and|\\/|–|-|—)\\s*'+dayNames+')*)\\s*(?:is\\s+)?(?:closed|: ?closed)','i'));
+    const after=text.match(new RegExp('closed\\s+(?:on\\s+)?('+dayNames+'(?:\\s*(?:,|&|and|\\/|–|-|—)\\s*'+dayNames+')*)','i'));
+    const rawDays=(before&&before[1])||(after&&after[1])||"";
+    closedDay=rawDays.toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN");
+  }
+  if(hasClosed && !/\d/.test(text))return [{top:"CLOSED",bottom:closedDay?closedDay+" · CLOSED":"CLOSED"}];
   const dayMatch=text.match(/\b(?:MON|MONDAY|TUE|TUESDAY|WED|WEDNESDAY|THU|THURSDAY|FRI|FRIDAY|SAT|SATURDAY|SUN|SUNDAY)\b(?:\s*(?:TO|–|-|—)\s*(?:MON|MONDAY|TUE|TUESDAY|WED|WEDNESDAY|THU|THURSDAY|FRI|FRIDAY|SAT|SATURDAY|SUN|SUNDAY))?/i);
-  const days=dayMatch?dayMatch[0].toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN").replace(/\bMON\b/g,"MON").replace(/\bTUE\b/g,"TUE").replace(/\bWED\b/g,"WED").replace(/\bTHU\b/g,"THU").replace(/\bFRI\b/g,"FRI").replace(/\bSAT\b/g,"SAT").replace(/\bSUN\b/g,"SUN"):"";
+  const days=dayMatch?dayMatch[0].toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN"):"";
   const times=[...text.matchAll(/(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)\s*(?:-|–|—|to)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)/ig)];
   const fmt=(h,m,ap)=>`${Number(h)}${m&&Number(m)?":"+String(m).padStart(2,"0"):""} ${ap.toUpperCase()}`;
   const out=[];
   for(let i=0;i<times.length;i++){
     const t=times[i];
-    out.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom:days||"SHOP TIMINGS"});
+    const bottom=closedDay?closedDay+" · CLOSED":(days||"SHOP TIMINGS");
+    out.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom});
   }
-  if(!out.length)out.push({top:text.slice(0,36),bottom:days||(/\bclosed\b/i.test(text)?"CLOSED":"SHOP TIMINGS")});
-  if(/\bclosed\b/i.test(text) && out.length===1)out[0].bottom=(days?days+" · ":"")+"CLOSED";
+  if(!out.length)out.push({top:text.slice(0,36),bottom:closedDay?closedDay+" · CLOSED":(days||(hasClosed?"CLOSED":"SHOP TIMINGS"))});
+  if(hasClosed && out.length===1 && !closedDay)out[0].bottom=(days?days+" · ":"")+"CLOSED";
   return out;
 }
 function showShopTimingSlide(i){
