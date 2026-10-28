@@ -23,7 +23,7 @@ window.QS_THEMES=[
 ];
 window.applyTheme=function(id){var T=QS_THEMES,t=T.filter(function(x){return x.id===id})[0]||T[0],r=document.documentElement,s=r.style;
 var m={r:t.a2,r2:t.a1,bg:t.bg,g1:t.g1,g2:t.g2,on:t.on};for(var k in m)s.setProperty('--'+k,m[k]);
-r.setAttribute('data-theme',t.id);var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t.bg;return t.id};
+r.setAttribute('data-theme',t.id);var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.content=t.bg;try{if(typeof window.updateShopTimingBannerTheme==='function')window.updateShopTimingBannerTheme(t.id)}catch(e){}return t.id};
 try{applyTheme(localStorage.getItem('qs_theme')||'gold')}catch(e){applyTheme('gold')}
 </script>
 
@@ -743,6 +743,27 @@ a.btn.primary,
   video.addEventListener('contextmenu',function(e){e.preventDefault();}, {capture:true});
 })();
 </script>
+<script id="shop-timing-banner-theme-video">
+(function(){
+  var video=document.getElementById('shopTimingVideo');
+  if(!video)return;
+  var urls={red:'https://shoppy.sindora.site/B.webm',green:'https://shoppy.sindora.site/G.webm',yellow:'https://shoppy.sindora.site/Y.webm',blue:'https://shoppy.sindora.site/BL.webm',other:'https://shoppy.sindora.site/N.webm'};
+  window.updateShopTimingBannerTheme=function(themeId){
+    var key=String(themeId||'').toLowerCase(),url=urls.other;
+    if(key==='crimson'||key==='red')url=urls.red;
+    else if(key==='emerald'||key==='green')url=urls.green;
+    else if(key==='gold'||key==='yellow')url=urls.yellow;
+    else if(key==='sapphire'||key==='blue')url=urls.blue;
+    var source=video.querySelector('source');
+    if(!source){source=document.createElement('source');source.type='video/webm';video.appendChild(source)}
+    if(source.getAttribute('src')!==url){source.setAttribute('src',url);video.load();}
+    video.muted=true;video.loop=true;video.playsInline=true;
+    if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
+  };
+  var current='gold';try{current=localStorage.getItem('qs_theme')||'gold'}catch(e){}
+  window.updateShopTimingBannerTheme(current);
+})();
+</script>
 <section class="grid"><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
 <span id="type2" hidden></span><span id="owner" hidden></span>
 <div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
@@ -850,7 +871,6 @@ function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||!!d
 function syncShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.hidden||!video.src)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopHeroVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(video.paused){const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}}
 function initShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.autoplay=false;video.preload="auto";if("IntersectionObserver" in window){shopHeroVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopHeroVideoPlayback()},{threshold:0.01});shopHeroVideoObserver.observe(video)}const sync=()=>syncShopHeroVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopHeroVideoMutationObserver=new MutationObserver(sync);shopHeroVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 
-const SHOP_TIMING_VIDEO_URL="https://shoppy.sindora.site/B.webm";
 let shopTimingSlides=[],shopTimingIndex=0,shopTimingPreviousTime=0,shopTimingHasStarted=false,shopTimingVideoBound=false,shopTimingVideoObserver=null,shopTimingVideoMutationObserver=null;
 function shopTimingVideoBlocked(){return document.hidden||welcomeIntroVisible||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
 function syncShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video)return;if(shopTimingVideoBlocked()){if(!video.paused)video.pause();return}if(!video.paused){return}const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}
@@ -907,8 +927,7 @@ function renderShopTimingBanner(){
   const banner=$("shopTimingBanner"),video=$("shopTimingVideo");
   if(!banner||!video)return;
   // Always use the dedicated timing video; never touch shopHeroVideo or hero_image_url.
-  const source=video.querySelector("source");
-  if(source&&source.getAttribute("src")!==SHOP_TIMING_VIDEO_URL){source.src=SHOP_TIMING_VIDEO_URL;video.load()}
+  try{const activeTheme=document.documentElement.getAttribute("data-theme")||localStorage.getItem("qs_theme")||"gold";if(typeof window.updateShopTimingBannerTheme==="function")window.updateShopTimingBannerTheme(activeTheme)}catch(e){}
   shopTimingSlides=parseShopTimingSlides(shop?.owner_name||"");
   shopTimingIndex=0;shopTimingPreviousTime=0;shopTimingHasStarted=false;
   showShopTimingSlide(0);
