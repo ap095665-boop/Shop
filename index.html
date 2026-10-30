@@ -759,9 +759,7 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 
 /* Gallery has no progress rail or numeric pagination; it runs only while in view. */
 #gallerySection .g-meta{display:none!important}
-#gallerySection.gallery-away .g-stage{visibility:hidden;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .22s ease,transform .22s ease,visibility .22s step-end}
-#gallerySection:not(.gallery-away) .g-stage{visibility:visible;opacity:1;transform:none;transition:opacity .22s ease,transform .22s ease}
-@media(prefers-reduced-motion:reduce){#gallerySection.gallery-away .g-stage,#gallerySection:not(.gallery-away) .g-stage{transition:none}}
+/* Keep the carousel visible during normal scrolling; visibility only controls one-time autoplay. */
 
 </style>
 
@@ -795,7 +793,6 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 const gallerySection = document.getElementById('gallerySection');
 const galleryAtmosphere = document.getElementById('galleryAtmosphere');
 window.shopGalleryInView = false;
-if(gallerySection)gallerySection.classList.add('gallery-away');
 function updateGalleryAtmosphere(url){
   if(!galleryAtmosphere || !url)return;
   try{galleryAtmosphere.style.setProperty('--gallery-atmosphere-image','url('+JSON.stringify(url)+')');}catch(e){}
@@ -811,11 +808,19 @@ function initCarousel(urls){
       slides.forEach((slide,i)=>{ const img=slide.querySelector('img'); if(img && !img.src) img.src=urls[i]; });
     }
     let active = 0, hover = false, holding = false, visible = false, rotateTimer = null;
+    let autoStep = 0, autoFinished = n < 2;
     function stopRotation(){if(rotateTimer){clearTimeout(rotateTimer);rotateTimer=null;}}
     function scheduleRotation(){
       stopRotation();
-      if(n<2 || !visible || hover || holding || document.hidden)return;
-      rotateTimer=setTimeout(()=>{rotateTimer=null;if(visible&&!hover&&!holding&&!document.hidden){go(active+1);scheduleRotation();}},4500);
+      if(n<2 || autoFinished || autoStep>=n-1 || !visible || hover || holding || document.hidden)return;
+      rotateTimer=setTimeout(()=>{
+        rotateTimer=null;
+        if(!visible||hover||holding||document.hidden)return;
+        autoStep=Math.min(autoStep+1,n-1);
+        go(autoStep);
+        if(autoStep>=n-1){autoFinished=true;stopRotation();}
+        else scheduleRotation();
+      },4500);
     }
 
     urls.forEach((u,i)=>{
@@ -850,14 +855,13 @@ function initCarousel(urls){
     function go(i){active=((i%n)+n)%n;apply(false);}
     function syncPause(){
       gallerySection.classList.toggle('paused',hover||holding||!visible);
-      if(visible&&!hover&&!holding&&!document.hidden)scheduleRotation();else stopRotation();
+      if(visible&&!hover&&!holding&&!document.hidden&&!autoFinished)scheduleRotation();else stopRotation();
     }
 
     apply(true);
     if('IntersectionObserver' in window){
       const observer=new IntersectionObserver(es=>{
         visible=!!es[0].isIntersecting && es[0].intersectionRatio>=0.12;
-        gallerySection.classList.toggle('gallery-away',!visible);
         window.shopGalleryInView=visible;
         const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.toggle('pause',visible);
         if(visible)loadGalleryImages();
@@ -866,7 +870,7 @@ function initCarousel(urls){
         if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
       },{threshold:0.25});
       observer.observe(gallerySection);
-    }else{visible=true;gallerySection.classList.remove('gallery-away');window.shopGalleryInView=true;const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.add('pause');loadGalleryImages();syncPause();}
+    }else{visible=true;window.shopGalleryInView=true;const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.add('pause');loadGalleryImages();syncPause();}
 
     stage.addEventListener('pointerdown',e=>{if(n<2)return;const sl=e.target.closest&&e.target.closest('.g-slide');if(sl&&+sl.dataset.o!==0){holding=true;syncPause();}});
     stage.addEventListener('pointerup',e=>{
