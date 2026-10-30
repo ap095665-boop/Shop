@@ -756,6 +756,10 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 #galleryAtmosphere #gallerySection{margin-top:10px}
 #galleryAtmosphere>.grid,#galleryAtmosphere>.hub-save-wrap,#galleryAtmosphere>footer{position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){#galleryAtmosphere:before{transition:none}}
+
+/* Gallery has no progress rail or numeric pagination; it runs only while in view. */
+#gallerySection .g-meta{display:none!important}
+
 </style>
 
 </head>
@@ -782,7 +786,6 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 <section id="gallerySection" aria-label="Photo gallery" hidden>
   <h2>Gallery</h2><div class="g-rule"></div>
   <div class="g-stage" id="gStage" role="region" aria-roledescription="carousel" aria-label="Shop photos"><div class="g-track" id="gTrack"></div></div>
-  <div class="g-meta"><div class="g-bars" id="gBars"></div><span class="g-count" id="gCount"></span></div>
 </section>
 <script id="shop-gallery-carousel">
 
@@ -797,98 +800,85 @@ function initCarousel(urls){
     const n = urls.length;
     if(!n) return;
     const track = document.getElementById('gTrack'), stage = document.getElementById('gStage');
-    const barsEl = document.getElementById('gBars'), countEl = document.getElementById('gCount');
-    const slides = [], bars = [];
+    const slides = [];
     let imagesLoaded = false;
     function loadGalleryImages(){
       if(imagesLoaded)return; imagesLoaded=true;
       slides.forEach((slide,i)=>{ const img=slide.querySelector('img'); if(img && !img.src) img.src=urls[i]; });
     }
-    let active = 0, hover = false, holding = false, visible = false;
+    let active = 0, hover = false, holding = false, visible = false, rotateTimer = null;
+    function stopRotation(){if(rotateTimer){clearTimeout(rotateTimer);rotateTimer=null;}}
+    function scheduleRotation(){
+      stopRotation();
+      if(n<2 || !visible || hover || holding || document.hidden)return;
+      rotateTimer=setTimeout(()=>{rotateTimer=null;if(visible&&!hover&&!holding&&!document.hidden){go(active+1);scheduleRotation();}},4500);
+    }
 
     urls.forEach((u,i)=>{
       const li = document.createElement('div'); li.className = 'g-slide loading'; li.dataset.i = i;
-      const img = new Image(); img.alt = 'Shop' + ' photo ' + (i+1);
-      img.decoding = 'async'; img.draggable = false; img.referrerPolicy = 'no-referrer';
+      const img = new Image(); img.alt = 'Shop photo ' + (i+1);
+      img.decoding = 'async'; img.loading='lazy'; img.draggable = false; img.referrerPolicy = 'no-referrer';
       img.onload = ()=>{ li.classList.remove('loading'); li.classList.add('loaded'); if(li.classList.contains('active'))updateGalleryAtmosphere(img.currentSrc||img.src||urls[i]); };
       img.onerror = ()=>{ li.classList.remove('loading'); li.classList.add('broken'); };
       img.dataset.src = u;
       const bad = document.createElement('div'); bad.className = 'g-broken'; bad.textContent = 'Photo unavailable';
       const shade = document.createElement('div'); shade.className = 'g-shade';
       li.append(img, bad, shade); track.appendChild(li); slides.push(li);
-      if(n > 1){
-        const b = document.createElement('span'); b.className = 'g-bar'; b.appendChild(document.createElement('i'));
-        b.firstChild.addEventListener('animationend', ()=>{ if(bars[active] === b) go(active + 1); });
-        barsEl.appendChild(b); bars.push(b);
-      }
     });
-    if(n < 2){ barsEl.style.display = 'none'; countEl.style.display = 'none'; }
 
-    const pad = x => String(x).padStart(2,'0');
     function place(s, d, jump){
       const a = Math.abs(d);
       const tf = d === 0 ? 'translate3d(0,0,0) scale(1)'
         : 'translate3d(' + (d*58) + '%,0,-90px) scale(.84) rotateY(' + (-d*20) + 'deg)';
       const op = a === 0 ? 1 : (a === 1 ? 0.6 : 0);
-      if(jump){
-        s.style.transition = 'none'; s.style.opacity = 0; s.style.transform = tf;
-        void s.offsetWidth; s.style.transition = '';
-      }
-      s.style.transform = tf; s.style.opacity = op;
-      s.style.zIndex = 3 - a; s.style.pointerEvents = a > 1 ? 'none' : 'auto';
+      if(jump){s.style.transition='none';s.style.opacity=0;s.style.transform=tf;void s.offsetWidth;s.style.transition='';}
+      s.style.transform=tf;s.style.opacity=op;s.style.zIndex=3-a;s.style.pointerEvents=a>1?'none':'auto';
     }
     function apply(first){
       slides.forEach((s,i)=>{
-        let d = (i - active + n) % n; if(d > n/2) d -= n;
-        const prev = s.dataset.o === undefined ? d : +s.dataset.o;
-        s.dataset.o = d;
-        s.classList.toggle('active', d === 0);
-        place(s, d, !first && Math.abs(d - prev) > 1);
+        let d=(i-active+n)%n;if(d>n/2)d-=n;
+        const prev=s.dataset.o===undefined?d:+s.dataset.o;s.dataset.o=d;
+        s.classList.toggle('active',d===0);place(s,d,!first&&Math.abs(d-prev)>1);
       });
-      bars.forEach(b=>b.classList.remove('on','done'));
-      void barsEl.offsetWidth; // restart the progress animation
-      bars.forEach((b,i)=>{ if(i < active) b.classList.add('done'); else if(i === active) b.classList.add('on'); });
-      countEl.textContent = pad(active+1) + ' / ' + pad(n);
       const activeImg=slides[active]&&slides[active].querySelector('img');
       if(activeImg)updateGalleryAtmosphere(activeImg.currentSrc||activeImg.src||activeImg.dataset.src||urls[active]);
     }
-    function go(i){ active = ((i % n) + n) % n; apply(false); }
-    function syncPause(){ gallerySection.classList.toggle('paused', hover || holding || !visible); }
+    function go(i){active=((i%n)+n)%n;apply(false);}
+    function syncPause(){
+      gallerySection.classList.toggle('paused',hover||holding||!visible);
+      if(visible&&!hover&&!holding&&!document.hidden)scheduleRotation();else stopRotation();
+    }
 
-    apply(true); syncPause();
+    apply(true);
     if('IntersectionObserver' in window){
-      new IntersectionObserver(es=>{
-        visible = !!es[0].isIntersecting;
-        window.shopGalleryInView = visible;
+      const observer=new IntersectionObserver(es=>{
+        visible=!!es[0].isIntersecting;
+        window.shopGalleryInView=visible;
         const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.toggle('pause',visible);
         if(visible)loadGalleryImages();
         syncPause();
         if(typeof window.syncShopHeroVideoPlayback==='function')window.syncShopHeroVideoPlayback();
         if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
-      }, { threshold:0.25 }).observe(gallerySection);
-    } else { visible = true; window.shopGalleryInView=true; const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.add('pause'); loadGalleryImages(); syncPause(); }
+      },{threshold:0.25});
+      observer.observe(gallerySection);
+    }else{visible=true;window.shopGalleryInView=true;const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.add('pause');loadGalleryImages();syncPause();}
 
-    // swipe, tap a side photo to bring it forward, pause while touching
-    let sx = null;
-    stage.addEventListener('pointerdown', e=>{ sx = e.clientX; holding = true; syncPause(); });
-    stage.addEventListener('pointerup', e=>{
-      if(sx !== null && n > 1){
-        const dx = e.clientX - sx;
-        if(Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
-        else { const sl = e.target.closest && e.target.closest('.g-slide'); if(sl && +sl.dataset.o !== 0) go(+sl.dataset.i); }
-      }
-      sx = null; holding = false; syncPause();
+    stage.addEventListener('pointerdown',e=>{if(n<2)return;const sl=e.target.closest&&e.target.closest('.g-slide');if(sl&&+sl.dataset.o!==0){holding=true;syncPause();}});
+    stage.addEventListener('pointerup',e=>{
+      if(n>1){const sl=e.target.closest&&e.target.closest('.g-slide');if(sl&&+sl.dataset.o!==0)go(+sl.dataset.i);}
+      holding=false;syncPause();
     });
-    stage.addEventListener('pointercancel', ()=>{ sx = null; holding = false; syncPause(); });
-    stage.addEventListener('mouseenter', ()=>{ hover = true; syncPause(); });
-    stage.addEventListener('mouseleave', ()=>{ hover = false; syncPause(); });
+    stage.addEventListener('pointercancel',()=>{holding=false;syncPause();});
+    stage.addEventListener('mouseenter',()=>{hover=true;syncPause();});
+    stage.addEventListener('mouseleave',()=>{hover=false;syncPause();});
+    document.addEventListener('visibilitychange',syncPause);
   }
 
 window.renderShopGallery = function(urls){
   const section=document.getElementById('gallerySection');
   if(!section)return;
-  const track=document.getElementById('gTrack'), bars=document.getElementById('gBars'), count=document.getElementById('gCount');
-  track.innerHTML=''; bars.innerHTML=''; bars.style.display=''; count.style.display='';
+  const track=document.getElementById('gTrack');
+  track.innerHTML='';
   section.hidden=!Array.isArray(urls)||!urls.length;
   if(section.hidden){if(galleryAtmosphere)galleryAtmosphere.style.removeProperty('--gallery-atmosphere-image');return;}
   updateGalleryAtmosphere(urls[0]);
