@@ -729,6 +729,13 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 #gallerySection .g-meta{width:var(--gw);margin-top:25px;display:flex;align-items:center;gap:14px}#gallerySection .g-bars{flex:1;display:flex;gap:6px}#gallerySection .g-bar{flex:1;height:3px;border-radius:3px;overflow:hidden;background:color-mix(in srgb,var(--muted) 20%,transparent)}#gallerySection .g-bar i{display:block;width:0;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--r),var(--r2))}#gallerySection .g-bar.done i{width:100%}#gallerySection .g-bar.on i{animation:shopGalleryFill 4.5s linear forwards}#gallerySection.paused .g-bar.on i{animation-play-state:paused}@keyframes shopGalleryFill{from{width:0}to{width:100%}}#gallerySection .g-count{font-weight:800;font-size:11px;letter-spacing:.14em;color:var(--r2);font-variant-numeric:tabular-nums}
 @media(max-width:520px){#gallerySection{padding:30px 0 26px;--gw:min(72vw,270px)}#gallerySection .g-slide{border-radius:22px}}
 @media(prefers-reduced-motion:reduce){#gallerySection .g-slide,#gallerySection .g-slide img{transition:none}#gallerySection .g-slide.active img,#gallerySection .g-slide.loading:before,#gallerySection .g-bar.on i{animation:none!important}}
+/* Premium image-reactive atmosphere spanning Gallery through Saved Sites. */
+#galleryAtmosphere{--gallery-atmosphere-image:none;position:relative;isolation:isolate;overflow:hidden;margin:8px calc(50% - 50vw) 0;padding:1px max(0px,calc((100vw - 1160px)/2));background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 94%,transparent),var(--bg) 88%);}
+#galleryAtmosphere:before{content:"";position:absolute;z-index:-2;inset:-48px;background-image:var(--gallery-atmosphere-image);background-size:cover;background-position:center 42%;background-repeat:no-repeat;filter:blur(42px) saturate(1.45);opacity:.34;transform:scale(1.12);transition:opacity .6s ease,filter .6s ease;pointer-events:none}
+#galleryAtmosphere:after{content:"";position:absolute;z-index:-1;inset:0;background:radial-gradient(ellipse at 50% 12%,color-mix(in srgb,var(--r) 28%,transparent),transparent 58%),linear-gradient(180deg,color-mix(in srgb,var(--bg) 42%,transparent),color-mix(in srgb,var(--bg) 82%,transparent) 38%,var(--bg) 100%);pointer-events:none}
+#galleryAtmosphere #gallerySection{margin-top:10px}
+#galleryAtmosphere>.grid,#galleryAtmosphere>.hub-save-wrap,#galleryAtmosphere>footer{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){#galleryAtmosphere:before{transition:none}}
 </style>
 
 </head>
@@ -751,6 +758,7 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
   </section>
 </div>
 
+<div id="galleryAtmosphere" class="gallery-atmosphere">
 <section id="gallerySection" aria-label="Photo gallery" hidden>
   <h2>Gallery</h2><div class="g-rule"></div>
   <div class="g-stage" id="gStage" role="region" aria-roledescription="carousel" aria-label="Shop photos"><div class="g-track" id="gTrack"></div></div>
@@ -759,7 +767,12 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 <script id="shop-gallery-carousel">
 
 const gallerySection = document.getElementById('gallerySection');
+const galleryAtmosphere = document.getElementById('galleryAtmosphere');
 window.shopGalleryInView = false;
+function updateGalleryAtmosphere(url){
+  if(!galleryAtmosphere || !url)return;
+  try{galleryAtmosphere.style.setProperty('--gallery-atmosphere-image','url('+JSON.stringify(url)+')');}catch(e){}
+}
 function initCarousel(urls){
     const n = urls.length;
     if(!n) return;
@@ -777,7 +790,7 @@ function initCarousel(urls){
       const li = document.createElement('div'); li.className = 'g-slide loading'; li.dataset.i = i;
       const img = new Image(); img.alt = 'Shop' + ' photo ' + (i+1);
       img.decoding = 'async'; img.draggable = false; img.referrerPolicy = 'no-referrer';
-      img.onload = ()=>{ li.classList.remove('loading'); li.classList.add('loaded'); };
+      img.onload = ()=>{ li.classList.remove('loading'); li.classList.add('loaded'); if(li.classList.contains('active'))updateGalleryAtmosphere(img.currentSrc||img.src||urls[i]); };
       img.onerror = ()=>{ li.classList.remove('loading'); li.classList.add('broken'); };
       img.dataset.src = u;
       const bad = document.createElement('div'); bad.className = 'g-broken'; bad.textContent = 'Photo unavailable';
@@ -816,6 +829,8 @@ function initCarousel(urls){
       void barsEl.offsetWidth; // restart the progress animation
       bars.forEach((b,i)=>{ if(i < active) b.classList.add('done'); else if(i === active) b.classList.add('on'); });
       countEl.textContent = pad(active+1) + ' / ' + pad(n);
+      const activeImg=slides[active]&&slides[active].querySelector('img');
+      if(activeImg)updateGalleryAtmosphere(activeImg.currentSrc||activeImg.src||activeImg.dataset.src||urls[active]);
     }
     function go(i){ active = ((i % n) + n) % n; apply(false); }
     function syncPause(){ gallerySection.classList.toggle('paused', hover || holding || !visible); }
@@ -855,7 +870,8 @@ window.renderShopGallery = function(urls){
   const track=document.getElementById('gTrack'), bars=document.getElementById('gBars'), count=document.getElementById('gCount');
   track.innerHTML=''; bars.innerHTML=''; bars.style.display=''; count.style.display='';
   section.hidden=!Array.isArray(urls)||!urls.length;
-  if(section.hidden)return;
+  if(section.hidden){if(galleryAtmosphere)galleryAtmosphere.style.removeProperty('--gallery-atmosphere-image');return;}
+  updateGalleryAtmosphere(urls[0]);
   initCarousel(urls);
 };
 
@@ -873,6 +889,7 @@ window.renderShopGallery = function(urls){
 <section class="grid"><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
 <span id="type2" hidden></span><span id="owner" hidden></span>
 <div class="hub-save-wrap"><button class="hub-save" id="saveSiteBtn" type="button" aria-label="Open saved sites"><span class="hub-stack"><span class="hub-l1">Saved sites</span><span class="hub-l2"><i class="gem"></i>for future use<i class="gem"></i></span><span class="hub-l3">Click here<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span></span></button></div>
+</div><!-- /galleryAtmosphere -->
 <footer id="address">—</footer>
 <details class="policies-accordion" aria-label="Policies">
   <summary><span class="policies-summary-icon" aria-hidden="true">✦</span><span class="policies-summary-text"><strong>Policies</strong><small>Privacy, terms &amp; refunds</small></span><span class="policies-chevron" aria-hidden="true">⌄</span></summary>
