@@ -684,32 +684,32 @@ a.btn.primary,
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-<style id="shop-timing-banner-draft-css">
-/* Timing banner uses the supplied working draft's exact 3:1 layout and text coordinates.
-   This video is independent of #shopHeroVideo and never participates in popup pause logic. */
-.timing-banner-wrap{width:100%;max-width:none;box-sizing:border-box;margin:42px auto 0;padding:0}
-.timing-banner{position:relative;width:100%;aspect-ratio:3/1;overflow:hidden;isolation:isolate;background:#170a08;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
-.timing-banner video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-2}
-.timing-banner .text-slot{position:absolute;left:42%;width:38%;display:flex;align-items:center;justify-content:center;text-align:center;padding:.5%;color:#fff8e8;text-shadow:0 2px 4px rgba(0,0,0,.8);font-family:"Manrope",sans-serif;font-weight:800;line-height:1.05;white-space:nowrap;pointer-events:none;opacity:1;-webkit-font-smoothing:antialiased}
-#shopTimingTopText{top:28%;height:21%;font-family:"DM Serif Display",Georgia,serif;font-size:clamp(13px,3.1vw,48px);font-weight:400;letter-spacing:.015em;color:#fff4d8;text-shadow:0 1px 0 #fff1c4,0 3px 0 rgba(95,38,9,.9),0 5px 14px rgba(0,0,0,.88),0 0 18px rgba(255,183,65,.42)}
-#shopTimingBottomText{top:55%;height:13%;font-size:clamp(10px,1.9vw,28px);letter-spacing:.09em;color:#fff9ef;text-shadow:0 2px 0 rgba(110,20,8,.9),0 4px 10px rgba(0,0,0,.9),0 0 12px rgba(255,120,50,.3)}
-#shopTimingTopText.fade,#shopTimingBottomText.fade{animation:shopTimingPremiumReveal .85s cubic-bezier(.18,.8,.25,1) both}
-@keyframes shopTimingPremiumReveal{0%{opacity:0;transform:translateY(9px) scale(.965);filter:blur(5px);letter-spacing:.12em}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-@media(max-width:520px){.timing-banner-wrap{padding:0}.timing-banner{border-radius:16px}#shopTimingTopText{font-size:clamp(10px,3vw,16px)}#shopTimingBottomText{font-size:clamp(8px,2.1vw,12px);letter-spacing:.04em}}
-@media(prefers-reduced-motion:reduce){#shopTimingTopText.fade,#shopTimingBottomText.fade{animation:none}}
-/* Premium emerald glass shadow matching the Saved Sites button. */
-.timing-banner-wrap{position:relative;isolation:isolate;filter:drop-shadow(0 18px 28px color-mix(in srgb,var(--r2,#61e7b7) 24%,transparent));}
-.hero-shell{margin-bottom:0!important}
-.timing-banner{box-shadow:0 0 0 1px color-mix(in srgb,var(--r2,#ff416b) 28%,transparent),0 16px 34px color-mix(in srgb,var(--r2,#ff416b) 18%,transparent),0 0 42px color-mix(in srgb,var(--r2,#ff416b) 10%,transparent);}
-.timing-banner{border:1.5px solid transparent;background:linear-gradient(145deg,color-mix(in srgb,var(--r,#123c2f) 18%,#080d0b),#050807 58%,color-mix(in srgb,var(--r2,#61e7b7) 10%,#050807)) padding-box,linear-gradient(115deg,color-mix(in srgb,var(--r,#123c2f) 35%,transparent),var(--r2,#61e7b7),color-mix(in srgb,var(--r,#123c2f) 35%,transparent),var(--r2,#61e7b7),color-mix(in srgb,var(--r,#123c2f) 35%,transparent)) border-box;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -14px 28px -16px color-mix(in srgb,var(--r2,#61e7b7) 48%,transparent),0 18px 40px -20px var(--r2,#61e7b7),0 2px 0 #00000066;transition:box-shadow .4s ease,border-color .4s ease}
-@media(hover:hover){.timing-banner:hover{box-shadow:inset 0 1px 0 #ffffff35,inset 0 -14px 28px -14px color-mix(in srgb,var(--r2,#61e7b7) 62%,transparent),0 22px 46px -18px var(--r2,#61e7b7),0 2px 0 #00000066}}
-/* All eight existing themes drive the banner's border, glow, and glass shadow. */
-.timing-banner-wrap{filter:drop-shadow(0 18px 28px color-mix(in srgb,var(--r2) 28%,transparent))!important}
-.timing-banner{background:linear-gradient(145deg,color-mix(in srgb,var(--r) 17%,#080808),color-mix(in srgb,var(--bg) 78%,#000) 58%,color-mix(in srgb,var(--r2) 12%,#050505)) padding-box,linear-gradient(115deg,color-mix(in srgb,var(--r) 48%,transparent),var(--r2),color-mix(in srgb,var(--r) 42%,transparent),var(--r2),color-mix(in srgb,var(--r) 48%,transparent)) border-box!important;box-shadow:inset 0 1px 0 #ffffff2b,inset 0 -14px 28px -16px color-mix(in srgb,var(--r2) 55%,transparent),0 18px 40px -20px var(--r2),0 2px 0 #00000066!important}
-/* Best-effort UI protection against long-press save/drag; source URL itself remains public. */
-#shopTimingBanner,#shopTimingBanner video{ -webkit-touch-callout:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-user-drag:none!important;user-drag:none!important; }
-#shopTimingBanner video{pointer-events:none!important}
-
+<style id="shop-timing-mini-banner-css">
+@property --timing-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+.timing-banner-wrap{width:100%;max-width:620px;box-sizing:border-box;margin:30px auto 0;padding:0 2px;position:relative;isolation:isolate;filter:drop-shadow(0 18px 28px color-mix(in srgb,var(--r2) 28%,transparent))}
+.timing-mini-frame{--timing-accent:var(--r2);position:relative;padding:1.5px;border-radius:20px;background:conic-gradient(from var(--timing-angle),var(--timing-accent),var(--r),transparent 28%,transparent 55%,var(--r),var(--timing-accent));animation:timingMiniSpin 7s linear infinite}
+.timing-mini-frame[data-s="closed"]{--timing-accent:var(--r)}
+.timing-mini-frame:before{content:"";position:absolute;inset:-4px;border-radius:24px;background:inherit;filter:blur(18px);opacity:.42;z-index:-1}
+@keyframes timingMiniSpin{to{--timing-angle:360deg}}
+.timing-mini-card{position:relative;overflow:hidden;border-radius:18.5px;background:linear-gradient(160deg,color-mix(in srgb,var(--r) 22%,var(--bg)),color-mix(in srgb,var(--bg) 92%,#000) 75%);padding:12px 13px 11px;isolation:isolate;border:1px solid color-mix(in srgb,var(--r2) 22%,transparent)}
+.timing-mini-card:before{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:var(--timing-accent);filter:blur(46px);opacity:.25;top:-70px;right:-40px;z-index:-1;animation:timingMiniDrift 9s ease-in-out infinite alternate}
+@keyframes timingMiniDrift{to{transform:translate(-120px,40px)}}
+.timing-mini-particles{position:absolute;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.timing-mini-particle{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--r2);box-shadow:0 0 7px 1px var(--r2);opacity:0;animation:timingMiniTwinkle 4s ease-in-out infinite}
+@keyframes timingMiniTwinkle{0%,100%{opacity:0;transform:translateY(5px)}50%{opacity:.9;transform:translateY(-6px)}}
+.timing-mini-head{display:flex;align-items:center;gap:8px;font-size:12px;min-width:0}
+.timing-mini-dot{width:7px;height:7px;border-radius:50%;background:var(--timing-accent);box-shadow:0 0 0 0 var(--timing-accent);animation:timingMiniPulse 1.8s infinite;flex:none}
+@keyframes timingMiniPulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+#shopTimingStatus{color:var(--timing-accent);font-weight:900;white-space:nowrap}
+#shopTimingShopName{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-size:11px}
+.timing-mini-window{position:relative;height:42px;overflow:hidden;margin-top:7px}
+.timing-mini-slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;transform:translateY(110%);opacity:0;filter:blur(3px);transition:transform .65s cubic-bezier(.7,0,.2,1),opacity .5s,filter .5s}
+.timing-mini-slide.in{transform:none;opacity:1;filter:none}.timing-mini-slide.out{transform:translateY(-110%);opacity:0;filter:blur(3px)}.timing-mini-slide small{font-size:10px;color:var(--muted);line-height:1.2;letter-spacing:.04em}.timing-mini-slide strong{font:800 clamp(13px,2.2vw,16px)/1.3 Inter,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.timing-mini-progress{height:2px;background:color-mix(in srgb,var(--muted) 20%,transparent);border-radius:2px;overflow:hidden;margin:7px 0 9px}.timing-mini-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--r),var(--r2));animation:timingMiniFill 3.4s linear forwards}.timing-mini-frame.pause .timing-mini-progress i,.timing-mini-frame.pause .timing-mini-particle,.timing-mini-frame.pause .timing-mini-card:before,.timing-mini-frame.pause .timing-mini-dot{animation-play-state:paused}@keyframes timingMiniFill{to{width:100%}}
+.timing-mini-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.timing-mini-day{text-align:center;font-size:10px;font-weight:800;padding:4px 0;border-radius:7px;border:1px solid color-mix(in srgb,var(--muted) 20%,transparent);background:#ffffff08;color:var(--muted)}.timing-mini-day.today{border-color:var(--r2);box-shadow:0 0 10px -2px var(--r2);color:var(--r2)}.timing-mini-day.closed{color:var(--r);border:1px dashed color-mix(in srgb,var(--r) 65%,transparent);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--r) 13%,transparent) 0 4px,transparent 4px 8px);text-decoration:line-through}
+@media(max-width:520px){.timing-banner-wrap{margin-top:24px}.timing-mini-card{padding:11px 10px 9px}.timing-mini-day{font-size:9px}}
+body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-mini-frame,body:has(.saved-sites-overlay.show) .timing-mini-frame,body:has(.product-preview-overlay.show) .timing-mini-frame{animation-play-state:paused}body:has(.overlay.show) .timing-mini-particle,body:has(.site-policy.show) .timing-mini-particle,body:has(.saved-sites-overlay.show) .timing-mini-particle,body:has(.product-preview-overlay.show) .timing-mini-particle{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.timing-mini-frame,.timing-mini-card:before,.timing-mini-dot,.timing-mini-particle,.timing-mini-progress i{animation:none!important}.timing-mini-slide{transition:none}}
 </style>
 
 <style id="shop-gallery-theme">
@@ -740,13 +740,15 @@ a.btn.primary,
 <div class="hero-shell" id="heroShell"><video id="shopHeroVideo" class="shop-hero-video" aria-hidden="true" muted loop playsinline autoplay hidden></video><nav class="nav"><div class="brand" id="brand">SHOP MANAGER</div><div class="status" id="status"><i></i><span id="statusText">OPEN</span></div></nav>
 <main class="hero"><div class="orb"></div><div class="hero-content"><img id="shopHeroImage" class="shop-hero-image" alt="Shop" hidden><div class="eyebrow" id="type">SHOP</div><h1 id="name">SHOP</h1><p id="tagline">A live digital presence for this shop.</p><div class="actions"><a class="btn primary" id="call">Call</a><a class="btn" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn" id="map" target="_blank" rel="noopener">Location</a><a class="btn" id="rateUs" target="_blank" rel="noopener noreferrer" hidden>⭐ Rate Us</a><button class="btn" id="updates">Updates</button><button class="btn" id="payQr">Pay / QR</button></div></div></main></div>
 <div class="timing-banner-wrap">
-<section class="timing-banner" id="shopTimingBanner" aria-label="Shop timing banner">
-  <video id="shopTimingVideo" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-    <source src="https://shoppy.sindora.site/B.webm" type="video/webm">
-  </video>
-  <div id="shopTimingTopText" class="text-slot" aria-live="polite">Shop timings</div>
-  <div id="shopTimingBottomText" class="text-slot" aria-live="polite">OPENING HOURS</div>
-</section>
+  <section class="timing-mini-frame" id="shopTimingBanner" data-s="open" aria-label="Shop opening hours">
+    <div class="timing-mini-card" id="shopTimingCard">
+      <div class="timing-mini-particles" id="shopTimingParticles" aria-hidden="true"></div>
+      <div class="timing-mini-head"><i class="timing-mini-dot"></i><b id="shopTimingStatus">OPEN NOW</b><span id="shopTimingShopName"></span></div>
+      <div class="timing-mini-window" id="shopTimingWindow" aria-live="polite"></div>
+      <div class="timing-mini-progress"><i id="shopTimingProgress"></i></div>
+      <div class="timing-mini-week" id="shopTimingWeek" aria-label="Days of the week"></div>
+    </div>
+  </section>
 </div>
 
 <section id="gallerySection" aria-label="Photo gallery" hidden>
@@ -823,12 +825,13 @@ function initCarousel(urls){
       new IntersectionObserver(es=>{
         visible = !!es[0].isIntersecting;
         window.shopGalleryInView = visible;
+        const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.toggle('pause',visible);
         if(visible)loadGalleryImages();
         syncPause();
         if(typeof window.syncShopHeroVideoPlayback==='function')window.syncShopHeroVideoPlayback();
         if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
       }, { threshold:0.25 }).observe(gallerySection);
-    } else { visible = true; window.shopGalleryInView=true; loadGalleryImages(); syncPause(); }
+    } else { visible = true; window.shopGalleryInView=true; const timingBanner=document.getElementById('shopTimingBanner');if(timingBanner)timingBanner.classList.add('pause'); loadGalleryImages(); syncPause(); }
 
     // swipe, tap a side photo to bring it forward, pause while touching
     let sx = null;
@@ -858,39 +861,13 @@ window.renderShopGallery = function(urls){
 
 </script>
 
-<script id="timing-banner-download-gesture-guard">
+<script id="shop-timing-mini-banner-theme">
 (function(){
-  var banner=document.getElementById('shopTimingBanner');
-  var video=document.getElementById('shopTimingVideo');
-  if(!banner||!video)return;
-  video.setAttribute('controlsList','nodownload noplaybackrate');
-  video.setAttribute('disablePictureInPicture','');
-  video.setAttribute('draggable','false');
-  banner.addEventListener('contextmenu',function(e){e.preventDefault();}, {capture:true});
-  banner.addEventListener('dragstart',function(e){e.preventDefault();}, {capture:true});
-  banner.addEventListener('selectstart',function(e){e.preventDefault();}, {capture:true});
-  video.addEventListener('contextmenu',function(e){e.preventDefault();}, {capture:true});
-})();
-</script>
-<script id="shop-timing-banner-theme-video">
-(function(){
-  var video=document.getElementById('shopTimingVideo');
-  if(!video)return;
-  var urls={red:'https://shoppy.sindora.site/B.webm',green:'https://shoppy.sindora.site/G.webm',yellow:'https://shoppy.sindora.site/Y.webm',blue:'https://shoppy.sindora.site/BL.webm',other:'https://shoppy.sindora.site/N.webm'};
-  window.updateShopTimingBannerTheme=function(themeId){
-    var key=String(themeId||'').toLowerCase(),url=urls.other;
-    if(key==='crimson'||key==='red')url=urls.red;
-    else if(key==='emerald'||key==='green')url=urls.green;
-    else if(key==='gold'||key==='yellow')url=urls.yellow;
-    else if(key==='sapphire'||key==='blue')url=urls.blue;
-    var source=video.querySelector('source');
-    if(!source){source=document.createElement('source');source.type='video/webm';video.appendChild(source)}
-    if(source.getAttribute('src')!==url){source.setAttribute('src',url);video.load();}
-    video.muted=true;video.loop=true;video.playsInline=true;
-    if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
-  };
-  var current='gold';try{current=localStorage.getItem('qs_theme')||'gold'}catch(e){}
-  window.updateShopTimingBannerTheme(current);
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const particles=document.getElementById('shopTimingParticles');
+  if(particles&&!particles.childElementCount){for(let i=0;i<9;i++){const dot=document.createElement('i');dot.className='timing-mini-particle';dot.style.left=(Math.random()*96+2)+'%';dot.style.top=(Math.random()*90+4)+'%';dot.style.animationDelay=(Math.random()*4)+'s';dot.style.animationDuration=(3+Math.random()*3)+'s';particles.appendChild(dot)}}
+  window.updateShopTimingBannerTheme=function(){/* CSS variables --r and --r2 drive the banner theme directly. */};
+  window.updateShopTimingBannerTheme();
 })();
 </script>
 <section class="grid"><div class="card"><div class="label">Phone</div><div class="value" id="phone">—</div></div></section>
@@ -1000,80 +977,39 @@ function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||win
 function syncShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.hidden||!video.src)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopHeroVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(video.paused){const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}}
 function initShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.autoplay=false;video.preload="auto";if("IntersectionObserver" in window){shopHeroVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopHeroVideoPlayback()},{threshold:0.01});shopHeroVideoObserver.observe(video)}const sync=()=>syncShopHeroVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopHeroVideoMutationObserver=new MutationObserver(sync);shopHeroVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 
-let shopTimingSlides=[],shopTimingIndex=0,shopTimingPreviousTime=0,shopTimingHasStarted=false,shopTimingVideoBound=false,shopTimingVideoObserver=null,shopTimingVideoMutationObserver=null;
-function shopTimingVideoBlocked(){return document.hidden||welcomeIntroVisible||window.shopGalleryInView===true||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
-function syncShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopTimingVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(!video.paused){return}const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}
-function initShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.controls=false;if("IntersectionObserver" in window){shopTimingVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopTimingVideoPlayback()},{threshold:0.01});shopTimingVideoObserver.observe(video)}const sync=()=>syncShopTimingVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopTimingVideoMutationObserver=new MutationObserver(sync);shopTimingVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
+let shopTimingSlides=[],shopTimingIndex=0,shopTimingTimer=null,shopTimingTransitionTimer=null;
 function parseShopTimingSlides(raw){
   const text=String(raw||"").replace(/[\r\n]+/g," ").replace(/\s+/g," ").trim();
-  if(!text)return [{top:"",bottom:""}];
+  if(!text)return [{top:"Opening hours",bottom:"Please check with the shop"}];
   const dayToken="(?:MONDAY|MON|TUESDAY|TUE|WEDNESDAY|WED|THURSDAY|THU|FRIDAY|FRI|SATURDAY|SAT|SUNDAY|SUN)";
-  const normalizeDays=value=>String(value||"").toUpperCase()
-    .replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE")
-    .replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU")
-    .replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT")
-    .replace(/\bSUNDAY\b/g,"SUN").replace(/\s*(?:TO|–|—|-)\s*/g,"–");
+  const normalizeDays=value=>String(value||"").toUpperCase().replace(/\bMONDAY\b/g,"MON").replace(/\bTUESDAY\b/g,"TUE").replace(/\bWEDNESDAY\b/g,"WED").replace(/\bTHURSDAY\b/g,"THU").replace(/\bFRIDAY\b/g,"FRI").replace(/\bSATURDAY\b/g,"SAT").replace(/\bSUNDAY\b/g,"SUN").replace(/\s*(?:TO|–|—|-)\s*/g,"–");
   const timePattern=/(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)\s*(?:-|–|—|to)\s*(\d{1,2})(?:[:.](\d{2}))?\s*(AM|PM)/ig;
   const fmt=(h,m,ap)=>`${Number(h)}${m&&Number(m)?":"+String(m).padStart(2,"0"):""} ${ap.toUpperCase()}`;
-  const segments=text.split(/\s*(?:,|;|\|)\s*/).map(x=>x.trim()).filter(Boolean);
-  const slides=[];
-  for(const segment of segments){
-    const closed=/\bclosed\b/i.test(segment);
-    const dayRe=new RegExp(`(${dayToken}(?:\\s*(?:,|&|and|\\/|–|-|—|to)\\s*${dayToken})*)`,"i");
-    const dayMatch=dayRe.exec(segment);
-    const days=normalizeDays(dayMatch?.[1]||"");
-    const times=[...segment.matchAll(timePattern)];
-    if(closed){
-      slides.push({top:"CLOSED",bottom:(days?days+" · ":"")+"CLOSED"});
-      continue;
-    }
-    if(times.length){
-      for(const t of times){
-        slides.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom:days||"SHOP TIMINGS"});
-      }
-      continue;
-    }
-    // Preserve useful schedule text even when it does not match a standard time format.
-    if(days||segment){
-      const remainder=segment.replace(dayRe,"").trim().replace(/^[:\-–—]+|[:\-–—]+$/g,"").trim();
-      slides.push({top:remainder||days||segment,bottom:days&&remainder?days:"SHOP TIMINGS"});
-    }
-  }
+  const segments=text.split(/\s*(?:,|;|\|)\s*/).map(x=>x.trim()).filter(Boolean),slides=[];
+  for(const segment of segments){const closed=/\bclosed\b/i.test(segment),dayRe=new RegExp(`(${dayToken}(?:\\s*(?:,|&|and|\\/|–|-|—|to)\\s*${dayToken})*)`,"i"),dayMatch=dayRe.exec(segment),days=normalizeDays(dayMatch?.[1]||""),times=[...segment.matchAll(timePattern)];if(closed){slides.push({top:"CLOSED",bottom:(days?days+" · ":"")+"CLOSED"});continue}if(times.length){for(const t of times)slides.push({top:`${fmt(t[1],t[2],t[3])} – ${fmt(t[4],t[5],t[6])}`,bottom:days||"SHOP TIMINGS"});continue}if(days||segment){const remainder=segment.replace(dayRe,"").trim().replace(/^[:\-–—]+|[:\-–—]+$/g,"").trim();slides.push({top:remainder||days||segment,bottom:days&&remainder?days:"SHOP TIMINGS"})}}
   return slides.length?slides:[{top:text.slice(0,36),bottom:"SHOP TIMINGS"}];
 }
 function showShopTimingSlide(i){
-  const top=$("shopTimingTopText"),bottom=$("shopTimingBottomText");
-  if(!top||!bottom||!shopTimingSlides.length)return;
+  const win=$("shopTimingWindow"),progress=$("shopTimingProgress");if(!win||!shopTimingSlides.length)return;
   shopTimingIndex=((i%shopTimingSlides.length)+shopTimingSlides.length)%shopTimingSlides.length;
   const slide=shopTimingSlides[shopTimingIndex];
-  top.classList.remove("fade");bottom.classList.remove("fade");
-  top.textContent=slide.top||"";
-  bottom.textContent=slide.bottom||"";
-  top.style.opacity="1";bottom.style.opacity="1";
-  void top.offsetWidth;top.classList.add("fade");bottom.classList.add("fade");
+  win.innerHTML=shopTimingSlides.map((item,index)=>`<div class="timing-mini-slide ${index===shopTimingIndex?"in":""}"><small>${esc(item.bottom||"SHOP TIMINGS")}</small><strong>${esc(item.top||"")}</strong></div>`).join("");
+  if(progress){progress.style.animation='none';void progress.offsetWidth;progress.style.animation=''}
 }
 function renderShopTimingBanner(){
-  const banner=$("shopTimingBanner"),video=$("shopTimingVideo");
-  if(!banner||!video)return;
-  // Always use the dedicated timing video; never touch shopHeroVideo or hero_image_url.
-  try{const activeTheme=document.documentElement.getAttribute("data-theme")||localStorage.getItem("qs_theme")||"gold";if(typeof window.updateShopTimingBannerTheme==="function")window.updateShopTimingBannerTheme(activeTheme)}catch(e){}
+  const banner=$("shopTimingBanner"),status=$("shopTimingStatus"),name=$("shopTimingShopName"),week=$("shopTimingWeek");if(!banner||!status)return;
+  const current=state(),now=new Date(),today=(now.getDay()+6)%7,dayLabels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  banner.dataset.s=current.closed?"closed":"open";status.textContent=current.closed?"CLOSED NOW":"OPEN NOW";if(name)name.textContent=shop?.shop_name||"";
   shopTimingSlides=parseShopTimingSlides(shop?.owner_name||"");
-  shopTimingIndex=0;shopTimingPreviousTime=0;shopTimingHasStarted=false;
-  showShopTimingSlide(0);
-  initShopTimingVideoPlayback();
-  if(!shopTimingVideoBound){
-    shopTimingVideoBound=true;
-    video.addEventListener("timeupdate",()=>{
-      const current=video.currentTime||0;
-      if(shopTimingHasStarted&&shopTimingPreviousTime>1&&current<.5)showShopTimingSlide(shopTimingIndex+1);
-      if(current>.1)shopTimingHasStarted=true;
-      shopTimingPreviousTime=current;
-    });
-    video.addEventListener("play",()=>{if(!shopTimingHasStarted)showShopTimingSlide(0)});
-  }
-  const play=()=>syncShopTimingVideoPlayback();
-  if(video.readyState>=2)play();else video.addEventListener("canplay",play,{once:true});
+  if(week){const raw=String(shop?.owner_name||"").toUpperCase();const closedDays=dayLabels.filter(d=>new RegExp('\\b'+d.toUpperCase()+'\\b[^,;|]{0,16}\\bCLOSED\\b|\\bCLOSED\\b[^,;|]{0,16}\\b'+d.toUpperCase()+'\\b').test(raw));week.innerHTML=dayLabels.map((d,i)=>`<span class="timing-mini-day ${i===today?"today":""} ${closedDays.includes(d)?"closed":""}">${d}</span>`).join("")}
+  if(typeof window.updateShopTimingBannerTheme==='function')window.updateShopTimingBannerTheme();
+  if(!banner.dataset.initialized){banner.dataset.initialized="1";showShopTimingSlide(0);shopTimingTimer=setInterval(()=>{if(!document.hidden&&!window.shopGalleryInView&&!document.querySelector('.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show'))showShopTimingSlide(shopTimingIndex+1)},3400)}else if(!shopTimingSlides.length)showShopTimingSlide(0);
 }
+// Compatibility hook retained for existing visibility/popup handlers; the new banner has no video.
+function syncShopTimingVideoPlayback(){}
+window.syncShopTimingVideoPlayback=syncShopTimingVideoPlayback;
+
+setInterval(()=>{if(shop)renderShopTimingBanner()},30000);
 
 function renderShopHeroImage(){const img=$("shopHeroImage"),video=$("shopHeroVideo"),shell=$("heroShell");if(!img||!shell)return;const clear=()=>{img.hidden=true;img.removeAttribute("src");if(video){video.pause();video.hidden=true;video.removeAttribute("src");video.load();shopHeroVideoUrl=""}shell.style.removeProperty("--shop-hero-bg");shell.classList.remove("has-shop-hero","has-shop-hero-video")};const url=safeImageUrl(shop?.hero_image_url);if(!url){clear();return}const isVideo=/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i.test(url);if(isVideo&&video){initShopHeroVideoPlayback();img.hidden=true;img.removeAttribute("src");shell.style.removeProperty("--shop-hero-bg");shell.classList.add("has-shop-hero","has-shop-hero-video");video.hidden=false;video.onerror=()=>{video.pause();video.hidden=true;shell.classList.remove("has-shop-hero-video");shell.classList.remove("has-shop-hero")};video.onloadeddata=()=>{video.hidden=false;shell.classList.add("has-shop-hero","has-shop-hero-video");syncShopHeroVideoPlayback()};if(shopHeroVideoUrl!==url||video.getAttribute("src")!==url){shopHeroVideoUrl=url;video.src=url;video.load()}else{syncShopHeroVideoPlayback()}return}if(video){video.pause();video.hidden=true;if(shopHeroVideoUrl){video.removeAttribute("src");video.load();shopHeroVideoUrl=""}}shell.classList.remove("has-shop-hero-video");const probe=new Image();probe.onload=()=>{shell.style.setProperty("--shop-hero-bg","url(\""+url.replace(/["\\]/g,"\\$&")+"\")");shell.classList.add("has-shop-hero");img.hidden=true;img.removeAttribute("src")};probe.onerror=clear;probe.src=url;img.alt=String(shop?.shop_name||"Shop")+" hero image"}
 
