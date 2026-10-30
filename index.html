@@ -757,12 +757,18 @@ a.btn.primary,
 <script id="shop-gallery-carousel">
 
 const gallerySection = document.getElementById('gallerySection');
+window.shopGalleryInView = false;
 function initCarousel(urls){
     const n = urls.length;
     if(!n) return;
     const track = document.getElementById('gTrack'), stage = document.getElementById('gStage');
     const barsEl = document.getElementById('gBars'), countEl = document.getElementById('gCount');
     const slides = [], bars = [];
+    let imagesLoaded = false;
+    function loadGalleryImages(){
+      if(imagesLoaded)return; imagesLoaded=true;
+      slides.forEach((slide,i)=>{ const img=slide.querySelector('img'); if(img && !img.src) img.src=urls[i]; });
+    }
     let active = 0, hover = false, holding = false, visible = false;
 
     urls.forEach((u,i)=>{
@@ -771,7 +777,7 @@ function initCarousel(urls){
       img.decoding = 'async'; img.draggable = false; img.referrerPolicy = 'no-referrer';
       img.onload = ()=>{ li.classList.remove('loading'); li.classList.add('loaded'); };
       img.onerror = ()=>{ li.classList.remove('loading'); li.classList.add('broken'); };
-      img.src = u;
+      img.dataset.src = u;
       const bad = document.createElement('div'); bad.className = 'g-broken'; bad.textContent = 'Photo unavailable';
       const shade = document.createElement('div'); shade.className = 'g-shade';
       li.append(img, bad, shade); track.appendChild(li); slides.push(li);
@@ -814,8 +820,15 @@ function initCarousel(urls){
 
     apply(true); syncPause();
     if('IntersectionObserver' in window){
-      new IntersectionObserver(es=>{ visible = es[0].isIntersecting; syncPause(); }, { threshold:0.4 }).observe(gallerySection);
-    } else { visible = true; syncPause(); }
+      new IntersectionObserver(es=>{
+        visible = !!es[0].isIntersecting;
+        window.shopGalleryInView = visible;
+        if(visible)loadGalleryImages();
+        syncPause();
+        if(typeof window.syncShopHeroVideoPlayback==='function')window.syncShopHeroVideoPlayback();
+        if(typeof window.syncShopTimingVideoPlayback==='function')window.syncShopTimingVideoPlayback();
+      }, { threshold:0.25 }).observe(gallerySection);
+    } else { visible = true; window.shopGalleryInView=true; loadGalleryImages(); syncPause(); }
 
     // swipe, tap a side photo to bring it forward, pause while touching
     let sx = null;
@@ -983,13 +996,13 @@ function startWelcomeIntroFromAboutUs(aboutUs){
 }
 
 let shopHeroVideoUrl="",shopHeroVideoObserver=null,shopHeroVideoMutationObserver=null;
-function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
+function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||window.shopGalleryInView===true||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
 function syncShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.hidden||!video.src)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopHeroVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(video.paused){const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}}
 function initShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.autoplay=false;video.preload="auto";if("IntersectionObserver" in window){shopHeroVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopHeroVideoPlayback()},{threshold:0.01});shopHeroVideoObserver.observe(video)}const sync=()=>syncShopHeroVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopHeroVideoMutationObserver=new MutationObserver(sync);shopHeroVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 
 let shopTimingSlides=[],shopTimingIndex=0,shopTimingPreviousTime=0,shopTimingHasStarted=false,shopTimingVideoBound=false,shopTimingVideoObserver=null,shopTimingVideoMutationObserver=null;
-function shopTimingVideoBlocked(){return document.hidden||welcomeIntroVisible||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
-function syncShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video)return;if(shopTimingVideoBlocked()){if(!video.paused)video.pause();return}if(!video.paused){return}const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}
+function shopTimingVideoBlocked(){return document.hidden||welcomeIntroVisible||window.shopGalleryInView===true||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show')}
+function syncShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video)return;const rect=video.getBoundingClientRect();const visible=rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;if(shopTimingVideoBlocked()||!visible){if(!video.paused)video.pause();return}if(!video.paused){return}const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}
 function initShopTimingVideoPlayback(){const video=$("shopTimingVideo");if(!video||video.dataset.playbackManager)return;video.dataset.playbackManager="1";video.muted=true;video.loop=true;video.playsInline=true;video.controls=false;if("IntersectionObserver" in window){shopTimingVideoObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.target===video))syncShopTimingVideoPlayback()},{threshold:0.01});shopTimingVideoObserver.observe(video)}const sync=()=>syncShopTimingVideoPlayback();window.addEventListener("scroll",sync,{passive:true});window.addEventListener("resize",sync,{passive:true});document.addEventListener("visibilitychange",sync);window.addEventListener("pageshow",sync);if("MutationObserver" in window){shopTimingVideoMutationObserver=new MutationObserver(sync);shopTimingVideoMutationObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]})}}
 function parseShopTimingSlides(raw){
   const text=String(raw||"").replace(/[\r\n]+/g," ").replace(/\s+/g," ").trim();
