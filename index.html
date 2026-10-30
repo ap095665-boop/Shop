@@ -711,6 +711,26 @@ a.btn.primary,
 #shopTimingBanner video{pointer-events:none!important}
 
 </style>
+
+<style id="shop-gallery-theme">
+#gallerySection{--gw:min(72vw,290px);position:relative;width:100%;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:42px 0 34px;margin:12px auto 18px;color:var(--muted);font-family:Manrope,Inter,system-ui,sans-serif}
+#gallerySection[hidden]{display:none!important}
+#gallerySection h2{margin:0;font-family:var(--serif,"Cormorant Garamond",Georgia,serif);font-weight:700;font-size:clamp(26px,4vw,36px);color:var(--r2);letter-spacing:-.02em}
+#gallerySection .g-rule{height:1px;width:56%;max-width:220px;margin:12px 0 26px;background:linear-gradient(90deg,transparent,var(--r2),var(--r),transparent)}
+#gallerySection .g-stage{position:relative;width:100%;height:calc(var(--gw)*1.25);perspective:1100px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+#gallerySection .g-track{position:absolute;inset:0;transform-style:preserve-3d}
+#gallerySection .g-slide{position:absolute;top:0;left:50%;width:var(--gw);height:100%;margin-left:calc(var(--gw)/-2);border-radius:26px;overflow:hidden;cursor:pointer;background:linear-gradient(160deg,color-mix(in srgb,var(--r) 18%,var(--bg)),var(--bg));border:1.5px solid color-mix(in srgb,var(--r2) 72%,transparent);box-shadow:0 28px 58px -25px color-mix(in srgb,var(--r) 58%,transparent),0 0 0 1px color-mix(in srgb,var(--r2) 24%,transparent),inset 0 1px 0 #ffffff24;transition:transform .85s cubic-bezier(.22,.9,.25,1),opacity .85s ease,filter .85s ease;will-change:transform,opacity}
+#gallerySection .g-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.02);transition:opacity .6s ease;-webkit-user-drag:none}
+#gallerySection .g-slide.loaded img{opacity:1}#gallerySection .g-slide.active img{animation:shopGalleryKen 7s ease-out forwards}@keyframes shopGalleryKen{from{transform:scale(1.02)}to{transform:scale(1.12)}}
+#gallerySection .g-slide:not(.active){filter:saturate(.72) brightness(.72)}
+#gallerySection .g-shade{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(180deg,transparent 55%,color-mix(in srgb,var(--bg) 78%,transparent));box-shadow:inset 0 0 0 1px #ffffff12,inset 0 1px 0 #ffffff20}
+#gallerySection .g-slide.loading:before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(110deg,transparent 30%,color-mix(in srgb,var(--r2) 15%,transparent) 50%,transparent 70%);background-size:200% 100%;animation:shopGalleryShimmer 1.4s linear infinite}@keyframes shopGalleryShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+#gallerySection .g-broken{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:20px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}#gallerySection .g-slide.broken .g-broken{display:flex}
+#gallerySection .g-meta{width:var(--gw);margin-top:25px;display:flex;align-items:center;gap:14px}#gallerySection .g-bars{flex:1;display:flex;gap:6px}#gallerySection .g-bar{flex:1;height:3px;border-radius:3px;overflow:hidden;background:color-mix(in srgb,var(--muted) 20%,transparent)}#gallerySection .g-bar i{display:block;width:0;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--r),var(--r2))}#gallerySection .g-bar.done i{width:100%}#gallerySection .g-bar.on i{animation:shopGalleryFill 4.5s linear forwards}#gallerySection.paused .g-bar.on i{animation-play-state:paused}@keyframes shopGalleryFill{from{width:0}to{width:100%}}#gallerySection .g-count{font-weight:800;font-size:11px;letter-spacing:.14em;color:var(--r2);font-variant-numeric:tabular-nums}
+@media(max-width:520px){#gallerySection{padding:30px 0 26px;--gw:min(72vw,270px)}#gallerySection .g-slide{border-radius:22px}}
+@media(prefers-reduced-motion:reduce){#gallerySection .g-slide,#gallerySection .g-slide img{transition:none}#gallerySection .g-slide.active img,#gallerySection .g-slide.loading:before,#gallerySection .g-bar.on i{animation:none!important}}
+</style>
+
 </head>
 <body>
 <div id="welcomeIntroOverlay" class="welcome-intro-overlay" aria-hidden="true" hidden>
@@ -728,6 +748,102 @@ a.btn.primary,
   <div id="shopTimingBottomText" class="text-slot" aria-live="polite">OPENING HOURS</div>
 </section>
 </div>
+
+<section id="gallerySection" aria-label="Photo gallery" hidden>
+  <h2>Gallery</h2><div class="g-rule"></div>
+  <div class="g-stage" id="gStage" role="region" aria-roledescription="carousel" aria-label="Shop photos"><div class="g-track" id="gTrack"></div></div>
+  <div class="g-meta"><div class="g-bars" id="gBars"></div><span class="g-count" id="gCount"></span></div>
+</section>
+<script id="shop-gallery-carousel">
+
+const gallerySection = document.getElementById('gallerySection');
+function initCarousel(urls){
+    const n = urls.length;
+    if(!n) return;
+    const track = document.getElementById('gTrack'), stage = document.getElementById('gStage');
+    const barsEl = document.getElementById('gBars'), countEl = document.getElementById('gCount');
+    const slides = [], bars = [];
+    let active = 0, hover = false, holding = false, visible = false;
+
+    urls.forEach((u,i)=>{
+      const li = document.createElement('div'); li.className = 'g-slide loading'; li.dataset.i = i;
+      const img = new Image(); img.alt = 'Shop' + ' photo ' + (i+1);
+      img.decoding = 'async'; img.draggable = false; img.referrerPolicy = 'no-referrer';
+      img.onload = ()=>{ li.classList.remove('loading'); li.classList.add('loaded'); };
+      img.onerror = ()=>{ li.classList.remove('loading'); li.classList.add('broken'); };
+      img.src = u;
+      const bad = document.createElement('div'); bad.className = 'g-broken'; bad.textContent = 'Photo unavailable';
+      const shade = document.createElement('div'); shade.className = 'g-shade';
+      li.append(img, bad, shade); track.appendChild(li); slides.push(li);
+      if(n > 1){
+        const b = document.createElement('span'); b.className = 'g-bar'; b.appendChild(document.createElement('i'));
+        b.firstChild.addEventListener('animationend', ()=>{ if(bars[active] === b) go(active + 1); });
+        barsEl.appendChild(b); bars.push(b);
+      }
+    });
+    if(n < 2){ barsEl.style.display = 'none'; countEl.style.display = 'none'; }
+
+    const pad = x => String(x).padStart(2,'0');
+    function place(s, d, jump){
+      const a = Math.abs(d);
+      const tf = d === 0 ? 'translate3d(0,0,0) scale(1)'
+        : 'translate3d(' + (d*58) + '%,0,-90px) scale(.84) rotateY(' + (-d*20) + 'deg)';
+      const op = a === 0 ? 1 : (a === 1 ? 0.6 : 0);
+      if(jump){
+        s.style.transition = 'none'; s.style.opacity = 0; s.style.transform = tf;
+        void s.offsetWidth; s.style.transition = '';
+      }
+      s.style.transform = tf; s.style.opacity = op;
+      s.style.zIndex = 3 - a; s.style.pointerEvents = a > 1 ? 'none' : 'auto';
+    }
+    function apply(first){
+      slides.forEach((s,i)=>{
+        let d = (i - active + n) % n; if(d > n/2) d -= n;
+        const prev = s.dataset.o === undefined ? d : +s.dataset.o;
+        s.dataset.o = d;
+        s.classList.toggle('active', d === 0);
+        place(s, d, !first && Math.abs(d - prev) > 1);
+      });
+      bars.forEach(b=>b.classList.remove('on','done'));
+      void barsEl.offsetWidth; // restart the progress animation
+      bars.forEach((b,i)=>{ if(i < active) b.classList.add('done'); else if(i === active) b.classList.add('on'); });
+      countEl.textContent = pad(active+1) + ' / ' + pad(n);
+    }
+    function go(i){ active = ((i % n) + n) % n; apply(false); }
+    function syncPause(){ gallerySection.classList.toggle('paused', hover || holding || !visible); }
+
+    apply(true); syncPause();
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(es=>{ visible = es[0].isIntersecting; syncPause(); }, { threshold:0.4 }).observe(gallerySection);
+    } else { visible = true; syncPause(); }
+
+    // swipe, tap a side photo to bring it forward, pause while touching
+    let sx = null;
+    stage.addEventListener('pointerdown', e=>{ sx = e.clientX; holding = true; syncPause(); });
+    stage.addEventListener('pointerup', e=>{
+      if(sx !== null && n > 1){
+        const dx = e.clientX - sx;
+        if(Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
+        else { const sl = e.target.closest && e.target.closest('.g-slide'); if(sl && +sl.dataset.o !== 0) go(+sl.dataset.i); }
+      }
+      sx = null; holding = false; syncPause();
+    });
+    stage.addEventListener('pointercancel', ()=>{ sx = null; holding = false; syncPause(); });
+    stage.addEventListener('mouseenter', ()=>{ hover = true; syncPause(); });
+    stage.addEventListener('mouseleave', ()=>{ hover = false; syncPause(); });
+  }
+
+window.renderShopGallery = function(urls){
+  const section=document.getElementById('gallerySection');
+  if(!section)return;
+  const track=document.getElementById('gTrack'), bars=document.getElementById('gBars'), count=document.getElementById('gCount');
+  track.innerHTML=''; bars.innerHTML=''; bars.style.display=''; count.style.display='';
+  section.hidden=!Array.isArray(urls)||!urls.length;
+  if(section.hidden)return;
+  initCarousel(urls);
+};
+
+</script>
 
 <script id="timing-banner-download-gesture-guard">
 (function(){
@@ -834,7 +950,7 @@ function addressDetails(value){let raw=String(value??"").trim();let aboutUs="";c
 let welcomeIntroStarted=false,welcomeIntroTimer=null,welcomeIntroExitTimer=null,welcomeIntroVisible=false;
 function welcomeImageFromAboutUs(value){
   const about=String(value??"");
-  const matches=about.match(/https?:\/\/[^\s<>"'`]+?\.webp(?:\?[^\s<>"'`]*)?/ig)||[];
+  const matches=about.match(/https?:\/\/[^\s<>"'`]+?\.(?:webp|png|jpe?g|gif|avif)(?:\?[^\s<>"'`]*)?/ig)||[];
   for(const candidate of matches){const url=safeImageUrl(candidate.replace(/[),.;]+$/,""));if(url)return url}
   return "";
 }
@@ -959,7 +1075,15 @@ function renderProductBrowse(){const items=productBrowseItems(),item=items[produ
 function updateProductBrowseCart(){const items=productItems();let n=0,total=0;items.forEach((x,i)=>{const q=Math.min(selectedProducts.get(i)||0,Number(x.stock)||0);if(q>0&&x.stock>0){n+=q;total+=itemPrice(x)*q}});const count=$("productBrowseSelectedCount"),sum=$("productBrowseSelectedTotal"),view=$("productBrowseViewCart");if(count)count.innerHTML=`<strong>${n}</strong> item${n===1?"":"s"} selected`;if(sum)sum.textContent="Grand Total "+money(total);if(view){view.disabled=state().closed||n===0;view.innerHTML=state().closed?"Store Closed":"View Cart"+(n?`<span class="cart-badge">${n}</span>`:"")}}
 function changeBrowseQuantity(dir){const item=productBrowseItems()[productBrowseIndex];if(!item||state().closed)return;const key=item.__sourceIndex,max=Math.max(0,Number(item.stock)||0),next=Math.max(0,Math.min(max,(selectedProducts.get(key)||0)+dir));if(next)selectedProducts.set(key,next);else selectedProducts.delete(key);$("productBrowseQtyValue").textContent=String(next);$("productBrowseMinus").disabled=next<=0;$("productBrowsePlus").disabled=next>=max;const listValue=document.querySelector(`[data-qty-value="${key}"]`);if(listValue)listValue.textContent=String(next);updateProductCart();updateProductBrowseCart();if(next>0){const b=$("productBrowseViewCart");if(b){b.classList.remove("reacted");void b.offsetWidth;b.classList.add("reacted")}}}
 function closeProductImage(){const overlay=$("productPreviewOverlay"),img=$("productPreviewImage");if(!overlay)return;overlay.classList.remove("show");overlay.setAttribute("aria-hidden","true");if(img){img.removeAttribute("src");img.onerror=null;img.hidden=true}if(productBrowseTimer){clearTimeout(productBrowseTimer);productBrowseTimer=null}syncShopHeroVideoPlayback()}
-function render(){if(!shop)return;renderShopHeroImage();let s=state();const addressInfo=addressDetails(shop.address);currentShopAboutUs=addressInfo.aboutUs||"";$("brand").textContent=shop.shop_name;$("name").innerHTML=esc(shop.shop_name).replace(/\s+/g,"<br>");$("type").textContent=shop.store_type;$("type2").textContent=shop.store_type;$("owner").textContent=shop.owner_name;renderShopTimingBanner();$("phone").textContent=shop.phone;$("address").textContent=addressInfo.address;const rateButton=$("rateUs");rateButton.hidden=!addressInfo.rateUrl;if(addressInfo.rateUrl)rateButton.href=addressInfo.rateUrl;$("call").href="tel:"+String(shop.phone||"").replace(/[^\d+]/g,"");$("wa").href="https://wa.me/"+String(shop.phone||"").replace(/\D/g,"")+"?text="+encodeURIComponent("Hello, I'd like to enquire.");$("map").href=shop.latitude!=null&&shop.longitude!=null?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.latitude+","+shop.longitude):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(addressInfo.address||shop.shop_name||"");$("status").classList.toggle("closed",s.closed);$("statusText").textContent=s.closed?"CLOSED":"OPEN";$("tagline").textContent=s.closed?(s.reason==="manual"?(shop.closed_message||"Shop is currently closed."):s.reason==="quick"?"The shop is temporarily closed.":"Shop is currently outside today's opening hours."):"A live digital presence for this shop.";renderSlides()}
+function galleryUrlsFromStoreType(value){
+  const text=String(value??"");
+  const match=text.match(/\bgallery\s*:\s*((?:["'][^"']*["']\s*,?\s*)+)/i);
+  if(!match)return [];
+  const found=match[1].match(/["']([^"']+)["']/g)||[];
+  return found.map(x=>safeImageUrl(x.slice(1,-1))).filter(Boolean).slice(0,12);
+}
+function cleanStoreType(value){return String(value??"").replace(/\s*[,;|]?\s*gallery\s*:\s*(?:["'][^"']*["']\s*,?\s*)+/ig,"").replace(/[\s,;|]+$/g,"").trim()}
+function render(){if(!shop)return;renderShopHeroImage();let s=state();const addressInfo=addressDetails(shop.address);currentShopAboutUs=addressInfo.aboutUs||"";$("brand").textContent=shop.shop_name;$("name").innerHTML=esc(shop.shop_name).replace(/\s+/g,"<br>");const visibleStoreType=cleanStoreType(shop.store_type);$("type").textContent=visibleStoreType;$("type2").textContent=visibleStoreType;if(typeof window.renderShopGallery==="function")window.renderShopGallery(galleryUrlsFromStoreType(shop.store_type));$("owner").textContent=shop.owner_name;renderShopTimingBanner();$("phone").textContent=shop.phone;$("address").textContent=addressInfo.address;const rateButton=$("rateUs");rateButton.hidden=!addressInfo.rateUrl;if(addressInfo.rateUrl)rateButton.href=addressInfo.rateUrl;$("call").href="tel:"+String(shop.phone||"").replace(/[^\d+]/g,"");$("wa").href="https://wa.me/"+String(shop.phone||"").replace(/\D/g,"")+"?text="+encodeURIComponent("Hello, I'd like to enquire.");$("map").href=shop.latitude!=null&&shop.longitude!=null?"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(shop.latitude+","+shop.longitude):"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(addressInfo.address||shop.shop_name||"");$("status").classList.toggle("closed",s.closed);$("statusText").textContent=s.closed?"CLOSED":"OPEN";$("tagline").textContent=s.closed?(s.reason==="manual"?(shop.closed_message||"Shop is currently closed."):s.reason==="quick"?"The shop is temporarily closed.":"Shop is currently outside today's opening hours."):"A live digital presence for this shop.";renderSlides()}
 function productItems(){const list=shop?.info?.products;return Array.isArray(list)?list.slice(0,20).filter(x=>x&&String(x.name||"").trim()!==""&&x.sellingPrice!==""&&x.sellingPrice!=null).map(x=>({...x,id:String(x.id||x.productId||""),stock:(Number.isFinite(Number(x.stock))&&Number(x.stock)>=0)?Math.floor(Number(x.stock)):0})):[]}
 function itemPrice(item){const offer=Number(item.offerPrice);return item.offerPrice!==""&&!Number.isNaN(offer)?offer:Number(item.sellingPrice)||0}
 function money(v){return "₹"+Number(v||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
