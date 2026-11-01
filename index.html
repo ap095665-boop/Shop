@@ -791,6 +791,14 @@ body:after{inset:0!important;filter:none!important;transform:translateZ(0);will-
 /* Skip rendering work for sections far off-screen */
 #gallerySection,.policies-accordion{content-visibility:auto;contain-intrinsic-size:auto 420px}
 
+/* Hero title + action buttons: always visible (no scroll-driven show/hide) */
+.hero-shell.has-shop-hero-video .hero-content #name,
+.hero-shell.has-shop-hero-video .hero-content .actions{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:none!important;transition:none!important}
+/* Timing banner: no big drop-shadow filter, isolate its layout from the page */
+.timing-banner-wrap{filter:none!important;contain:layout style}
+.timing-mini-frame{box-shadow:0 12px 24px -16px var(--r2)}
+.timing-mini-card{contain:layout style}
+
 /* Pause every looping animation while the finger is scrolling */
 html.is-scrolling *,html.is-scrolling *:before,html.is-scrolling *:after{animation-play-state:paused!important}
 .hub-stack>span{animation:none!important}
@@ -1049,8 +1057,8 @@ function startWelcomeIntroFromAboutUs(aboutUs){
 }
 
 let shopHeroVideoUrl="",shopHeroVideoObserver=null,shopHeroVideoVisibilityObserver=null,shopHeroVideoMutationObserver=null,shopHeroContentObserver=null,shopHeroVideoNear=false,shopHeroVideoVisible=false;
-function setShopHeroContentVisibility(active){const shell=$("heroShell");if(shell)shell.classList.toggle("hero-video-area-visible",!!active)}
-function observeShopHeroContent(){const hero=document.querySelector("#heroShell .hero");if(!hero||!("IntersectionObserver" in window))return;if(shopHeroContentObserver)shopHeroContentObserver.disconnect();shopHeroContentObserver=new IntersectionObserver(entries=>{const e=entries[0];setShopHeroContentVisibility(!!e&&e.isIntersecting&&e.intersectionRatio>=0.08)},{threshold:[0,0.08,0.2]});shopHeroContentObserver.observe(hero)}
+function setShopHeroContentVisibility(active){const shell=$("heroShell");if(shell&&!shell.classList.contains("hero-video-area-visible"))shell.classList.add("hero-video-area-visible")}
+function observeShopHeroContent(){setShopHeroContentVisibility(true)}
 function shopHeroVideoBlocked(){return document.hidden||welcomeIntroVisible||window.shopGalleryInView===true||!!document.querySelector('.welcome-intro-overlay:not([hidden]),.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show,.cart-overlay.show,.checkout-overlay.show')}
 function attachShopHeroVideoSource(){const video=$("shopHeroVideo");if(!video||!shopHeroVideoNear||!shopHeroVideoUrl||video.getAttribute("src")===shopHeroVideoUrl)return;video.preload="auto";video.src=shopHeroVideoUrl;video.load()}
 function syncShopHeroVideoPlayback(){const video=$("shopHeroVideo");if(!video||video.hidden||!shopHeroVideoUrl)return;if(!shopHeroVideoVisible||shopHeroVideoBlocked()){if(!video.paused)video.pause();return}attachShopHeroVideoSource();if(video.readyState>=2&&video.paused){const attempt=video.play();if(attempt&&typeof attempt.catch==="function")attempt.catch(()=>{})}}
@@ -1072,8 +1080,9 @@ function showShopTimingSlide(i){
   const win=$("shopTimingWindow"),progress=$("shopTimingProgress");if(!win||!shopTimingSlides.length)return;
   shopTimingIndex=((i%shopTimingSlides.length)+shopTimingSlides.length)%shopTimingSlides.length;
   const slide=shopTimingSlides[shopTimingIndex];
-  win.innerHTML=shopTimingSlides.map((item,index)=>`<div class="timing-mini-slide ${index===shopTimingIndex?"in":""}"><small>${esc(item.bottom||"SHOP TIMINGS")}</small><strong>${esc(item.top||"")}</strong></div>`).join("");
-  if(progress){progress.style.animation='none';void progress.offsetWidth;progress.style.animation=''}
+  const sig=shopTimingSlides.map(x=>(x.top||"")+"|"+(x.bottom||"")).join("~");
+  if(win.dataset.sig===sig&&win.children.length===shopTimingSlides.length){for(let k=0;k<win.children.length;k++)win.children[k].classList.toggle("in",k===shopTimingIndex)}
+  else{win.innerHTML=shopTimingSlides.map((item,index)=>`<div class="timing-mini-slide ${index===shopTimingIndex?"in":""}"><small>${esc(item.bottom||"SHOP TIMINGS")}</small><strong>${esc(item.top||"")}</strong></div>`).join("");win.dataset.sig=sig}
 }
 function renderShopTimingBanner(){
   const banner=$("shopTimingBanner"),status=$("shopTimingStatus"),name=$("shopTimingShopName"),week=$("shopTimingWeek");if(!banner||!status)return;
@@ -1082,13 +1091,13 @@ function renderShopTimingBanner(){
   shopTimingSlides=parseShopTimingSlides(shop?.owner_name||"");
   if(week){const raw=String(shop?.owner_name||"").toUpperCase();const closedDays=dayLabels.filter(d=>new RegExp('\\b'+d.toUpperCase()+'\\b[^,;|]{0,16}\\bCLOSED\\b|\\bCLOSED\\b[^,;|]{0,16}\\b'+d.toUpperCase()+'\\b').test(raw));week.innerHTML=dayLabels.map((d,i)=>`<span class="timing-mini-day ${i===today?"today":""} ${closedDays.includes(d)?"closed":""}">${d}</span>`).join("")}
   if(typeof window.updateShopTimingBannerTheme==='function')window.updateShopTimingBannerTheme();
-  if(!banner.dataset.initialized){banner.dataset.initialized="1";showShopTimingSlide(0);shopTimingTimer=setInterval(()=>{if(!document.hidden&&!window.shopGalleryInView&&!document.querySelector('.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show'))showShopTimingSlide(shopTimingIndex+1)},3400)}else if(!shopTimingSlides.length)showShopTimingSlide(0);
+  if(!banner.dataset.initialized){banner.dataset.initialized="1";showShopTimingSlide(0);shopTimingTimer=setInterval(()=>{if(!document.hidden&&!document.documentElement.classList.contains("is-scrolling")&&!window.shopGalleryInView&&!document.querySelector('.overlay.show,.site-policy.show,.saved-sites-overlay.show,.product-preview-overlay.show'))showShopTimingSlide(shopTimingIndex+1)},3400)}else if(!shopTimingSlides.length)showShopTimingSlide(0);
 }
 // Compatibility hook retained for existing visibility/popup handlers; the new banner has no video.
 function syncShopTimingVideoPlayback(){}
 window.syncShopTimingVideoPlayback=syncShopTimingVideoPlayback;
 
-setInterval(()=>{if(shop)renderShopTimingBanner()},30000);
+setInterval(()=>{if(shop&&!document.documentElement.classList.contains("is-scrolling"))renderShopTimingBanner()},30000);
 
 function renderShopHeroImage(){const img=$("shopHeroImage"),video=$("shopHeroVideo"),shell=$("heroShell");if(!img||!shell)return;const clear=()=>{img.hidden=true;img.removeAttribute("src");if(video){video.pause();video.hidden=true;video.removeAttribute("src");video.removeAttribute("data-src");video.load();shopHeroVideoUrl="";shopHeroVideoNear=false;shopHeroVideoVisible=false}shell.style.removeProperty("--shop-hero-bg");shell.classList.remove("has-shop-hero","has-shop-hero-video","hero-video-area-visible")};const url=safeImageUrl(shop?.hero_image_url);if(!url){clear();return}const isVideo=/\.(mp4|webm|ogg|ogv|mov|m4v)(?:$|[?#])/i.test(url);if(isVideo&&video){initShopHeroVideoPlayback();img.hidden=true;img.removeAttribute("src");shell.style.removeProperty("--shop-hero-bg");shell.classList.add("has-shop-hero","has-shop-hero-video");video.hidden=false;video.onerror=()=>{video.pause();video.hidden=true;shell.classList.remove("has-shop-hero-video");shell.classList.remove("has-shop-hero")};video.onloadeddata=()=>{video.hidden=false;shell.classList.add("has-shop-hero","has-shop-hero-video");syncShopHeroVideoPlayback()};if(shopHeroVideoUrl!==url){if(video.hasAttribute("src")){video.pause();video.removeAttribute("src");video.load()}shopHeroVideoUrl=url;video.dataset.src=url;attachShopHeroVideoSource()}else syncShopHeroVideoPlayback();return}if(video){video.pause();video.hidden=true;if(shopHeroVideoUrl){video.removeAttribute("src");video.removeAttribute("data-src");video.load();shopHeroVideoUrl="";shopHeroVideoNear=false;shopHeroVideoVisible=false}}shell.classList.remove("has-shop-hero-video","hero-video-area-visible");const probe=new Image();probe.onload=()=>{shell.style.setProperty("--shop-hero-bg","url(\""+url.replace(/["\\]/g,"\\$&")+"\")");shell.classList.add("has-shop-hero");img.hidden=true;img.removeAttribute("src")};probe.onerror=clear;probe.src=url;img.alt=String(shop?.shop_name||"Shop")+" hero image"}
 
@@ -1464,7 +1473,7 @@ $("paymentConfirmYes").onclick=async()=>{
   await submitPaymentReview();
 };$("orderPaymentOverlay").addEventListener("click",e=>{if(e.target===$("orderPaymentOverlay"))closeCheckout()});
 $("paymentConfirmOverlay").addEventListener("click",e=>{if(e.target===$("paymentConfirmOverlay"))closePaymentSubmitConfirmation()});$("cartBack").onclick=closeCart;$("cartSendOrder").onclick=sendSelectedOrder;$("cartOrderDate").addEventListener("change",syncPickupConstraints);$("cartOrderTime").addEventListener("focus",syncPickupConstraints);$("cartOverlay").addEventListener("click",e=>{if(e.target===$("cartOverlay"))closeCart()});
-setInterval(()=>{if(!shop)return;document.querySelectorAll("[data-count]").forEach(e=>e.textContent=countdown(e.dataset.count));let c=state().closed;if(c!==lastClosed){lastClosed=c;render()}},1000);
+setInterval(()=>{if(!shop||document.documentElement.classList.contains("is-scrolling"))return;document.querySelectorAll("[data-count]").forEach(e=>e.textContent=countdown(e.dataset.count));let c=state().closed;if(c!==lastClosed){lastClosed=c;render()}},1000);
 load();
 </script>
 
