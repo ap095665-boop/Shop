@@ -758,6 +758,45 @@ body:has(.overlay.show) .timing-mini-frame,body:has(.site-policy.show) .timing-m
 @media(prefers-reduced-motion:reduce){#galleryAtmosphere:before{transition:none}}
 </style>
 
+<style id="smooth-scroll-perf">
+/* ===== App-like smooth scrolling: remove per-frame paint/blur cost ===== */
+html{scroll-behavior:auto;overscroll-behavior-y:none;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{-webkit-overflow-scrolling:touch;overscroll-behavior-y:none}
+a,button,summary,input,select,label,.card,.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+/* Fixed background: static, GPU layer, no infinite animation, no blur */
+body:before{inset:0!important;animation:none!important;transform:translateZ(0);will-change:transform;backface-visibility:hidden}
+body:after{inset:0!important;filter:none!important;transform:translateZ(0);will-change:transform;backface-visibility:hidden;
+  background:linear-gradient(100deg,#000c,#0003,#000c),url("https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=60") center/cover!important}
+
+/* Backdrop blur is the biggest scroll killer on phones: replace with solid dark */
+*,*:before,*:after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.overlay,.site-policy,.saved-sites-overlay,#thmScrim{background:#030003f2!important}
+.status,.hero-shell.has-shop-hero .status{background:rgba(0,0,0,.7)!important}
+
+/* Heavy blurred layers -> static / cheap */
+#galleryAtmosphere:before{filter:none!important;transform:none!important;opacity:.22!important}
+.orb{animation:none!important;filter:none!important}
+
+/* Lighter text shadows (huge radii repaint slowly) */
+.hero-shell.has-shop-hero .brand,.hero-shell.has-shop-hero .status,.hero-shell.has-shop-hero .hero-content .eyebrow,
+.hero-shell.has-shop-hero .hero-content h1,.hero-shell.has-shop-hero .hero-content p,
+.hero-shell.has-shop-hero .hero-content h1,.hero-shell.has-shop-hero .hero-content .status{text-shadow:0 2px 8px #000!important}
+
+/* Gallery: no per-slide filters, keep only transform/opacity (compositor-only) */
+#gallerySection .g-slide{transition:transform .6s cubic-bezier(.22,.9,.25,1),opacity .6s ease!important}
+#gallerySection .g-slide:not(.active){filter:none!important;opacity:.78}
+#gallerySection .g-slide.active img{animation:none!important}
+
+/* Skip rendering work for sections far off-screen */
+#gallerySection,.policies-accordion{content-visibility:auto;contain-intrinsic-size:auto 420px}
+
+/* Pause every looping animation while the finger is scrolling */
+html.is-scrolling *,html.is-scrolling *:before,html.is-scrolling *:after{animation-play-state:paused!important}
+.hub-stack>span{animation:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+
 </head>
 <body>
 <div id="welcomeIntroOverlay" class="welcome-intro-overlay" aria-hidden="true" hidden>
@@ -1859,4 +1898,11 @@ if ("serviceWorker" in navigator) {
 @keyframes welcomeImageOut{to{transform:scale(1.055);filter:blur(3px);opacity:0}}
 @media(prefers-reduced-motion:reduce){.welcome-intro-overlay:before,.welcome-intro-frame,.welcome-intro-image,.welcome-intro-frame:after{animation-duration:.01ms!important;animation-delay:0ms!important}.welcome-intro-overlay.is-exiting,.welcome-intro-overlay.is-exiting .welcome-intro-frame,.welcome-intro-overlay.is-exiting .welcome-intro-image{animation-duration:.01ms!important}}
 </style>
+<script id="smooth-scroll-perf-js">
+(function(){var r=document.documentElement,t;
+addEventListener('scroll',function(){if(!r.classList.contains('is-scrolling'))r.classList.add('is-scrolling');clearTimeout(t);t=setTimeout(function(){r.classList.remove('is-scrolling')},140)},{passive:true});
+document.addEventListener('touchmove',function(){},{passive:true});
+})();
+</script>
+
 </body></html>
